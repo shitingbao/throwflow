@@ -1,0 +1,483 @@
+syntax = "proto3";
+
+package material.v1;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+option go_package = "material/api/material/v1;v1";
+
+service Material {
+  // 素材参谋
+  rpc ListMaterials (ListMaterialsRequest) returns (ListMaterialsReply) {}
+  rpc ListProducts (ListProductsRequest) returns (ListProductsReply) {}
+  rpc ListAwemesByProductId (ListAwemesByProductIdRequest) returns (ListAwemesByProductIdReply) {}
+  rpc ListSelectMaterials (google.protobuf.Empty) returns (ListSelectMaterialsReply) {}
+  rpc GetDownUrlVideoUrls (GetDownUrlVideoUrlsRequest) returns (GetDownUrlVideoUrlsReply) {}
+  rpc GetVideoUrls (GetVideoUrlsRequest) returns (GetVideoUrlsReply) {}
+  rpc GetPromotions (GetPromotionsRequest) returns (GetPromotionsReply) {}
+  rpc GetUploadIdMaterials (GetUploadIdMaterialsRequest) returns (GetUploadIdMaterialsReply) {}
+  rpc GetFileSizeMaterials (GetFileSizeMaterialsRequest) returns (GetFileSizeMaterialsReply) {}
+  rpc GetIsTopMaterials (GetIsTopMaterialsRequest) returns (GetIsTopMaterialsReply) {}
+  rpc StatisticsMaterials (google.protobuf.Empty) returns (StatisticsMaterialsReply) {}
+  rpc CreateMaterials (CreateMaterialsRequest) returns (CreateMaterialsReply) {}
+  rpc UploadMaterials (UploadMaterialsRequest) returns (UploadMaterialsReply) {}
+  rpc UploadPartMaterials (UploadPartMaterialsRequest) returns (UploadPartMaterialsReply) {}
+  rpc CompleteUploadMaterials (CompleteUploadMaterialsRequest) returns (CompleteUploadMaterialsReply) {}
+  rpc AbortUploadMaterials (AbortUploadMaterialsRequest) returns (AbortUploadMaterialsReply) {}
+  rpc DownMaterials (DownMaterialsRequest) returns (DownMaterialsReply) {}
+
+  // 素材参谋收藏
+  rpc ListCollectMaterials (ListCollectMaterialsRequest) returns (ListCollectMaterialsReply) {}
+  rpc UpdateCollects (UpdateCollectsRequest) returns (UpdateCollectsReply) {}
+}
+
+message ListMaterialsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 companyId = 3 [(validate.rules).uint64.gte = 0];
+  uint64 productId = 4 [(validate.rules).uint64.gte = 0];
+  string keyword = 5 [(validate.rules).string = {min_len: 0}];
+  string search = 6 [(validate.rules).string = {in: ["", "name", "aweme", "product"]}];
+  string category = 7 [(validate.rules).string = {min_len: 0}];
+  string msort = 8 [(validate.rules).string = {in: ["", "isHot", "time", "like"]}];
+  string mplatform = 9 [(validate.rules).string = {in: ["", "dy", "ks"]}];
+  uint32 isShowCollect = 10 [(validate.rules).uint32 = {in: [0, 1]}];
+  string phone = 11 [(validate.rules).string.pattern = "^$|^\\s{0}$|((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+}
+
+message ListMaterialsReply {
+  message Materials {
+    uint64 videoId = 1;
+    string videoName = 2;
+    string videoUrl = 3;
+    string videoCover = 4;
+    uint64 videoLike = 5;
+    string videoLikeShowA = 6;
+    string videoLikeShowB = 7;
+    uint64 awemeId = 8;
+    string awemeName = 9;
+    string awemeAccount = 10;
+    string awemeFollowers = 11;
+    string awemeFollowersShow = 12;
+    string awemeImg = 13;
+    string awemeLandingPage = 14;
+    uint64 productId = 15;
+    string productName = 16;
+    string productImg = 17;
+    string productLandingPage = 18;
+    string productPrice = 19;
+    uint32 isHot = 20;
+    uint64 TotalItemNum = 21;
+    string platformName = 22;
+    uint32 isCollect = 23;
+    string updateTime = 24;
+    string updateTimeF = 25;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Materials list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListProductsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+  string search = 4 [(validate.rules).string = {in: ["", "name", "aweme", "product"]}];
+  string category = 5 [(validate.rules).string = {min_len: 0}];
+  string msort = 6 [(validate.rules).string = {in: ["", "isHot", "time", "like"]}];
+  string mplatform = 7 [(validate.rules).string = {in: ["", "dy", "ks"]}];
+}
+
+message ListProductsReply {
+  message Products {
+    uint64 productId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string productLandingPage = 4;
+    string productPrice = 5;
+    uint32 isHot = 6;
+    uint64 videoLike = 7;
+    string videoLikeShowA = 8;
+    string videoLikeShowB = 9;
+    uint64 awemes = 10;
+    uint64 videos = 11;
+    string platformName = 12;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Products list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListAwemesByProductIdRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message ListAwemesByProductIdReply {
+  message Aweme {
+    string awemeName = 1;
+    string awemeAccount = 2;
+    string awemeImg = 3;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Aweme list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListSelectMaterialsReply {
+  message ChildCategory{
+    string key = 1;
+    string value = 2;
+  }
+
+  message Category {
+    string key = 1;
+    string value = 2;
+    repeated ChildCategory childList = 3;
+  }
+
+  message Msort {
+    string key = 1;
+    string value = 2;
+  }
+
+  message Mplatform {
+    string key = 1;
+    string value = 2;
+  }
+
+  message Search {
+    string key = 1;
+    string value = 2;
+  }
+
+  message Data{
+    repeated Category category = 1;
+    repeated Msort msort = 2;
+    repeated Mplatform mplatform = 3;
+    repeated Search search = 4;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetDownUrlVideoUrlsRequest {
+  uint64 videoId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetDownUrlVideoUrlsReply {
+  message Data {
+    string videoUrl = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetVideoUrlsRequest {
+  uint64 videoId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetVideoUrlsReply {
+  message ImageUrls{
+    string imageUrl = 1;
+  }
+
+  message Data {
+    string videoJumpUrl = 1;
+    repeated ImageUrls imageUrls= 3;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetPromotionsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 promotionId = 3 [(validate.rules).uint64.gt = 0];
+  string ptype = 4 [(validate.rules).string = {in: ["aweme", "product"]}];
+}
+
+message GetPromotionsReply {
+  message Industry {
+    string industryName = 1;
+    string industryRatio = 2;
+  }
+
+  message Materials {
+    uint64 videoId = 1;
+    string videoName = 2;
+    string videoUrl = 3;
+    string videoCover = 4;
+    uint64 awemeId = 5;
+    string awemeName = 6;
+    string awemeAccount = 7;
+    string awemeFollowers = 8;
+    string awemeFollowersShow = 9;
+    string awemeImg = 10;
+    string awemeLandingPage = 11;
+    uint64 productId = 12;
+    string productName = 13;
+    string productImg = 14;
+    string productLandingPage = 15;
+    string productPrice = 16;
+    uint64 videoLike = 17;
+    string videoLikeShowA = 18;
+    string videoLikeShowB = 19;
+    uint64 TotalItemNum = 20;
+    string updateTime = 21;
+  }
+
+  message Data {
+    uint64 promotionId = 1;
+    string promotionName = 2;
+    string promotionType = 3;
+    string promotionAccount = 4;
+    string promotionImg = 5;
+    string promotionLandingPage = 6;
+    string promotionFollowers = 7;
+    string promotionFollowersShow = 8;
+    string promotionPrice = 9;
+    string promotionPlatformName = 10;
+    string industryName = 11;
+    string shopName = 12;
+    string shopLogo = 13;
+    string shopScore = 14;
+    repeated Industry industry = 15;
+    uint64 pageNum = 16;
+    uint64 pageSize = 17;
+    uint64 total = 18;
+    uint64 totalPage = 19;
+    repeated Materials list = 20;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetUploadIdMaterialsRequest {
+  string suffix = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetUploadIdMaterialsReply {
+  message Data {
+    string uploadId = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetFileSizeMaterialsRequest {
+  string materialUrl = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetFileSizeMaterialsReply {
+  message Data {
+    uint64 fileSize = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetIsTopMaterialsRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetIsTopMaterialsReply {
+  message Data {
+    uint32 isTop = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsMaterialsReply {
+  message Statistics {
+    string key = 1;
+    string value = 2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateMaterialsRequest {
+  string materialUrl = 1 [(validate.rules).string = {min_len: 1}];
+  uint64 productId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 videoId = 3 [(validate.rules).uint64.gte = 0];
+  string fileName = 4 [(validate.rules).string = {min_len: 1}];
+  string materialType = 5 [(validate.rules).string = {in: ["product", "material"]}];
+  string fileType = 6 [(validate.rules).string = {in: ["image", "video"]}];
+}
+
+message CreateMaterialsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UploadMaterialsRequest {
+  uint64 videoId = 1 [(validate.rules).uint64.gt = 0];
+  string videoUrl = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message UploadMaterialsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UploadPartMaterialsRequest {
+  string uploadId = 1 [(validate.rules).string = {min_len: 1}];
+  uint64 partNumber = 2 [(validate.rules).uint64.gt = 0];
+  uint64 totalPart = 3 [(validate.rules).uint64.gt = 0];
+  uint64 contentLength = 4 [(validate.rules).uint64.gt = 0];
+  string content = 5 [(validate.rules).string = {min_len: 1}];
+}
+
+message UploadPartMaterialsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CompleteUploadMaterialsRequest {
+  string uploadId = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message CompleteUploadMaterialsReply {
+  message Data {
+    string staticUrl = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message AbortUploadMaterialsRequest {
+  string uploadId = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message AbortUploadMaterialsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DownMaterialsRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gte = 0];
+  uint64 videoId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 companyMaterialId = 3 [(validate.rules).uint64.gte = 0];
+  string downType = 4 [(validate.rules).string = {in: ["local", "cloud"]}];
+}
+
+message DownMaterialsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCollectMaterialsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 companyId = 3 [(validate.rules).uint64.gt = 0];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+  string search = 5 [(validate.rules).string = {in: ["", "name", "aweme", "product"]}];
+  string category = 6 [(validate.rules).string = {min_len: 0}];
+  string msort = 7 [(validate.rules).string = {in: ["", "isHot", "time", "like"]}];
+  string mplatform = 8 [(validate.rules).string = {in: ["", "dy", "ks"]}];
+  string phone = 9 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+}
+
+message ListCollectMaterialsReply {
+  message Materials {
+    uint64 videoId = 1;
+    string videoName = 2;
+    string videoUrl = 3;
+    string videoCover = 4;
+    string videoCategory = 5;
+    uint64 awemeId = 6;
+    string awemeName = 7;
+    string awemeAccount = 8;
+    string awemeFollowers = 9;
+    string awemeFollowersShow = 10;
+    string awemeImg = 11;
+    string awemeLandingPage = 12;
+    uint64 productId = 13;
+    string productName = 14;
+    string productImg = 15;
+    string productLandingPage = 16;
+    string productPrice = 17;
+    string platformName = 18;
+    string updateDay = 19;
+    uint32 isCollect = 20;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Materials list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCollectsRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 videoId = 2 [(validate.rules).uint64.gt = 0];
+  string phone = 3 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+}
+
+message UpdateCollectsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}

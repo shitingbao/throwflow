@@ -1,0 +1,1759 @@
+syntax = "proto3";
+
+package douyin.v1;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+option go_package = "douyin/api/douyin/v1;v1";
+
+service Douyin {
+  // 巨量引擎应用账号管理
+  rpc ListOceanengineConfigs (ListOceanengineConfigsRequest) returns (ListOceanengineConfigsReply) {}
+  rpc ListSelectOceanengineConfigs (google.protobuf.Empty) returns (ListSelectOceanengineConfigsReply) {}
+  rpc RandOceanengineConfigs (RandOceanengineConfigsRequest) returns (RandOceanengineConfigsReply) {}
+  rpc CreateOceanengineConfigs (CreateOceanengineConfigsRequest) returns (CreateOceanengineConfigsReply) {}
+  rpc UpdateOceanengineConfigs (UpdateOceanengineConfigsRequest) returns (UpdateOceanengineConfigsReply) {}
+  rpc UpdateStatusOceanengineConfigs (UpdateStatusOceanengineConfigsRequest) returns (UpdateStatusOceanengineConfigsReply) {}
+  rpc DeleteOceanengineConfigs (DeleteOceanengineConfigsRequest) returns (DeleteOceanengineConfigsReply) {}
+
+  // 千川授权账户管理
+  rpc CreateOceanengineAccounts (CreateOceanengineAccountsRequest) returns (CreateOceanengineAccountsReply) {}
+
+  // 千川授权账户Token管理
+  rpc GetOceanengineAccountTokens (GetOceanengineAccountTokensRequest) returns (GetOceanengineAccountTokensReply) {}
+  rpc RefreshOceanengineAccountTokens (google.protobuf.Empty) returns (RefreshOceanengineAccountTokensReply) {}
+
+  // 千川数据[千川账户钱包信息, 千川账户已授权抖音号, 千川广告组列表, 千川广告计划列表, 千川商家获取可投商品列表]管理
+  rpc SyncQianchuanDatas (google.protobuf.Empty) returns (SyncQianchuanDatasReply) {}
+
+  // RDS数据管理
+  rpc SyncRdsDatas (google.protobuf.Empty) returns (SyncRdsDatasReply) {}
+
+  // 千川托管广告计划管理
+  rpc GetExternalQianchuanAds (GetExternalQianchuanAdsRequest) returns (GetExternalQianchuanAdsReply) {}
+  rpc GetExternalHistoryQianchuanAds (GetExternalHistoryQianchuanAdsRequest) returns (GetExternalHistoryQianchuanAdsReply) {}
+  rpc ListQianchuanAds (ListQianchuanAdsRequest) returns (ListQianchuanAdsReply) {}
+  rpc ListExternalQianchuanAds (ListExternalQianchuanAdsRequest) returns (ListExternalQianchuanAdsReply) {}
+  rpc StatisticsExternalQianchuanAds (StatisticsExternalQianchuanAdsRequest) returns (StatisticsExternalQianchuanAdsReply) {}
+  rpc ListSelectExternalQianchuanAds (google.protobuf.Empty) returns (ListSelectExternalQianchuanAdsReply) {}
+  rpc SyncQianchuanAds (SyncQianchuanAdsRequest) returns (SyncQianchuanAdsReply) {}
+
+  // 千川广告组管理
+  rpc ListQianchuanCampaigns (ListQianchuanCampaignsRequest) returns (ListQianchuanCampaignsReply) {}
+
+  // 千川广告账户管理
+  rpc GetQianchuanAdvertiserByCompanyIdAndAdvertiserIds (GetQianchuanAdvertiserByCompanyIdAndAdvertiserIdsRequest) returns (GetQianchuanAdvertiserByCompanyIdAndAdvertiserIdsReply) {}
+  rpc ListQianchuanAdvertisers (ListQianchuanAdvertisersRequest) returns (ListQianchuanAdvertisersReply) {}
+  rpc ListQianchuanAdvertiserByDays (ListQianchuanAdvertiserByDaysRequest) returns (ListQianchuanAdvertiserByDaysReply) {}
+  rpc ListExternalQianchuanAdvertisers (ListExternalQianchuanAdvertisersRequest) returns (ListExternalQianchuanAdvertisersReply) {}
+  rpc StatisticsQianchuanAdvertisers (StatisticsQianchuanAdvertisersRequest) returns (StatisticsQianchuanAdvertisersReply) {}
+  rpc StatisticsDashboardQianchuanAdvertisers (StatisticsDashboardQianchuanAdvertisersRequest) returns (StatisticsDashboardQianchuanAdvertisersReply) {}
+  rpc StatisticsExternalQianchuanAdvertisers (StatisticsExternalQianchuanAdvertisersRequest) returns (StatisticsExternalQianchuanAdvertisersReply) {}
+  rpc UpdateStatusQianchuanAdvertisers (UpdateStatusQianchuanAdvertisersRequest) returns (UpdateStatusQianchuanAdvertisersReply) {}
+  rpc UpdateStatusQianchuanAdvertisersByCompanyId (UpdateStatusQianchuanAdvertisersByCompanyIdRequest) returns (UpdateStatusQianchuanAdvertisersByCompanyIdReply) {}
+
+  // 千川达人管理
+  rpc ListQianchuanReportAwemes (ListQianchuanReportAwemesRequest) returns (ListQianchuanReportAwemesReply) {}
+  rpc StatisticsQianchuanReportAwemes (StatisticsQianchuanReportAwemesRequest) returns (StatisticsQianchuanReportAwemesReply) {}
+
+  // 千川商品管理
+  rpc ListQianchuanReportProducts (ListQianchuanReportProductsRequest) returns (ListQianchuanReportProductsReply) {}
+  rpc StatisticsQianchuanReportProducts (StatisticsQianchuanReportProductsRequest) returns (StatisticsQianchuanReportProductsReply) {}
+
+  // 千川广告账户统计管理
+  rpc ListQianchuanReportAdvertisers (ListQianchuanReportAdvertisersRequest) returns (ListQianchuanReportAdvertisersReply) {}
+
+  // 千川广告账户授权历史管理
+  rpc ListQianchuanAdvertiserHistorys (ListQianchuanAdvertiserHistorysRequest) returns (ListQianchuanAdvertiserHistorysReply) {}
+
+  // 抖音开放平台账户授权token管理
+  rpc GetUrlOpenDouyinTokens (GetUrlOpenDouyinTokensRequest) returns (GetUrlOpenDouyinTokensReply) {}
+  rpc GetTicketOpenDouyinTokens (google.protobuf.Empty) returns (GetTicketOpenDouyinTokensReply) {}
+  rpc GetQrCodeOpenDouyinTokens (GetQrCodeOpenDouyinTokensRequest) returns (GetQrCodeOpenDouyinTokensReply) {}
+  rpc GetStatusOpenDouyinTokens (GetStatusOpenDouyinTokensRequest) returns (GetStatusOpenDouyinTokensReply) {}
+  rpc CreateOpenDouyinTokens (CreateOpenDouyinTokensRequest) returns (CreateOpenDouyinTokensReply) {}
+  rpc UpdateCooperativeCodeDouyinTokens (UpdateCooperativeCodeDouyinTokensRequest) returns (UpdateCooperativeCodeDouyinTokensReply) {}
+  rpc RefreshOpenDouyinTokens (google.protobuf.Empty) returns (RefreshOpenDouyinTokensReply) {}
+  rpc RenewRefreshTokensOpenDouyinTokens (google.protobuf.Empty) returns (RenewRefreshTokensOpenDouyinTokensReply) {}
+  rpc SyncUserFansOpenDouyinTokens (google.protobuf.Empty) returns (SyncUserFansOpenDouyinTokensReply) {}
+
+  // 精选联盟达人订单管理
+  rpc GetStorePreferenceJinritemaiOrders (GetStorePreferenceJinritemaiOrdersRequest) returns (GetStorePreferenceJinritemaiOrdersReply) {}
+  rpc GetIsTopJinritemaiOrders (GetIsTopJinritemaiOrdersRequest) returns (GetIsTopJinritemaiOrdersReply) {}
+  rpc GetCompanyTaskUserOrderStatus (GetCompanyTaskUserOrderStatusRequest) returns (GetCompanyTaskUserOrderStatusReply) {}
+  rpc ListJinritemaiOrders (ListJinritemaiOrdersRequest) returns (ListJinritemaiOrdersReply) {}
+  rpc ListProductIdAndVideoIdJinritemaiOrders (ListProductIdAndVideoIdJinritemaiOrdersRequest) returns (ListProductIdAndVideoIdJinritemaiOrdersReply) {}
+  rpc ListJinritemaiOrderByPickExtras (google.protobuf.Empty) returns (ListJinritemaiOrderByPickExtrasReply) {}
+  rpc ListCommissionRateJinritemaiOrders (ListCommissionRateJinritemaiOrdersRequest) returns (ListCommissionRateJinritemaiOrdersReply) {}
+  rpc StatisticsJinritemaiOrders (StatisticsJinritemaiOrdersRequest) returns (StatisticsJinritemaiOrdersReply) {}
+  rpc StatisticsJinritemaiOrderByClientKeyAndOpenIds (StatisticsJinritemaiOrderByClientKeyAndOpenIdsRequest) returns (StatisticsJinritemaiOrderByClientKeyAndOpenIdsReply) {}
+  rpc StatisticsJinritemaiOrderByDays (StatisticsJinritemaiOrderByDaysRequest) returns (StatisticsJinritemaiOrderByDaysReply) {}
+  rpc AsyncNotificationJinritemaiOrders (AsyncNotificationJinritemaiOrdersRequest) returns (AsyncNotificationJinritemaiOrdersReply) {}
+  rpc SyncJinritemaiOrders (SyncJinritemaiOrdersRequest) returns (SyncJinritemaiOrdersReply) {}
+  rpc Sync90DayJinritemaiOrders (google.protobuf.Empty) returns (Sync90DayJinritemaiOrdersReply) {}
+
+  // 精选联盟抖客订单管理
+  rpc ListUserIdDoukeOrders (google.protobuf.Empty) returns (ListUserIdDoukeOrdersReply) {}
+  rpc StatisticsDoukeOrderByDays (StatisticsDoukeOrderByDaysRequest) returns (StatisticsDoukeOrderByDaysReply) {}
+  rpc AsyncNotificationDoukeOrders (AsyncNotificationDoukeOrdersRequest) returns (AsyncNotificationDoukeOrdersReply) {}
+
+  // 精选联盟达人橱窗管理
+  rpc ListJinritemaiStores (ListJinritemaiStoresRequest) returns (ListJinritemaiStoresReply) {}
+  rpc ListOpenDouyinUserInfosByProductId (ListOpenDouyinUserInfosByProductIdRequest) returns (ListOpenDouyinUserInfosByProductIdReply) {}
+  rpc ListProductIdJinritemaiStores (ListProductIdJinritemaiStoresRequest) returns (ListProductIdJinritemaiStoresReply) {}
+  rpc CreateJinritemaiStores (CreateJinritemaiStoresRequest) returns (CreateJinritemaiStoresReply) {}
+  rpc UpdateJinritemaiStores (UpdateJinritemaiStoresRequest) returns (UpdateJinritemaiStoresReply) {}
+  rpc DeleteJinritemaiStores (DeleteJinritemaiStoresRequest) returns (DeleteJinritemaiStoresReply) {}
+  rpc SyncJinritemaiStores (google.protobuf.Empty) returns (SyncJinritemaiStoresReply) {}
+
+  // 抖音开发平台达人视频管理
+  rpc ListOpenDouyinVideos (ListOpenDouyinVideosRequest) returns (ListOpenDouyinVideosReply) {}
+  rpc ListProductOpenDouyinVideos (ListProductOpenDouyinVideosRequest) returns (ListProductOpenDouyinVideosReply) {}
+  rpc ListVideoIdOpenDouyinVideos (ListVideoIdOpenDouyinVideosRequest) returns (ListVideoIdOpenDouyinVideosReply) {}
+  rpc ListVideoIdOpenDouyinVideoByClientKeyAndOpenIds (ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsRequest) returns (ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsReply) {}
+  rpc ListVideoTokensOpenDouyinVideos (ListVideoTokensOpenDouyinVideosRequest) returns (ListVideoTokensOpenDouyinVideosReply) {}
+  rpc UpdateIsUpdateCoverAndProductIdOpenDouyinVideos (UpdateIsUpdateCoverAndProductIdOpenDouyinVideosRequest) returns (UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply) {}
+  rpc SyncOpenDouyinVideos (google.protobuf.Empty) returns (SyncOpenDouyinVideosReply) {}
+
+  // 抖音开放平台达人管理
+  rpc ListOpenDouyinUserInfos (ListOpenDouyinUserInfosRequest) returns (ListOpenDouyinUserInfosReply) {}
+  rpc UpdateOpenDouyinUserInfos (UpdateOpenDouyinUserInfosRequest) returns (UpdateOpenDouyinUserInfosReply) {}
+
+  // 抖客平台账户授权token管理
+  rpc CreateDoukeTokens (CreateDoukeTokensRequest) returns (CreateDoukeTokensReply) {}
+  rpc RefreshDoukeTokens (google.protobuf.Empty) returns (RefreshDoukeTokensReply) {}
+
+  // 抖客平台商品分销转链管理
+  rpc CreateDoukeProductShares (CreateDoukeProductSharesRequest) returns (CreateDoukeProductSharesReply) {}
+}
+
+message ListOceanengineConfigsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint32 oceanengineType = 3 [(validate.rules).uint32 = {in: [0, 1, 2]}];
+}
+
+message ListOceanengineConfigsReply {
+  message Oceanengines{
+    uint64 id = 1;
+    uint32 oceanengineType = 2;
+    string appId = 3;
+    string appName = 4;
+    string appSecret = 5;
+    string redirectUrl = 6;
+    uint32 concurrents = 7;
+    uint32 status = 8;
+    string createTime = 9;
+    string updateTime = 10;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Oceanengines list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListSelectOceanengineConfigsReply {
+  message OceanengineType {
+    string key = 1;
+    string value = 2;
+  }
+
+  message Data{
+    repeated OceanengineType oceanengineType = 2;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message RandOceanengineConfigsRequest {
+  uint32 oceanengineType = 1 [(validate.rules).uint32 = {in: [1, 2]}];
+}
+
+message RandOceanengineConfigsReply {
+  message Data {
+    uint64 id = 1;
+    uint32 oceanengineType = 2;
+    string appId = 3;
+    string appName = 4;
+    string appSecret = 5;
+    string redirectUrl = 6;
+    uint32 concurrents = 7;
+    uint32 status = 8;
+    string createTime = 9;
+    string updateTime = 10;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateOceanengineConfigsRequest {
+  uint32 oceanengineType = 1 [(validate.rules).uint32 = {in: [1, 2]}];
+  string appId = 2 [(validate.rules).string ={min_len: 1, max_len: 20}];
+  string appName = 3 [(validate.rules).string ={min_len: 1, max_len: 250}];
+  string appSecret = 4 [(validate.rules).string ={min_len: 1, max_len: 250}];
+  string redirectUrl = 5 [(validate.rules).string.uri = true];
+  uint32 concurrents = 6 [(validate.rules).uint32 = {gt:0, lte: 200}];
+  uint32 status = 7 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message CreateOceanengineConfigsReply {
+  message Data {
+    uint64 id = 1;
+    uint32 oceanengineType = 2;
+    string appId = 3;
+    string appName = 4;
+    string appSecret = 5;
+    string redirectUrl = 6;
+    uint32 concurrents = 7;
+    uint32 status = 8;
+    string createTime = 9;
+    string updateTime = 10;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateOceanengineConfigsRequest {
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+  uint32 oceanengineType = 2 [(validate.rules).uint32 = {in: [1, 2]}];
+  string appId = 3 [(validate.rules).string ={min_len: 1, max_len: 20}];
+  string appName = 4 [(validate.rules).string ={min_len: 1, max_len: 200}];
+  string appSecret = 5 [(validate.rules).string ={min_len: 1, max_len: 250}];
+  string redirectUrl = 6 [(validate.rules).string.uri = true];
+  uint32 concurrents = 7 [(validate.rules).uint32 = {gt:0, lte: 200}];
+  uint32 status = 8 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message UpdateOceanengineConfigsReply {
+  message Data {
+    uint64 id = 1;
+    uint32 oceanengineType = 2;
+    string appId = 3;
+    string appName = 4;
+    string appSecret = 5;
+    string redirectUrl = 6;
+    uint32 concurrents = 7;
+    uint32 status = 8;
+    string createTime = 9;
+    string updateTime = 10;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateStatusOceanengineConfigsRequest {
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+  uint32 status = 2 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message UpdateStatusOceanengineConfigsReply {
+  message Data {
+    uint64 id = 1;
+    uint32 oceanengineType = 2;
+    string appId = 3;
+    string appName = 4;
+    string appSecret = 5;
+    string redirectUrl = 6;
+    uint32 concurrents = 7;
+    uint32 status = 8;
+    string createTime = 9;
+    string updateTime = 10;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DeleteOceanengineConfigsRequest {
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message DeleteOceanengineConfigsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateOceanengineAccountsRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  string appId = 2 [(validate.rules).string ={min_len: 1, max_len: 20}];
+  string authCode = 3 [(validate.rules).string ={min_len: 1, max_len: 250}];
+}
+
+message CreateOceanengineAccountsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetOceanengineAccountTokensRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 advertiserId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message GetOceanengineAccountTokensReply {
+  message Data {
+    uint64 accountId = 1;
+    uint64 companyId = 2;
+    string appId = 3;
+    string accessToken = 4;
+    uint32 expiresIn = 5;
+    string refreshToken = 6;
+    uint32 refreshTokenExpiresIn = 7;
+    string accountRole = 8;
+    string updateTime = 9;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message RefreshOceanengineAccountTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncQianchuanDatasReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncRdsDatasReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetExternalQianchuanAdsRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  uint64 adId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message GetExternalQianchuanAdsReply {
+  message Ads{
+    string time = 1;
+    double statCost = 2;
+    double roi = 3;
+    int64 payOrderCount = 4;
+    double payOrderAmount = 5;
+    int64 clickCnt = 6;
+    int64 showCnt = 7;
+    int64 convertCnt = 8;
+    double clickRate = 9;
+    double cpmPlatform = 10;
+    int64 dyFollow = 11;
+    double payConvertRate = 12;
+    double ConvertCost = 13;
+    double averagePayOrderStatCost = 14;
+    double payOrderAveragePrice = 15;
+  }
+
+  message Data {
+    repeated Ads list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetExternalHistoryQianchuanAdsRequest {
+  string startDay = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  uint64 adId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message GetExternalHistoryQianchuanAdsReply {
+  message Ads{
+    string time = 1;
+    double statCost = 2;
+    double roi = 3;
+    int64 payOrderCount = 4;
+    double payOrderAmount = 5;
+    int64 clickCnt = 6;
+    int64 showCnt = 7;
+    int64 convertCnt = 8;
+    double clickRate = 9;
+    double cpmPlatform = 10;
+    int64 dyFollow = 11;
+    double payConvertRate = 12;
+    double ConvertCost = 13;
+    double averagePayOrderStatCost = 14;
+    double payOrderAveragePrice = 15;
+  }
+
+  message Data {
+    repeated Ads list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanAdsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gte = 0];
+  string day = 3 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+  string advertiserIds = 5 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListQianchuanAdsReply {
+  message QianchuanAds {
+    uint64 adId = 1;
+    uint64 advertiserId = 2;
+    uint64 campaignId = 3;
+    string promotionWay = 4;
+    string marketingGoal = 5;
+    string marketingScene = 6;
+    string name = 7;
+    string status = 8;
+    string optStatus = 9;
+    string adCreateTime = 10;
+    string adModifyTime = 11;
+    string labAdType = 12;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated QianchuanAds list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListExternalQianchuanAdsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string startDay = 3 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 4 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string keyword = 5 [(validate.rules).string = {min_len: 0}];
+  string advertiserIds = 6 [(validate.rules).string = {min_len: 1}];
+  string filter = 7 [(validate.rules).string = {in: ["", "notLabAd", "labAd", "videoPromGoods", "livePromGoods"]}];
+  string orderName = 8 [(validate.rules).string = {in: ["statCost", "adCreateTime"]}];
+  string orderType = 9 [(validate.rules).string = {in: ["desc", "asc"]}];
+}
+
+message ListExternalQianchuanAdsReply {
+  message Ads{
+    uint64 adId = 1;
+    string adName = 2;
+    uint64 advertiserId = 3;
+    string advertiserName = 4;
+    uint64 campaignId = 5;
+    string campaignName = 6;
+    string labAdType = 7;
+    string labAdTypeName = 8;
+    string marketingGoal = 9;
+    string marketingGoalName = 10;
+    string status = 11;
+    string statusName = 12;
+    string optStatus = 13;
+    string optStatusName = 14;
+    string externalAction = 15;
+    string externalActionName = 16;
+    string deepExternalAction = 17;
+    string deepBidType = 18;
+    uint64 promotionId = 19;
+    string promotionShowId = 20;
+    string promotionName = 21;
+    string promotionImg = 22;
+    string promotionAvatar = 23;
+    string promotionType = 24;
+    double statCost = 25;
+    double roi = 26;
+    double cpaBid = 27;
+    double roiGoal = 28;
+    double budget = 29;
+    string budgetMode = 30;
+    string budgetModeName = 31;
+    int64 payOrderCount = 32;
+    double payOrderAmount = 33;
+    int64 clickCnt = 34;
+    int64 showCnt = 35;
+    int64 convertCnt = 36;
+    double clickRate = 37;
+    double cpmPlatform = 38;
+    int64 dyFollow = 39;
+    double payConvertRate = 40;
+    double ConvertCost = 41;
+    double averagePayOrderStatCost = 42;
+    double payOrderAveragePrice = 43;
+    double convertRate = 44;
+    string adCreateTime = 45;
+    string adModifyTime = 46;
+
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Ads list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsExternalQianchuanAdsRequest {
+  string startDay = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+  string advertiserIds = 4 [(validate.rules).string = {min_len: 1}];
+  string filter = 5 [(validate.rules).string = {in: ["", "notLabAd", "labAd", "videoPromGoods", "livePromGoods"]}];
+}
+
+message StatisticsExternalQianchuanAdsReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListSelectExternalQianchuanAdsReply {
+  message Filter {
+    string key = 1;
+    string value = 2;
+  }
+
+  message Data{
+    repeated Filter filter = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncQianchuanAdsRequest {
+  string day = 1 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message SyncQianchuanAdsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanCampaignsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string day = 3 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+  string advertiserIds = 5 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListQianchuanCampaignsReply {
+  message QianchuanCampaigns {
+    uint64 id = 1;
+    uint64 advertiserId = 2;
+    string name = 3;
+    string budget = 4;
+    string BudgetMode = 5;
+    string MarketingGoal = 6;
+    string MarketingScene = 7;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated QianchuanCampaigns list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetQianchuanAdvertiserByCompanyIdAndAdvertiserIdsRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 advertiserId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message GetQianchuanAdvertiserByCompanyIdAndAdvertiserIdsReply {
+  message Data {
+    uint64 advertiserId = 1;
+    uint64 companyId = 2;
+    uint64 accountId = 3;
+    string advertiserName = 4;
+    string companyName = 5;
+    uint32 status = 6;
+    string createTime= 7;
+    string updateTime = 8;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanAdvertisersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gte = 0];
+  uint64 companyId = 3 [(validate.rules).uint64.gt = 0];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+  string advertiserIds = 5 [(validate.rules).string = {min_len: 0}];
+  string status = 6 [(validate.rules).string = {in: ["", "0", "1"]}];
+}
+
+message ListQianchuanAdvertisersReply {
+  message Advertisers{
+    uint64 advertiserId = 1;
+    uint64 companyId = 2;
+    uint64 accountId = 3;
+    string advertiserName = 4;
+    string companyName = 5;
+    uint32 status = 6;
+    string otherCompanyName = 7;
+    string otherCompanyId = 8;
+    string createTime= 9;
+    string updateTime = 10;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Advertisers list = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanAdvertiserByDaysRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  string day = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message ListQianchuanAdvertiserByDaysReply {
+  message Advertisers{
+    uint64 advertiserId = 1;
+    uint32 status = 3;
+  }
+
+  message Data {
+    repeated Advertisers list = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListExternalQianchuanAdvertisersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string startDay = 3 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 4 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 5 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListExternalQianchuanAdvertisersReply {
+  message Advertisers{
+    uint64 advertiserId = 1;
+    string advertiserName = 2;
+    double generalTotalBalance = 3;
+    double statCost = 4;
+    double roi = 5;
+    int64 campaigns = 6;
+    int64 payOrderCount = 7;
+    double payOrderAmount = 8;
+    int64 clickCnt = 9;
+    double clickRate = 10;
+    double payConvertRate = 11;
+    double averagePayOrderStatCost = 12;
+    double payOrderAveragePrice = 13;
+    int64 showCnt = 14;
+    int64 dyFollow = 15;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Advertisers list = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsQianchuanAdvertisersRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message StatisticsQianchuanAdvertisersReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsDashboardQianchuanAdvertisersRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  string day = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message StatisticsDashboardQianchuanAdvertisersReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsExternalQianchuanAdvertisersRequest {
+  string startDay = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message StatisticsExternalQianchuanAdvertisersReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateStatusQianchuanAdvertisersRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 advertiserId = 2 [(validate.rules).uint64.gt = 0];
+  uint32 status = 3 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message UpdateStatusQianchuanAdvertisersReply {
+  message Data {
+    uint64 companyId = 1;
+    uint64 advertiserId = 2;
+    string advertiserName = 3;
+    string companyName = 4;
+    uint32 status = 5;
+    string createTime= 6;
+    string updateTime = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateStatusQianchuanAdvertisersByCompanyIdRequest {
+  uint64 companyId = 1 [(validate.rules).uint64.gt = 0];
+  uint32 status = 3 [(validate.rules).uint32 = {in: [0]}];
+}
+
+message UpdateStatusQianchuanAdvertisersByCompanyIdReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanReportAwemesRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+  string day = 4 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 5 [(validate.rules).string = {min_len: 1}];
+  uint32 isDistinction = 6 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message ListQianchuanReportAwemesReply {
+  message Awemes{
+    uint64 advertiserId = 1;
+    string advertiserName = 2;
+    uint64 awemeId = 3;
+    string awemeName = 4;
+    string awemeShowId = 5;
+    string awemeAvatar = 6;
+    string awemeUrl = 7;
+    int64 dyFollow = 8;
+    string statCost = 9;
+    int64 payOrderCount = 10;
+    string payOrderAmount = 11;
+    string payOrderAveragePrice = 12;
+    string roi = 13;
+    int64 showCnt = 14;
+    int64 clickCnt = 15;
+    string clickRate = 16;
+    int64 convertCnt = 17;
+    string convertRate = 18;
+    string averagePayOrderStatCost = 19;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Awemes list = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsQianchuanReportAwemesRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message StatisticsQianchuanReportAwemesReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanReportProductsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+  string day = 4 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 5 [(validate.rules).string = {min_len: 1}];
+  uint32 isDistinction = 6 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message ListQianchuanReportProductsReply {
+  message Products{
+    uint64 advertiserId = 1;
+    string advertiserName = 2;
+    uint64 productId = 3;
+    string discountPrice = 4;
+    string productName = 5;
+    string productImg  = 6;
+    string productUrl = 7;
+    string statCost = 8;
+    int64 payOrderCount = 9;
+    string payOrderAmount = 10;
+    string payOrderAveragePrice = 11;
+    string roi = 12;
+    int64 showCnt = 13;
+    int64 clickCnt = 14;
+    string clickRate = 15;
+    int64 convertCnt = 16;
+    string convertRate = 17;
+    string averagePayOrderStatCost = 18;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Products list = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsQianchuanReportProductsRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message StatisticsQianchuanReportProductsReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanReportAdvertisersRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListQianchuanReportAdvertisersReply {
+  message QianchuanReportAdvertisers {
+    string time = 1;
+    string statCost = 2;
+    string payOrderAmount = 3;
+  }
+
+  message Data {
+    repeated QianchuanReportAdvertisers list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListQianchuanAdvertiserHistorysRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string advertiserIds = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListQianchuanAdvertiserHistorysReply {
+  message QianchuanAdvertisers {
+    uint64 advertiserId = 1;
+  }
+
+  message Data {
+    repeated QianchuanAdvertisers list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetUrlOpenDouyinTokensRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetUrlOpenDouyinTokensReply {
+  message Data{
+    string redirectUrl = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetTicketOpenDouyinTokensReply {
+  message Data{
+    string ticket = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetQrCodeOpenDouyinTokensRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetQrCodeOpenDouyinTokensReply {
+  message Data {
+    string qrCode = 1;
+    string state = 2;
+    string token = 3;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetStatusOpenDouyinTokensRequest {
+  string token = 1 [(validate.rules).string = {min_len: 1}];
+  string state = 2 [(validate.rules).string = {min_len: 1}];
+  string timestamp = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetStatusOpenDouyinTokensReply {
+  message Data {
+    string code = 1;
+    string status = 2;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateOpenDouyinTokensRequest {
+  string state = 1 [(validate.rules).string = {min_len: 1, max_len: 250}];
+  string code = 2 [(validate.rules).string ={min_len: 1, max_len: 250}];
+}
+
+message CreateOpenDouyinTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCooperativeCodeDouyinTokensRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+  string cooperativeCode = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateCooperativeCodeDouyinTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message RefreshOpenDouyinTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message RenewRefreshTokensOpenDouyinTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncUserFansOpenDouyinTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetStorePreferenceJinritemaiOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetStorePreferenceJinritemaiOrdersReply {
+  message StorePreference {
+    uint64 industryId = 1;
+    string industryName = 2;
+    string industryRatio = 3;
+  }
+
+  message Data {
+    repeated StorePreference storePreference = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetIsTopJinritemaiOrdersRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetIsTopJinritemaiOrdersReply {
+  message Data {
+    uint32 isTop = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetCompanyTaskUserOrderStatusRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string flowPoint = 2 [(validate.rules).string = {min_len: 0}];
+  string productId = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetCompanyTaskUserOrderStatusReply {
+  message Data {
+    uint64 id = 1;
+    uint64 userId = 2;
+    string productId = 3;
+    string paySuccessTime = 4;
+    string flowPoint = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListJinritemaiOrdersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+  string startDay = 4 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 5 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message ListJinritemaiOrdersReply {
+  message JinritemaiOrders{
+    string productId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string avatar = 4;
+    string nickname = 5;
+    string mediaType = 6;
+    string mediaTypeName = 7;
+    uint64 mediaId = 8;
+    string mediaCover = 9;
+    string realCommissionRate = 10;
+    double realCommission = 11;
+    uint64 itemNum = 12;
+    double totalPayAmount = 13;
+    double statCost = 14;
+    uint32 isShow = 15;
+    string createTime = 16;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated JinritemaiOrders list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListProductIdAndVideoIdJinritemaiOrdersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListProductIdAndVideoIdJinritemaiOrdersReply {
+  message JinritemaiOrder{
+    uint64 videoId = 1;
+    uint64 productOutId = 2;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated JinritemaiOrder list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListJinritemaiOrderByPickExtrasReply {
+  message OpenDouyinUserInfo{
+    string clientKey = 1;
+    string openId = 2;
+  }
+
+  message Data {
+    repeated OpenDouyinUserInfo list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCommissionRateJinritemaiOrdersRequest {
+  string content = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListCommissionRateJinritemaiOrdersReply {
+  message CommissionRate{
+    string productId = 1;
+    uint64 mediaId = 2;
+    uint32 commissionRatio = 3;
+  }
+
+  message Data {
+    repeated CommissionRate list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsJinritemaiOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string startDay = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 3 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message StatisticsJinritemaiOrdersReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsJinritemaiOrderByClientKeyAndOpenIdsRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+  string startDay = 3 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string endDay = 4 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message StatisticsJinritemaiOrderByClientKeyAndOpenIdsReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsJinritemaiOrderByDaysRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string content = 2 [(validate.rules).string = {min_len: 1}];
+  string pickExtra = 3 [(validate.rules).string = {min_len: 0}];
+}
+
+message StatisticsJinritemaiOrderByDaysReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message AsyncNotificationJinritemaiOrdersRequest {
+  string msgId = 1 [(validate.rules).string ={min_len: 1}];
+  string sign = 2 [(validate.rules).string ={min_len: 1}];
+  string content = 3 [(validate.rules).string ={min_len: 1}];
+}
+
+message AsyncNotificationJinritemaiOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncJinritemaiOrdersRequest {
+  string day = 1 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message SyncJinritemaiOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message Sync90DayJinritemaiOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserIdDoukeOrdersReply {
+  message UserId{
+    uint64 userId = 1;
+  }
+
+  message Data {
+    repeated UserId list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsDoukeOrderByDaysRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string day = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message StatisticsDoukeOrderByDaysReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message AsyncNotificationDoukeOrdersRequest {
+  string eventSign = 1 [(validate.rules).string ={min_len: 1}];
+  string appId = 2 [(validate.rules).string ={min_len: 1}];
+  string content = 3 [(validate.rules).string ={min_len: 1}];
+}
+
+message AsyncNotificationDoukeOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListJinritemaiStoresRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message ListJinritemaiStoresReply {
+  message JinritemaiStores{
+    string clientKey = 1;
+    string openId = 2;
+    string productId = 3;
+    string productName = 4;
+    string productImg = 5;
+    string productPrice = 6;
+    uint32 commissionType = 7;
+    string commissionTypeName = 8;
+    string commissionRatio = 9;
+    uint32 promotionType = 10;
+    string promotionTypeName = 11;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated JinritemaiStores list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListOpenDouyinUserInfosByProductIdRequest {
+  string productId = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListOpenDouyinUserInfosByProductIdReply {
+  message OpenDouyinUserInfos {
+    string accountId = 1;
+    string nickname = 2;
+    string avatar = 3;
+    string avatarLarger = 4;
+  }
+
+  message Data {
+    repeated OpenDouyinUserInfos list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListProductIdJinritemaiStoresRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListProductIdJinritemaiStoresReply {
+  message JinritemaiStore {
+    string productId = 1;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated JinritemaiStore list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateJinritemaiStoresRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string openDouyinUserIds = 2 [(validate.rules).string = {min_len: 1}];
+  uint64 companyId = 3 [(validate.rules).uint64.gt = 0];
+  uint64 productId = 4 [(validate.rules).uint64.gt = 0];
+  string activityUrl = 5 [(validate.rules).string = {min_len: 0}];
+}
+
+message CreateJinritemaiStoresReply {
+  message Message {
+    string productName = 1;
+    string awemeName = 2;
+    string content = 3;
+  }
+  message Data {
+    repeated Message list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateJinritemaiStoresRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string stores = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateJinritemaiStoresReply {
+  message Data {
+    string content = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DeleteJinritemaiStoresRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string stores = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message DeleteJinritemaiStoresReply {
+  message Data {
+    string content = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncJinritemaiStoresReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListOpenDouyinVideosRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string videoIds = 3 [(validate.rules).string = {min_len: 0}];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+  uint32 isExistProduct = 5 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message ListOpenDouyinVideosReply {
+  message OpenDouyinVideo{
+    string videoId = 1;
+    uint64 mediaType = 2;
+    string title = 3;
+    string cover = 4;
+    string createTime = 5;
+    uint64 awemeId = 6;
+    string accountId = 7;
+    string nickname = 8;
+    string avatar = 9;
+    string productId = 10;
+    string productName = 11;
+    string productImg = 12;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListProductOpenDouyinVideosRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListProductOpenDouyinVideosReply {
+  message ProductOpenDouyinVideo{
+    string productId = 1;
+    string productName = 2;
+    string productImg = 3;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated ProductOpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListVideoIdOpenDouyinVideosRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListVideoIdOpenDouyinVideosReply {
+  message OpenDouyinVideo{
+    string videoId = 1;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string clientKey = 3 [(validate.rules).string = {min_len: 1}];
+  string openId = 4 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsReply {
+  message OpenDouyinVideo{
+    string videoId = 1;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListVideoTokensOpenDouyinVideosRequest{
+  message token{
+    string clientKey = 1;
+    string openId = 2;
+  }
+  uint64 productOutId = 1;
+  repeated token tokens = 2;
+  string claimTime = 3;
+}
+
+message ListVideoTokensOpenDouyinVideosReply {
+  message VideoStatistics{
+    uint32 CommentCount = 1;
+    uint32 DiggCount = 2;
+    uint32 DownloadCount = 3;
+    uint32 ForwardCount = 4;
+    uint32 PlayCount = 5;
+    uint32 ShareCount = 6;
+  }
+
+  message OpenDouyinVideo{
+    string videoId = 1;
+    uint64 mediaType = 2;
+    string title = 3;
+    string cover = 4;
+    string createTime = 5;
+    uint64 awemeId = 6;
+    string accountId = 7;
+    string nickname = 8;
+    string avatar = 9;
+    string productId = 10;
+    string productName = 11;
+    string productImg = 12;
+    VideoStatistics Statistics = 13;
+    string clientKey = 14;
+    string openId = 15;
+    string itemId = 16;
+    bool isTop = 17;
+    string shareUrl = 18;
+    uint32 videoStatus = 19;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateIsUpdateCoverAndProductIdOpenDouyinVideosRequest {
+  string videoId = 1 [(validate.rules).string = {min_len: 1}];
+  string cover = 2 [(validate.rules).string = {min_len: 0}];
+  string productId = 3 [(validate.rules).string = {min_len: 0}];
+  uint32 videoStatus = 4 [(validate.rules).uint32 = {gte: 0}];
+}
+
+message UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncOpenDouyinVideosReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListOpenDouyinUserInfosRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListOpenDouyinUserInfosReply {
+  message OpenDouyinUserInfos {
+    string clientKey = 1;
+    string openId = 2;
+    string videoId = 3;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinUserInfos list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateOpenDouyinUserInfosRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+  uint64 awemeId = 3 [(validate.rules).uint64.gt = 0];
+  string accountId = 4 [(validate.rules).string = {min_len: 0}];
+  string nickname = 5 [(validate.rules).string = {min_len: 1}];
+  string avatar = 6 [(validate.rules).string = {min_len: 1}];
+  string avatarLarger = 7 [(validate.rules).string = {min_len: 1}];
+  string area = 8 [(validate.rules).string = {min_len: 0}];
+}
+
+message UpdateOpenDouyinUserInfosReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateDoukeTokensRequest {
+  string code = 1 [(validate.rules).string ={min_len: 1, max_len: 250}];
+}
+
+message CreateDoukeTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message RefreshDoukeTokensReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateDoukeProductSharesRequest {
+  string productUrl = 1 [(validate.rules).string ={min_len: 1}];
+  string externalInfo = 2 [(validate.rules).string ={min_len: 0}];
+}
+
+message CreateDoukeProductSharesReply {
+  message Data {
+    string dyPassword = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}

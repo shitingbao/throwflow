@@ -1,0 +1,150 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "company/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Volcengine volcengine = 3;
+  Company company = 4;
+  Service service = 5;
+  Registry registry = 6;
+  Event event = 7;
+}
+
+message Server {
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  GRPC grpc = 1;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string dsn = 2;
+  }
+  message Clickhouse{
+    string addr = 1;
+    string db = 3;
+    string username = 4;
+    string password = 5;
+  }
+  message Redis {
+    string addr = 1;
+    string password = 2;
+    int32 db = 3;
+    google.protobuf.Duration dial_timeout = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
+    google.protobuf.Duration login_token_timeout = 7;
+    google.protobuf.Duration product_token_timeout = 8;
+    google.protobuf.Duration product_lock_timeout = 9;
+    google.protobuf.Duration material_token_timeout = 10;
+    google.protobuf.Duration material_lock_timeout = 11;
+  }
+  Database database = 1;
+  Clickhouse clickhouse = 2;
+  Redis redis = 3;
+}
+
+message Volcengine {
+  message Product {
+    string endpoint = 1;
+    string url = 2;
+    string sub_folder = 3;
+    string region = 4;
+    string bucket_name = 5;
+  }
+
+  message Material {
+    string endpoint = 1;
+    string url = 2;
+    string sub_folder = 3;
+    string region = 4;
+    string bucket_name = 5;
+  }
+
+  message Organization {
+    string endpoint = 1;
+    string url = 2;
+    string sub_folder = 3;
+    string region = 4;
+    string bucket_name = 5;
+  }
+
+  message Task {
+    string endpoint = 1;
+    string url = 2;
+    string sub_folder = 3;
+    string region = 4;
+    string bucket_name = 5;
+  }
+
+  message Tos {
+    string access_key = 1;
+    string secret_key = 2;
+    Product product = 3;
+    Material material = 4;
+    Organization organization = 5;
+    Task task = 6;
+  }
+
+  Tos tos = 1;
+}
+
+message Company {
+  message Material {
+    string default_company_material_library_name = 1;
+  }
+
+  message OpenDouyin {
+    string default_open_id = 1;
+  }
+
+  uint64 default_company_id = 1;
+  Material material = 2;
+  OpenDouyin openDouyin = 3;
+}
+
+message Service {
+  message Common {
+    string endpoint = 1;
+  }
+  message Douyin {
+    string endpoint = 1;
+  }
+  message Weixin {
+    string endpoint = 1;
+  }
+  message Material {
+    string endpoint = 1;
+  }
+  Douyin  douyin = 1;
+  Common common = 2;
+  Weixin weixin = 3;
+  Material material = 4;
+}
+
+message Registry {
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+  }
+
+  Consul consul = 1;
+}
+
+message Event {
+  message Kafka {
+    string addr = 1;
+    string topic = 2;
+  }
+
+  Kafka kafka = 1;
+}
