@@ -1,0 +1,54 @@
+task:
+  timeout: 120s
+  jobs:
+    - name: RefreshOceanengineAccountTokens
+      schedule: '04 */1 * * *'
+    - name: RefreshOpenDouyinTokens
+      schedule: '04 */1 * * *'
+    - name: RenewRefreshTokensOpenDouyinTokens
+      schedule: '02 */1 * * *'
+    - name: SyncQianchuanDatas
+      schedule: '*/5 * * * *'
+    - name: SyncRdsDatas
+      schedule: '*/5 * * * *'
+    - name: SyncQianchuanAds
+      schedule: '*/5 * * * *'
+    - name: SyncUpdateStatusCompanys
+      schedule: '04 03 * * *'
+    - name: SyncUpdateQrCodeCompanyOrganizations
+      schedule: '*/5 * * * *'
+    - name: SyncJinritemaiStores
+      schedule: '*/5 * * * *'
+    - name: SyncOpenDouyinVideos
+      schedule: '*/5 * * * *'
+    - name: SyncUserFansOpenDouyinTokens
+      schedule: '02 */3 * * *'
+    - name: Sync90DayJinritemaiOrders
+      schedule: '*/5 * * * *'
+    - name: SyncIntegralUsers
+      schedule: '04 02 * * *'
+    - name: SyncUserOrganizationRelations
+      schedule: '*/5 * * * *'
+    - name: SyncOrderUserCommissions
+      schedule: '04 02 * * *'
+    - name: SyncCostOrderUserCommissions
+      schedule: '04 02 * * *'
+    - name: SyncUserCoupons
+      schedule: '*/1 * * * *'
+    - name: RefreshDoukeTokens
+      schedule: '04 */1 * * *'
+    - name: SyncUserBalances
+      schedule: '*/1 * * * *'
+    - name: SyncCompanyTasks
+      schedule: "*/5 * * * *"
+service:
+  douyin:
+    endpoint: discovery:///mengma.douyin.service
+  company:
+    endpoint: discovery:///mengma.company.service
+  weixin:
+    endpoint: discovery:///mengma.weixin.service
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http

@@ -1,0 +1,46 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "task/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Task task = 1;
+  Service service = 2;
+  Registry registry = 3;
+}
+
+message Task {
+  message Jobs {
+    string name = 1;
+    string schedule = 2;
+    string input = 3;
+    string output = 4;
+  }
+  google.protobuf.Duration timeout = 1;
+  repeated Jobs jobs = 2;
+}
+
+message Service {
+  message Douyin {
+    string endpoint = 1;
+  }
+  message Company {
+    string endpoint = 1;
+  }
+  message Weixin {
+    string endpoint = 1;
+  }
+  Douyin douyin = 1;
+  Company company = 2;
+  Weixin weixin = 3;
+}
+
+message Registry{
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+  }
+  Consul consul = 1;
+}
