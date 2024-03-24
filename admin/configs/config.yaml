@@ -1,0 +1,29 @@
+server:
+  http:
+    addr: 0.0.0.0:8800
+    timeout: 3s
+data:
+  database:
+    driver: mysql
+    dsn: root:123456@tcp(127.0.0.1:3306)/mengma?charset=utf8mb4&parseTime=True&loc=Local
+    page_size: 40
+  redis:
+    addr: 127.0.0.1:6379
+    password:
+    db: 0
+    dial_timeout: 1s
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    post_token_timeout: 86400s # 1 * 24 * 60 * 60
+    login_token_timeout: 259200s # 3 * 24 * 60 * 60
+service:
+  common:
+    endpoint: discovery:///mengma.common.service
+  douyin:
+    endpoint: discovery:///mengma.douyin.service
+  company:
+    endpoint: discovery:///mengma.company.service
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http

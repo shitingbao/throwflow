@@ -1,0 +1,4095 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Admin API
+    version: 0.0.1
+paths:
+    /v1/admin/areas/{parentAreaCode}:
+        get:
+            tags:
+                - Admin
+            description: 行政区划
+            operationId: Admin_ListAreas
+            parameters:
+                - name: parentAreaCode
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListAreasReply'
+    /v1/admin/clues:
+        get:
+            tags:
+                - Admin
+            description: 线索库管理[列表]
+            operationId: Admin_ListClues
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: industryId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: status
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListCluesReply'
+        post:
+            tags:
+                - Admin
+            description: 线索库管理[新增]
+            operationId: Admin_CreateClues
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateCluesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateCluesReply'
+    /v1/admin/clues/selects:
+        get:
+            tags:
+                - Admin
+            description: 线索库管理[select值]
+            operationId: Admin_ListSelectClues
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListSelectCluesReply'
+    /v1/admin/clues/statistics:
+        get:
+            tags:
+                - Admin
+            description: 线索库管理[统计]
+            operationId: Admin_StatisticsClues
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.StatisticsCluesReply'
+    /v1/admin/clues/{id}:
+        put:
+            tags:
+                - Admin
+            description: 线索库管理[修改]
+            operationId: Admin_UpdateClues
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateCluesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateCluesReply'
+        delete:
+            tags:
+                - Admin
+            description: 线索库管理[删除]
+            operationId: Admin_DeleteClues
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteCluesReply'
+    /v1/admin/clues/{id}/operationLog:
+        put:
+            tags:
+                - Admin
+            description: 线索库管理[修改操作记录]
+            operationId: Admin_UpdateOperationLogClues
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateOperationLogCluesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateOperationLogCluesReply'
+    /v1/admin/company/users/selects:
+        get:
+            tags:
+                - Admin
+            description: 企业库用户管理[select值]
+            operationId: Admin_ListSelectCompanyUsers
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListSelectCompanyUsersReply'
+    /v1/admin/company/{companyId}/users:
+        get:
+            tags:
+                - Admin
+            description: 企业库用户管理[列表]
+            operationId: Admin_ListCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListCompanyUsersReply'
+        post:
+            tags:
+                - Admin
+            description: 企业库用户管理[新增]
+            operationId: Admin_CreateCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateCompanyUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateCompanyUsersReply'
+    /v1/admin/company/{companyId}/users/{id}:
+        put:
+            tags:
+                - Admin
+            description: 企业库用户管理[修改]
+            operationId: Admin_UpdateCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateCompanyUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateCompanyUsersReply'
+        delete:
+            tags:
+                - Admin
+            description: 企业库用户管理[删除]
+            operationId: Admin_DeleteCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteCompanyUsersReply'
+    /v1/admin/company/{companyId}/users/{id}/qianchuanAdvertisers:
+        get:
+            tags:
+                - Admin
+            description: 企业库用户管理[权限]
+            operationId: Admin_ListQianchuanAdvertisersCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListQianchuanAdvertisersCompanyUsersReply'
+    /v1/admin/company/{companyId}/users/{id}/role:
+        put:
+            tags:
+                - Admin
+            description: 企业库用户管理[权限]
+            operationId: Admin_UpdateRoleCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateRoleCompanyUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateRoleCompanyUsersReply'
+    /v1/admin/company/{companyId}/users/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 企业库用户管理[修改状态]
+            operationId: Admin_UpdateStatusCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusCompanyUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusCompanyUsersReply'
+    /v1/admin/company/{companyId}/users/{id}/white:
+        put:
+            tags:
+                - Admin
+            description: 企业库用户管理[白名单]
+            operationId: Admin_UpdateWhiteCompanyUsers
+            parameters:
+                - name: companyId
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateWhiteCompanyUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateWhiteCompanyUsersReply'
+    /v1/admin/companymenus:
+        get:
+            tags:
+                - Admin
+            description: 盟码菜单管理[列表]
+            operationId: Admin_ListCompanyMenus
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListCompanyMenusReply'
+        post:
+            tags:
+                - Admin
+            description: 盟码菜单管理[新增]
+            operationId: Admin_CreateCompanyMenus
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateCompanyMenusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateCompanyMenusReply'
+    /v1/admin/companymenus/permissionCodes:
+        get:
+            tags:
+                - Admin
+            description: 获取盟码菜单权限标识
+            operationId: Admin_ListCompanyPermissionCodes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListCompanyPermissionCodesReply'
+    /v1/admin/companymenus/{id}:
+        put:
+            tags:
+                - Admin
+            description: 盟码菜单管理[修改]
+            operationId: Admin_UpdateCompanyMenus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateCompanyMenusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateCompanyMenusReply'
+        delete:
+            tags:
+                - Admin
+            description: 盟码菜单管理[删除]
+            operationId: Admin_DeleteCompanyMenus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteCompanyMenusReply'
+    /v1/admin/companymenus/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 盟码菜单管理[修改状态]
+            operationId: Admin_UpdateStatusCompanyMenus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusCompanyMenusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusCompanyMenusReply'
+    /v1/admin/companys:
+        get:
+            tags:
+                - Admin
+            description: 企业库管理[列表]
+            operationId: Admin_ListCompanys
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: keyword
+                  in: query
+                  schema:
+                    type: string
+                - name: industryId
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: companyType
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListCompanysReply'
+        post:
+            tags:
+                - Admin
+            description: 企业库管理[新增]
+            operationId: Admin_CreateCompanys
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateCompanysRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateCompanysReply'
+    /v1/admin/companys/selects:
+        get:
+            tags:
+                - Admin
+            description: 企业库管理[select值]
+            operationId: Admin_ListSelectCompanys
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListSelectCompanysReply'
+    /v1/admin/companys/statistics:
+        get:
+            tags:
+                - Admin
+            description: 企业库管理[统计]
+            operationId: Admin_StatisticsCompanys
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.StatisticsCompanysReply'
+    /v1/admin/companys/{id}:
+        put:
+            tags:
+                - Admin
+            description: 企业库管理[修改]
+            operationId: Admin_UpdateCompanys
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateCompanysRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateCompanysReply'
+        delete:
+            tags:
+                - Admin
+            operationId: Admin_DeleteCompanys
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteCompanysReply'
+    /v1/admin/companys/{id}/role:
+        put:
+            tags:
+                - Admin
+            description: 企业库管理[权限]
+            operationId: Admin_UpdateRoleCompanys
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateRoleCompanysRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateRoleCompanysReply'
+    /v1/admin/companys/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 企业库管理[修改状态]
+            operationId: Admin_UpdateStatusCompanys
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusCompanysRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusCompanysReply'
+    /v1/admin/industries:
+        get:
+            tags:
+                - Admin
+            description: 行业
+            operationId: Admin_ListIndustries
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListIndustriesReply'
+    /v1/admin/login:
+        post:
+            tags:
+                - Admin
+            description: 登录
+            operationId: Admin_Login
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.LoginRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.LoginReply'
+    /v1/admin/logout:
+        post:
+            tags:
+                - Admin
+            description: 退出
+            operationId: Admin_Logout
+            requestBody:
+                content:
+                    application/json: {}
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.LogoutReply'
+    /v1/admin/menus:
+        get:
+            tags:
+                - Admin
+            description: 菜单管理[列表]
+            operationId: Admin_ListMenus
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListMenusReply'
+        post:
+            tags:
+                - Admin
+            description: 菜单管理[新增]
+            operationId: Admin_CreateMenus
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateMenusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateMenusReply'
+    /v1/admin/menus/{id}:
+        put:
+            tags:
+                - Admin
+            description: 菜单管理[修改]
+            operationId: Admin_UpdateMenus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateMenusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateMenusReply'
+        delete:
+            tags:
+                - Admin
+            description: 菜单管理[删除]
+            operationId: Admin_DeleteMenus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteMenusReply'
+    /v1/admin/menus/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 菜单管理[修改状态]
+            operationId: Admin_UpdateStatusMenus
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusMenusRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusMenusReply'
+    /v1/admin/oceanengineConfigs:
+        get:
+            tags:
+                - Admin
+            description: 巨量引擎应用账号管理[列表]
+            operationId: Admin_ListOceanengineConfigs
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+                - name: oceanengineType
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListOceanengineConfigsReply'
+        post:
+            tags:
+                - Admin
+            description: 巨量引擎应用账号管理[新增]
+            operationId: Admin_CreateOceanengineConfigs
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateOceanengineConfigsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateOceanengineConfigsReply'
+    /v1/admin/oceanengineConfigs/selects:
+        get:
+            tags:
+                - Admin
+            description: 巨量引擎应用账号管理[select值]
+            operationId: Admin_ListSelectOceanengineConfigs
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListSelectOceanengineConfigsReply'
+    /v1/admin/oceanengineConfigs/{id}:
+        put:
+            tags:
+                - Admin
+            description: 巨量引擎应用账号管理[修改]
+            operationId: Admin_UpdateOceanengineConfigs
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateOceanengineConfigsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateOceanengineConfigsReply'
+        delete:
+            tags:
+                - Admin
+            description: 巨量引擎应用账号管理[删除]
+            operationId: Admin_DeleteOceanengineConfigs
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteOceanengineConfigsReply'
+    /v1/admin/oceanengineConfigs/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 巨量引擎应用账号管理[修改状态]
+            operationId: Admin_UpdateStatusOceanengineConfigs
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusOceanengineConfigsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusOceanengineConfigsReply'
+    /v1/admin/permissionCodes:
+        get:
+            tags:
+                - Admin
+            description: 获取权限标识
+            operationId: Admin_ListPermissionCodes
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListPermissionCodesReply'
+    /v1/admin/roles:
+        get:
+            tags:
+                - Admin
+            description: 角色管理[列表]
+            operationId: Admin_ListRoles
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListRolesReply'
+        post:
+            tags:
+                - Admin
+            description: 角色管理[创建]
+            operationId: Admin_CreateRoles
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateRolesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateRolesReply'
+    /v1/admin/roles/{id}:
+        put:
+            tags:
+                - Admin
+            description: 角色管理[修改]
+            operationId: Admin_UpdateRoles
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateRolesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateRolesReply'
+        delete:
+            tags:
+                - Admin
+            description: 角色管理[删除]
+            operationId: Admin_DeleteRoles
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteRolesReply'
+    /v1/admin/roles/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 角色管理[修改状态]
+            operationId: Admin_UpdateStatusRoles
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusRolesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusRolesReply'
+    /v1/admin/smslogs:
+        get:
+            tags:
+                - Admin
+            description: 短信记录管理[列表]
+            operationId: Admin_ListSmsLogs
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListSmsLogsReply'
+    /v1/admin/tokens:
+        get:
+            tags:
+                - Admin
+            description: token管理
+            operationId: Admin_GetToken
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.GetTokenReply'
+    /v1/admin/updateLogs:
+        get:
+            tags:
+                - Admin
+            description: 更新日志管理[列表]
+            operationId: Admin_ListUpdateLogs
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListUpdateLogsReply'
+        post:
+            tags:
+                - Admin
+            description: 更新日志管理[新增]
+            operationId: Admin_CreateUpdateLogs
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateUpdateLogsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateUpdateLogsReply'
+    /v1/admin/updateLogs/{id}:
+        put:
+            tags:
+                - Admin
+            description: 更新日志管理[修改]
+            operationId: Admin_UpdateUpdateLogs
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateUpdateLogsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateUpdateLogsReply'
+    /v1/admin/users:
+        get:
+            tags:
+                - Admin
+            description: 后台管理员管理[列表]
+            operationId: Admin_ListUsers
+            parameters:
+                - name: pageNum
+                  in: query
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListUsersReply'
+        post:
+            tags:
+                - Admin
+            description: 后台管理员管理[新增]
+            operationId: Admin_CreateUsers
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.CreateUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.CreateUsersReply'
+    /v1/admin/users/info:
+        get:
+            tags:
+                - Admin
+            description: 获取登录管理员信息
+            operationId: Admin_GetUserInfo
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.GetUserInfoReply'
+    /v1/admin/users/menus:
+        get:
+            tags:
+                - Admin
+            description: 获取后台管理员菜单
+            operationId: Admin_ListUserMenus
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.ListUserMenusReply'
+    /v1/admin/users/{id}:
+        put:
+            tags:
+                - Admin
+            description: 后台管理员管理[修改]
+            operationId: Admin_UpdateUsers
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateUsersReply'
+        delete:
+            tags:
+                - Admin
+            description: 后台管理员管理[删除]
+            operationId: Admin_DeleteUsers
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.DeleteUsersReply'
+    /v1/admin/users/{id}/status:
+        put:
+            tags:
+                - Admin
+            description: 后台管理员管理[修改状态]
+            operationId: Admin_UpdateStatusUsers
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: integer
+                    format: uint64
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/admin.v1.UpdateStatusUsersRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/admin.v1.UpdateStatusUsersReply'
+components:
+    schemas:
+        admin.v1.CreateCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateCluesReply_Data'
+        admin.v1.CreateCluesReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.CreateCluesReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.CreateCluesReply_ContactInformation'
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                source:
+                    type: string
+                status:
+                    type: string
+                operationLogs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.CreateCluesReply_OperationLog'
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.CreateCluesReply_OperationLog:
+            type: object
+            properties:
+                userName:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.CreateCluesRequest:
+            type: object
+            properties:
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                contactInformation:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                address:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+                token:
+                    type: string
+        admin.v1.CreateCompanyMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateCompanyMenusReply_Data'
+        admin.v1.CreateCompanyMenusReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.CreateCompanyMenusRequest:
+            type: object
+            properties:
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                token:
+                    type: string
+        admin.v1.CreateCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateCompanyUsersReply_Data'
+        admin.v1.CreateCompanyUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                isWhite:
+                    type: integer
+                    format: uint32
+        admin.v1.CreateCompanyUsersRequest:
+            type: object
+            properties:
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                token:
+                    type: string
+        admin.v1.CreateCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateCompanysReply_Data'
+        admin.v1.CreateCompanysReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.CreateCompanysReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.CreateCompanysReply_ContactInformation'
+                clueCompanyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                companyTypeName:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                menuId:
+                    type: string
+                accounts:
+                    type: integer
+                    format: uint32
+                qianchuanAdvertisers:
+                    type: integer
+                    format: uint32
+                miniQrCodeUrl:
+                    type: string
+                isTermwork:
+                    type: integer
+                    format: uint32
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.CreateCompanysRequest:
+            type: object
+            properties:
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                contactInformation:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                address:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+                token:
+                    type: string
+        admin.v1.CreateMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateMenusReply_Data'
+        admin.v1.CreateMenusReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                menuType:
+                    type: integer
+                    format: uint32
+                sort:
+                    type: integer
+                    format: uint32
+                fileName:
+                    type: string
+                iconName:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.CreateMenusRequest:
+            type: object
+            properties:
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                menuType:
+                    type: integer
+                    format: uint32
+                sort:
+                    type: integer
+                    format: uint32
+                fileName:
+                    type: string
+                iconName:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                token:
+                    type: string
+        admin.v1.CreateOceanengineConfigsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateOceanengineConfigsReply_Data'
+        admin.v1.CreateOceanengineConfigsReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                oceanengineType:
+                    type: integer
+                    format: uint32
+                appId:
+                    type: string
+                appName:
+                    type: string
+                appSecret:
+                    type: string
+                redirectUrl:
+                    type: string
+                concurrents:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+        admin.v1.CreateOceanengineConfigsRequest:
+            type: object
+            properties:
+                oceanengineType:
+                    type: integer
+                    format: uint32
+                appId:
+                    type: string
+                appName:
+                    type: string
+                appSecret:
+                    type: string
+                redirectUrl:
+                    type: string
+                concurrents:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                token:
+                    type: string
+        admin.v1.CreateRolesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateRolesReply_Data'
+        admin.v1.CreateRolesReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                roleName:
+                    type: string
+                roleExplain:
+                    type: string
+                menuIds:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.CreateRolesRequest:
+            type: object
+            properties:
+                roleName:
+                    type: string
+                roleExplain:
+                    type: string
+                menuIds:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                token:
+                    type: string
+        admin.v1.CreateUpdateLogsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateUpdateLogsReply_Data'
+        admin.v1.CreateUpdateLogsReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                name:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.CreateUpdateLogsRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                content:
+                    type: string
+                token:
+                    type: string
+        admin.v1.CreateUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.CreateUsersReply_Data'
+        admin.v1.CreateUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                roleId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+                lastLoginIp:
+                    type: string
+                lastLoginTime:
+                    type: string
+        admin.v1.CreateUsersRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                password:
+                    type: string
+                roleId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+                token:
+                    type: string
+        admin.v1.DeleteCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteCluesReply_Data'
+        admin.v1.DeleteCluesReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteCompanyMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteCompanyMenusReply_Data'
+        admin.v1.DeleteCompanyMenusReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteCompanyUsersReply_Data'
+        admin.v1.DeleteCompanyUsersReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteCompanysReply_Data'
+        admin.v1.DeleteCompanysReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteMenusReply_Data'
+        admin.v1.DeleteMenusReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteOceanengineConfigsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteOceanengineConfigsReply_Data'
+        admin.v1.DeleteOceanengineConfigsReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteRolesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteRolesReply_Data'
+        admin.v1.DeleteRolesReply_Data:
+            type: object
+            properties: {}
+        admin.v1.DeleteUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.DeleteUsersReply_Data'
+        admin.v1.DeleteUsersReply_Data:
+            type: object
+            properties: {}
+        admin.v1.GetTokenReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.GetTokenReply_Data'
+        admin.v1.GetTokenReply_Data:
+            type: object
+            properties:
+                token:
+                    type: string
+        admin.v1.GetUserInfoReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.GetUserInfoReply_Data'
+        admin.v1.GetUserInfoReply_Data:
+            type: object
+            properties:
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                lastLoginTime:
+                    type: string
+                roleName:
+                    type: string
+                permissionCodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.GetUserInfoReply_PermissionCodes'
+        admin.v1.GetUserInfoReply_PermissionCodes:
+            type: object
+            properties:
+                permissionCode:
+                    type: string
+        admin.v1.ListAreasReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListAreasReply_Data'
+        admin.v1.ListAreasReply_Areas:
+            type: object
+            properties:
+                areaCode:
+                    type: integer
+                    format: uint64
+                parentAreaCode:
+                    type: integer
+                    format: uint64
+                areaName:
+                    type: string
+        admin.v1.ListAreasReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListAreasReply_Areas'
+        admin.v1.ListCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListCluesReply_Data'
+        admin.v1.ListCluesReply_Clues:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCluesReply_ContactInformation'
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                source:
+                    type: string
+                status:
+                    type: string
+                operationLogs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCluesReply_OperationLog'
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+                isAffiliates:
+                    type: integer
+                    format: uint32
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+        admin.v1.ListCluesReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.ListCluesReply_Data:
+            type: object
+            properties:
+                pageNum:
+                    type: integer
+                    format: uint64
+                pageSize:
+                    type: integer
+                    format: uint64
+                total:
+                    type: integer
+                    format: uint64
+                totalPage:
+                    type: integer
+                    format: uint64
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCluesReply_Clues'
+        admin.v1.ListCluesReply_OperationLog:
+            type: object
+            properties:
+                userName:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.ListCompanyMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListCompanyMenusReply_Data'
+        admin.v1.ListCompanyMenusReply_ChildMenus:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.ListCompanyMenusReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCompanyMenusReply_Menus'
+        admin.v1.ListCompanyMenusReply_Menus:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                childList:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCompanyMenusReply_ChildMenus'
+                parentId:
+                    type: integer
+                    format: uint64
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.ListCompanyPermissionCodesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListCompanyPermissionCodesReply_Data'
+        admin.v1.ListCompanyPermissionCodesReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCompanyPermissionCodesReply_PermissionCodes'
+        admin.v1.ListCompanyPermissionCodesReply_PermissionCodes:
+            type: object
+            properties:
+                name:
+                    type: string
+                code:
+                    type: string
+        admin.v1.ListCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListCompanyUsersReply_Data'
+        admin.v1.ListCompanyUsersReply_CompanyUsers:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                isWhite:
+                    type: integer
+                    format: uint32
+        admin.v1.ListCompanyUsersReply_Data:
+            type: object
+            properties:
+                pageNum:
+                    type: integer
+                    format: uint64
+                pageSize:
+                    type: integer
+                    format: uint64
+                total:
+                    type: integer
+                    format: uint64
+                totalPage:
+                    type: integer
+                    format: uint64
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCompanyUsersReply_CompanyUsers'
+        admin.v1.ListCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListCompanysReply_Data'
+        admin.v1.ListCompanysReply_Companys:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCompanysReply_ContactInformation'
+                clueCompanyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                companyTypeName:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                menuId:
+                    type: string
+                accounts:
+                    type: integer
+                    format: uint32
+                qianchuanAdvertisers:
+                    type: integer
+                    format: uint32
+                miniQrCodeUrl:
+                    type: string
+                isTermwork:
+                    type: integer
+                    format: uint32
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.ListCompanysReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.ListCompanysReply_Data:
+            type: object
+            properties:
+                pageNum:
+                    type: integer
+                    format: uint64
+                pageSize:
+                    type: integer
+                    format: uint64
+                total:
+                    type: integer
+                    format: uint64
+                totalPage:
+                    type: integer
+                    format: uint64
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListCompanysReply_Companys'
+        admin.v1.ListIndustriesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListIndustriesReply_Data'
+        admin.v1.ListIndustriesReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListIndustriesReply_Industries'
+        admin.v1.ListIndustriesReply_Industries:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                industryName:
+                    type: string
+        admin.v1.ListMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListMenusReply_Data'
+        admin.v1.ListMenusReply_Data:
+            type: object
+            properties:
+                list:
+                    type: string
+        admin.v1.ListOceanengineConfigsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListOceanengineConfigsReply_Data'
+        admin.v1.ListOceanengineConfigsReply_Data:
+            type: object
+            properties:
+                pageNum:
+                    type: integer
+                    format: uint64
+                pageSize:
+                    type: integer
+                    format: uint64
+                total:
+                    type: integer
+                    format: uint64
+                totalPage:
+                    type: integer
+                    format: uint64
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListOceanengineConfigsReply_OceanengineConfigs'
+        admin.v1.ListOceanengineConfigsReply_OceanengineConfigs:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                oceanengineType:
+                    type: integer
+                    format: uint32
+                appId:
+                    type: string
+                appName:
+                    type: string
+                appSecret:
+                    type: string
+                redirectUrl:
+                    type: string
+                concurrents:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+        admin.v1.ListPermissionCodesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListPermissionCodesReply_Data'
+        admin.v1.ListPermissionCodesReply_ChildPermissionCodes:
+            type: object
+            properties:
+                name:
+                    type: string
+                code:
+                    type: string
+        admin.v1.ListPermissionCodesReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListPermissionCodesReply_PermissionCodes'
+        admin.v1.ListPermissionCodesReply_PermissionCodes:
+            type: object
+            properties:
+                name:
+                    type: string
+                code:
+                    type: string
+                childList:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListPermissionCodesReply_ChildPermissionCodes'
+        admin.v1.ListQianchuanAdvertisersCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListQianchuanAdvertisersCompanyUsersReply_Data'
+        admin.v1.ListQianchuanAdvertisersCompanyUsersReply_Advertisers:
+            type: object
+            properties:
+                advertiserId:
+                    type: integer
+                    format: uint64
+                advertiserName:
+                    type: string
+                companyName:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                isSelect:
+                    type: integer
+                    format: uint32
+        admin.v1.ListQianchuanAdvertisersCompanyUsersReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListQianchuanAdvertisersCompanyUsersReply_Advertisers'
+        admin.v1.ListRolesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListRolesReply_Data'
+        admin.v1.ListRolesReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListRolesReply_Roles'
+        admin.v1.ListRolesReply_Roles:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                roleName:
+                    type: string
+                roleExplain:
+                    type: string
+                menuIds:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.ListSelectCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListSelectCluesReply_Data'
+        admin.v1.ListSelectCluesReply_CompanyType:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSelectCluesReply_Data:
+            type: object
+            properties:
+                status:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectCluesReply_Status'
+                companyType:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectCluesReply_CompanyType'
+                qianchuanUse:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectCluesReply_QianchuanUse'
+        admin.v1.ListSelectCluesReply_QianchuanUse:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSelectCluesReply_Status:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSelectCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListSelectCompanyUsersReply_Data'
+        admin.v1.ListSelectCompanyUsersReply_Data:
+            type: object
+            properties:
+                role:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectCompanyUsersReply_Role'
+        admin.v1.ListSelectCompanyUsersReply_Role:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSelectCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListSelectCompanysReply_Data'
+        admin.v1.ListSelectCompanysReply_CompanyType:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSelectCompanysReply_Data:
+            type: object
+            properties:
+                status:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectCompanysReply_Status'
+                companyType:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectCompanysReply_CompanyType'
+        admin.v1.ListSelectCompanysReply_Status:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSelectOceanengineConfigsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListSelectOceanengineConfigsReply_Data'
+        admin.v1.ListSelectOceanengineConfigsReply_Data:
+            type: object
+            properties:
+                oceanengineType:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSelectOceanengineConfigsReply_OceanengineType'
+        admin.v1.ListSelectOceanengineConfigsReply_OceanengineType:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.ListSmsLogsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListSmsLogsReply_Data'
+        admin.v1.ListSmsLogsReply_Data:
+            type: object
+            properties:
+                pageNum:
+                    type: integer
+                    format: uint64
+                pageSize:
+                    type: integer
+                    format: uint64
+                total:
+                    type: integer
+                    format: uint64
+                totalPage:
+                    type: integer
+                    format: uint64
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListSmsLogsReply_SmsLogs'
+        admin.v1.ListSmsLogsReply_SmsLogs:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                phone:
+                    type: string
+                content:
+                    type: string
+                reply:
+                    type: string
+                type:
+                    type: string
+                ip:
+                    type: string
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+        admin.v1.ListUpdateLogsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListUpdateLogsReply_Data'
+        admin.v1.ListUpdateLogsReply_Data:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListUpdateLogsReply_UpdateLogs'
+        admin.v1.ListUpdateLogsReply_UpdateLogs:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                name:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.ListUserMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListUserMenusReply_Data'
+        admin.v1.ListUserMenusReply_Data:
+            type: object
+            properties:
+                list:
+                    type: string
+        admin.v1.ListUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.ListUsersReply_Data'
+        admin.v1.ListUsersReply_Data:
+            type: object
+            properties:
+                pageNum:
+                    type: integer
+                    format: uint64
+                pageSize:
+                    type: integer
+                    format: uint64
+                total:
+                    type: integer
+                    format: uint64
+                totalPage:
+                    type: integer
+                    format: uint64
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.ListUsersReply_Users'
+        admin.v1.ListUsersReply_Users:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                roleId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+                lastLoginIp:
+                    type: string
+                lastLoginTime:
+                    type: string
+        admin.v1.LoginReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.LoginReply_Data'
+        admin.v1.LoginReply_Data:
+            type: object
+            properties:
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                lastLoginTime:
+                    type: string
+                token:
+                    type: string
+                roleName:
+                    type: string
+                permissionCodes:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.LoginReply_PermissionCodes'
+        admin.v1.LoginReply_PermissionCodes:
+            type: object
+            properties:
+                permissionCode:
+                    type: string
+        admin.v1.LoginRequest:
+            type: object
+            properties:
+                username:
+                    type: string
+                password:
+                    type: string
+        admin.v1.LogoutReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.LogoutReply_Data'
+        admin.v1.LogoutReply_Data:
+            type: object
+            properties: {}
+        admin.v1.StatisticsCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.StatisticsCluesReply_Data'
+        admin.v1.StatisticsCluesReply_Data:
+            type: object
+            properties:
+                statistics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.StatisticsCluesReply_Statistics'
+        admin.v1.StatisticsCluesReply_Statistics:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.StatisticsCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.StatisticsCompanysReply_Data'
+        admin.v1.StatisticsCompanysReply_Data:
+            type: object
+            properties:
+                statistics:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.StatisticsCompanysReply_Statistics'
+        admin.v1.StatisticsCompanysReply_Statistics:
+            type: object
+            properties:
+                key:
+                    type: string
+                value:
+                    type: string
+        admin.v1.UpdateCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateCluesReply_Data'
+        admin.v1.UpdateCluesReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.UpdateCluesReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateCluesReply_ContactInformation'
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                source:
+                    type: string
+                status:
+                    type: string
+                operationLogs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateCluesReply_OperationLog'
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateCluesReply_OperationLog:
+            type: object
+            properties:
+                userName:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.UpdateCluesRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                contactInformation:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                address:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateCompanyMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateCompanyMenusReply_Data'
+        admin.v1.UpdateCompanyMenusReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateCompanyMenusRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+        admin.v1.UpdateCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateCompanyUsersReply_Data'
+        admin.v1.UpdateCompanyUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                isWhite:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateCompanyUsersRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateCompanysReply_Data'
+        admin.v1.UpdateCompanysReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.UpdateCompanysReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateCompanysReply_ContactInformation'
+                clueCompanyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                companyTypeName:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                menuId:
+                    type: string
+                accounts:
+                    type: integer
+                    format: uint32
+                qianchuanAdvertisers:
+                    type: integer
+                    format: uint32
+                miniQrCodeUrl:
+                    type: string
+                isTermwork:
+                    type: integer
+                    format: uint32
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateCompanysRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                contactInformation:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                address:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateMenusReply_Data'
+        admin.v1.UpdateMenusReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                menuType:
+                    type: integer
+                    format: uint32
+                sort:
+                    type: integer
+                    format: uint32
+                fileName:
+                    type: string
+                iconName:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateMenusRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                sort:
+                    type: integer
+                    format: uint32
+                fileName:
+                    type: string
+                iconName:
+                    type: string
+                permissionCode:
+                    type: string
+        admin.v1.UpdateOceanengineConfigsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateOceanengineConfigsReply_Data'
+        admin.v1.UpdateOceanengineConfigsReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                oceanengineType:
+                    type: integer
+                    format: uint32
+                appId:
+                    type: string
+                appName:
+                    type: string
+                appSecret:
+                    type: string
+                redirectUrl:
+                    type: string
+                concurrents:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+        admin.v1.UpdateOceanengineConfigsRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                oceanengineType:
+                    type: integer
+                    format: uint32
+                appId:
+                    type: string
+                appName:
+                    type: string
+                appSecret:
+                    type: string
+                redirectUrl:
+                    type: string
+                concurrents:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateOperationLogCluesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateOperationLogCluesReply_Data'
+        admin.v1.UpdateOperationLogCluesReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.UpdateOperationLogCluesReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateOperationLogCluesReply_ContactInformation'
+                companyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                source:
+                    type: string
+                status:
+                    type: string
+                operationLogs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateOperationLogCluesReply_OperationLog'
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateOperationLogCluesReply_OperationLog:
+            type: object
+            properties:
+                userName:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.UpdateOperationLogCluesRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                content:
+                    type: string
+                operationTime:
+                    type: string
+        admin.v1.UpdateRoleCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateRoleCompanyUsersReply_Data'
+        admin.v1.UpdateRoleCompanyUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                isWhite:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateRoleCompanyUsersRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                roleIds:
+                    type: string
+        admin.v1.UpdateRoleCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateRoleCompanysReply_Data'
+        admin.v1.UpdateRoleCompanysReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.UpdateRoleCompanysReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateRoleCompanysReply_ContactInformation'
+                clueCompanyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                companyTypeName:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                menuId:
+                    type: string
+                accounts:
+                    type: integer
+                    format: uint32
+                qianchuanAdvertisers:
+                    type: integer
+                    format: uint32
+                miniQrCodeUrl:
+                    type: string
+                isTermwork:
+                    type: integer
+                    format: uint32
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateRoleCompanysRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyType:
+                    type: integer
+                    format: uint32
+                menuIds:
+                    type: string
+                accounts:
+                    type: integer
+                    format: uint32
+                qianchuanAdvertisers:
+                    type: integer
+                    format: uint32
+                isTermwork:
+                    type: integer
+                    format: uint32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+        admin.v1.UpdateRolesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateRolesReply_Data'
+        admin.v1.UpdateRolesReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                roleName:
+                    type: string
+                roleExplain:
+                    type: string
+                menuIds:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateRolesRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                roleName:
+                    type: string
+                roleExplain:
+                    type: string
+                menuIds:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusCompanyMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusCompanyMenusReply_Data'
+        admin.v1.UpdateStatusCompanyMenusReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                sort:
+                    type: integer
+                    format: uint32
+                menuType:
+                    type: string
+                filename:
+                    type: string
+                filepath:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusCompanyMenusRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusCompanyUsersReply_Data'
+        admin.v1.UpdateStatusCompanyUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                isWhite:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusCompanyUsersRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusCompanysReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusCompanysReply_Data'
+        admin.v1.UpdateStatusCompanysReply_ContactInformation:
+            type: object
+            properties:
+                contactUsername:
+                    type: string
+                contactPosition:
+                    type: string
+                contactPhone:
+                    type: string
+                contactWeixin:
+                    type: string
+        admin.v1.UpdateStatusCompanysReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyName:
+                    type: string
+                industryId:
+                    type: string
+                industryName:
+                    type: string
+                contactInformations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/admin.v1.UpdateStatusCompanysReply_ContactInformation'
+                clueCompanyType:
+                    type: integer
+                    format: uint32
+                qianchuanUse:
+                    type: integer
+                    format: uint32
+                sale:
+                    type: integer
+                    format: uint64
+                seller:
+                    type: string
+                facilitator:
+                    type: string
+                companyType:
+                    type: integer
+                    format: uint32
+                companyTypeName:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                adminName:
+                    type: string
+                adminPhone:
+                    type: string
+                clueId:
+                    type: integer
+                    format: uint64
+                menuId:
+                    type: string
+                accounts:
+                    type: integer
+                    format: uint32
+                qianchuanAdvertisers:
+                    type: integer
+                    format: uint32
+                miniQrCodeUrl:
+                    type: string
+                isTermwork:
+                    type: integer
+                    format: uint32
+                address:
+                    type: string
+                areaName:
+                    type: string
+                areaCode:
+                    type: integer
+                    format: uint64
+        admin.v1.UpdateStatusCompanysRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusMenusReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusMenusReply_Data'
+        admin.v1.UpdateStatusMenusReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                menuName:
+                    type: string
+                parentId:
+                    type: integer
+                    format: uint64
+                menuType:
+                    type: integer
+                    format: uint32
+                sort:
+                    type: integer
+                    format: uint32
+                fileName:
+                    type: string
+                iconName:
+                    type: string
+                permissionCode:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusMenusRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusOceanengineConfigsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusOceanengineConfigsReply_Data'
+        admin.v1.UpdateStatusOceanengineConfigsReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                oceanengineType:
+                    type: integer
+                    format: uint32
+                appId:
+                    type: string
+                appName:
+                    type: string
+                appSecret:
+                    type: string
+                redirectUrl:
+                    type: string
+                concurrents:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                createTime:
+                    type: string
+                updateTime:
+                    type: string
+        admin.v1.UpdateStatusOceanengineConfigsRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusRolesReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusRolesReply_Data'
+        admin.v1.UpdateStatusRolesReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                roleName:
+                    type: string
+                roleExplain:
+                    type: string
+                menuIds:
+                    type: string
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusRolesRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateStatusUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateStatusUsersReply_Data'
+        admin.v1.UpdateStatusUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                roleId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+                lastLoginIp:
+                    type: string
+                lastLoginTime:
+                    type: string
+        admin.v1.UpdateStatusUsersRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateUpdateLogsReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateUpdateLogsReply_Data'
+        admin.v1.UpdateUpdateLogsReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                name:
+                    type: string
+                content:
+                    type: string
+                createTime:
+                    type: string
+        admin.v1.UpdateUpdateLogsRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                name:
+                    type: string
+                content:
+                    type: string
+        admin.v1.UpdateUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateUsersReply_Data'
+        admin.v1.UpdateUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                roleId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+                lastLoginIp:
+                    type: string
+                lastLoginTime:
+                    type: string
+        admin.v1.UpdateUsersRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                nickname:
+                    type: string
+                email:
+                    type: string
+                password:
+                    type: string
+                roleId:
+                    type: integer
+                    format: uint64
+                status:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateWhiteCompanyUsersReply:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: uint32
+                data:
+                    $ref: '#/components/schemas/admin.v1.UpdateWhiteCompanyUsersReply_Data'
+        admin.v1.UpdateWhiteCompanyUsersReply_Data:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                username:
+                    type: string
+                job:
+                    type: string
+                phone:
+                    type: string
+                role:
+                    type: integer
+                    format: uint32
+                status:
+                    type: integer
+                    format: uint32
+                isWhite:
+                    type: integer
+                    format: uint32
+        admin.v1.UpdateWhiteCompanyUsersRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: uint64
+                companyId:
+                    type: integer
+                    format: uint64
+                isWhite:
+                    type: integer
+                    format: uint32
+tags:
+    - name: Admin

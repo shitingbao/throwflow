@@ -1,0 +1,65 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "admin/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Service service = 3;
+  Registry registry = 4;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string dsn = 2;
+    int32 page_size = 3;
+  }
+  message Redis {
+    string addr = 1;
+    string password = 2;
+    int32 db = 3;
+    google.protobuf.Duration dial_timeout = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
+    google.protobuf.Duration post_token_timeout = 7;
+    google.protobuf.Duration login_token_timeout = 8;
+  }
+  Database database = 1;
+  Redis redis = 2;
+}
+
+message Service {
+  message Common {
+    string endpoint = 1;
+  }
+  message Douyin {
+    string endpoint = 1;
+  }
+  message Company {
+    string endpoint = 1;
+  }
+  Common common = 1;
+  Douyin  douyin = 2;
+  Company  company = 3;
+}
+
+message Registry{
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+  }
+  Consul consul = 1;
+}
