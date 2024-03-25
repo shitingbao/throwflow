@@ -1,0 +1,22 @@
+server:
+  http:
+    addr: 0.0.0.0:8880
+    timeout: 5s
+data:
+  database:
+    page_size: 40
+service:
+  common:
+    endpoint: discovery:///mengma.common.service
+  douyin:
+    endpoint: discovery:///mengma.douyin.service
+  company:
+    endpoint: discovery:///mengma.company.service
+  material:
+    endpoint: discovery:///mengma.material.service
+  weixin:
+    endpoint: discovery:///mengma.weixin.service
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http

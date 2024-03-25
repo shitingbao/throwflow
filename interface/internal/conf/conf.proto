@@ -1,0 +1,61 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "interface/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Service service = 3;
+  Registry registry = 4;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+}
+
+message Data {
+  message Database {
+    int32 page_size = 3;
+  }
+  Database database = 1;
+}
+
+message Service {
+  message Common {
+    string endpoint = 1;
+  }
+  message Douyin {
+    string endpoint = 1;
+  }
+  message Company {
+    string endpoint = 1;
+  }
+  message Material {
+    string endpoint = 1;
+  }
+  message Weixin {
+    string endpoint = 1;
+  }
+  Common common = 1;
+  Douyin douyin = 2;
+  Company company = 3;
+  Material material = 4;
+  Weixin weixin = 5;
+}
+
+
+message Registry{
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+  }
+  Consul consul = 1;
+}
