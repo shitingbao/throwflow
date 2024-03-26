@@ -1,0 +1,65 @@
+server:
+  grpc:
+    addr: 0.0.0.0:9900
+    timeout: 2s
+data:
+  database:
+    driver: mysql
+    dsn: root:123456@tcp(127.0.0.1:3306)/mengma?charset=utf8mb4&parseTime=True&loc=Local
+  redis:
+    addr: 127.0.0.1:6379
+    password:
+    db: 0
+    dial_timeout: 1s
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    post_token_timeout: 86400s # 1 * 24 * 60 * 60
+sms:
+  chuanglan:
+    account: N1234
+    password: lm1234
+    endpoint: https://smssh1.253.com/msg/v1/send/json
+    code:
+      day_limit: 10 # 验证码限制一天里同一个手机号同一个场景只能发的次数
+      second_limit: -1m # 验证码限定1分钟同一个手机号同一个场景只能发的次数
+      effective_date: -15m # 验证码过期时间
+      content: 【盟玛】验证码:%s，15分钟内有效，请在页面中提交验证码完成验证
+    account_opened:
+      content: 【盟玛】您的手机号%s已开通盟玛系统%s权限，请登录saas.mengma.cn查看
+suolink:
+  key: 65312345678fe12341dda29d1234567705b7e4f2b
+  url: https://test.mengma.cn/placard/
+  protocol: https
+organization:
+  default_organization_id: 13
+  dj_organization_id: 14
+pay:
+  bby:
+    default_account:
+      endpoint: https://payway.bby-pay.com/pay/gateway
+      mch_id: "20002366"
+      secret_key: TZA5K7ZZES1234345670SVAUHXUMH1WJNGYECDBTMYYZ7PXPW8AFMQKYW7R3JJSJFQP
+      call_back_url: https://test.mengma.cn/qc/pay/callback
+    dj_account:
+      endpoint: https://payway.bby-pay.com/pay/gateway
+      mch_id: "20001644"
+      secret_key: XMYIXDB12341456YI6STP6QALGROINSOXCP8EYYLW8QF0
+      call_back_url: https://test.mengma.cn/qc/pay/callback
+  yse:
+    src_merchant_no: "826331773720028"
+    default_account:
+      appid: wx944123427140a
+      payee_merchant_no: 8013312345YD
+      call_back_url: https://test.mengma.cn/qc/pay/callback
+    dj_account:
+      appid: wx531234eb427ddc
+      payee_merchant_no: 80131234035YD
+      call_back_url: https://test.mengma.cn/qc/pay/callback
+kuaidi:
+  kuaidi100:
+    key: zdib12344166
+    customer: E5E6A8F20A1234C1C7393AD7634A0A
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http
