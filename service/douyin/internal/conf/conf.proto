@@ -1,0 +1,134 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "douyin/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Oceanengine oceanengine = 3;
+  Developer developer = 4;
+  Douke douke = 5;
+  Company company = 6;
+  Registry registry = 7;
+  Service service = 8;
+  Event event = 9;
+}
+
+message Server {
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  GRPC grpc = 1;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string dsn = 2;
+  }
+  message Dsn {
+    string dsn = 1;
+    string app_id = 2;
+  }
+  message Lianshan {
+    string driver = 1;
+    repeated Dsn dsns = 2;
+  }
+  message Mongo {
+    string dsn = 1;
+    string username = 2;
+    string password = 3;
+    string dbname = 4;
+    google.protobuf.Duration timeout = 5;
+  }
+  message Clickhouse{
+    string addr = 1;
+    string db = 3;
+    string username = 4;
+    string password = 5;
+    int32 max_open_conns = 6;
+  }
+  message Redis {
+    string addr = 1;
+    string password = 2;
+    int32 db = 3;
+    google.protobuf.Duration dial_timeout = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
+    google.protobuf.Duration qr_code_token_timeout = 7;
+    google.protobuf.Duration open_douyin_url_token_timeout = 8;
+  }
+  Database database = 1;
+  Lianshan lianshan = 2;
+  Mongo mongo = 3;
+  Clickhouse clickhouse = 4;
+  Redis redis = 5;
+}
+
+message Oceanengine {
+  message Report {
+    int32 live = 1;
+  }
+  Report report = 1;
+}
+
+message Developer {
+  message OpenDouyin {
+    string client_key = 1;
+    string client_secret = 2;
+    string call_back_url = 3;
+    string default_open_id = 4;
+  }
+
+  message Aweme {
+    OpenDouyin open_douyin = 1;
+  }
+
+  Aweme aweme = 1;
+}
+
+message Company {
+  uint64 default_company_id = 1;
+}
+
+message Douke {
+  string app_key = 1;
+  string app_secret = 2;
+  string authority_id = 3;
+  string auth_subject_type = 4;
+  string pid = 5;
+}
+
+message Registry {
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+  }
+
+  Consul consul = 1;
+}
+
+message Service {
+  message Company {
+    string endpoint = 1;
+  }
+  message Weixin {
+    string endpoint = 1;
+  }
+  Company company = 1;
+  Weixin weixin = 2;
+}
+
+message Event {
+  message Kafka {
+    string addr = 1;
+    string topic = 2;
+  }
+
+  Kafka kafka = 1;
+}

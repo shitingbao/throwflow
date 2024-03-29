@@ -1,0 +1,73 @@
+server:
+  grpc:
+    addr: 0.0.0.0:9991
+    timeout: 2s
+data:
+  database:
+    driver: mysql
+    dsn: root:123456@tcp(127.0.0.1:3306)/mengma?charset=utf8mb4&parseTime=True&loc=Local
+  lianshan:
+    driver: mysql
+    dsns:
+      - dsn: mengma:Sx1234K@tcp(127.0.0.1:3306)/lianshan_rds_1752155800342580?charset=utf8mb4&parseTime=True&loc=Local
+        app_id: "1734336751624195"
+      - dsn: mengma:SxG6ka7aCK@tcp(127.0.0.1:3306)/lianshan_rds_1752176303966331?charset=utf8mb4&parseTime=True&loc=Local
+        app_id: "1733973472345203"
+      - dsn: mengma:SxG6ka7aCK@tcp(127.0.0.1:3306)/lianshan_rds_1752155800342548?charset=utf8mb4&parseTime=True&loc=Local
+        app_id: "1732707286207518"
+      - dsn: mengma:SxG6ka7aCK@tcp(127.0.0.1:3306)/lianshan_rds_1752176303966299?charset=utf8mb4&parseTime=True&loc=Local
+        app_id: "1731278428774404"
+      - dsn: mengma:SxG6ka7aCK@tcp(127.0.0.1:3306)/lianshan_rds_1783707892653060?charset=utf8mb4&parseTime=True&loc=Local
+        app_id: "1734151503760507"
+  mongo:
+    dsn: mongodb://127.0.0.1:57017
+    username:
+    password:
+    dbname: mengma_test
+    timeout: 2s
+  clickhouse:
+    addr: 127.0.0.1:59000
+    db: mengma_test
+    username: default
+    password:
+    max_open_conns: 40
+  redis:
+    addr: 127.0.0.1:6379
+    password:
+    db: 0
+    dial_timeout: 1s
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    qr_code_token_timeout: 300s # 5 * 60
+    open_douyin_url_token_timeout: 3600s # 1 * 60 * 60
+oceanengine:
+  report:
+    live: 5
+developer:
+  aweme:
+    open_douyin:
+      client_key: awo12341234dk9zb
+      client_secret: 5d97da1234123447149d1fad478f
+      call_back_url: https://test.mengma.cn/qc/aweme/auth/callback
+      default_open_id: _000DJN2rftiAJKuHYasyawDeO9_E77gFAx9
+douke:
+  app_key: "1234341234431145"
+  app_secret: f5412341234-5b5b-4daa-92c6-1234eeb9b641
+  authority_id: "123423422970"
+  auth_subject_type: DouKe
+  pid: dy_12348501701234_512432_276612346
+company:
+  default_company_id: 13
+service:
+  company:
+    endpoint: discovery:///mengma.company.service
+  weixin:
+    endpoint: discovery:///mengma.weixin.service
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http
+event:
+  kafka:
+    addr: 192.168.1.171:1234,192.168.2.95:9092,192.168.2.94:9092
+    topic: douyin_test
