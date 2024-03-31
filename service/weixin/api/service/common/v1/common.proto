@@ -1,0 +1,340 @@
+syntax = "proto3";
+
+package common.v1;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+option go_package = "common/api/common/v1;v1";
+
+service Common {
+  // 短信
+  rpc SendSms (SendSmsRequest) returns (SendSmsReply) {}
+  rpc VerifySms (VerifySmsRequest) returns (VerifySmsReply) {}
+  rpc ListSms (ListSmsRequest) returns (ListSmsReply) {}
+
+  // token管理
+  rpc GetToken (GetTokenRequest) returns (GetTokenReply) {}
+  rpc VerifyToken (VerifyTokenRequest) returns (VerifyTokenReply) {}
+
+  // 行政区划
+  rpc ListAreas (ListAreasRequest) returns (ListAreasReply) {}
+  rpc GetAreas (GetAreasRequest) returns (GetAreasReply) {}
+
+  // 更新日志
+  rpc ListUpdateLogs (google.protobuf.Empty) returns (ListUpdateLogsReply) {}
+  rpc CreateUpdateLogs (CreateUpdateLogsRequest) returns (CreateUpdateLogsReply) {}
+  rpc UpdateUpdateLogs (UpdateUpdateLogsRequest) returns (UpdateUpdateLogsReply) {}
+
+  // 支付
+  rpc Pay (PayRequest) returns (PayReply) {}
+  rpc PayAsyncNotification (PayAsyncNotificationRequest) returns (PayAsyncNotificationReply) {}
+
+  // 短链接
+  rpc CreateShortUrl (CreateShortUrlRequest) returns (CreateShortUrlReply) {}
+
+  // 短码
+  rpc CreateShortCode (google.protobuf.Empty) returns (CreateShortCodeReply) {}
+
+  // 快递信息
+  rpc GetKuaidiInfos (GetKuaidiInfosRequest) returns (GetKuaidiInfosReply) {}
+
+  // 快递公司
+  rpc ListKuaidiCompanys (ListKuaidiCompanysRequest) returns (ListKuaidiCompanysReply) {}
+
+  rpc Divide (DivideRequest) returns (DivideReply) {}
+}
+
+message SendSmsRequest {
+  string phone = 1 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  string content = 2;
+  string types = 3 [(validate.rules).string = {in: ['login', 'apply', 'accountOpend']}];
+  string ip = 4 [(validate.rules).string.ipv4 = true];
+}
+
+message SendSmsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message VerifySmsRequest {
+  string phone = 1 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  string code = 2 [(validate.rules).string.pattern = "^\\d{6}$"];
+  string types = 3 [(validate.rules).string = {in: ['login', 'apply']}];
+}
+
+message VerifySmsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListSmsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListSmsReply {
+  message Smss{
+    uint64 id = 1;
+    string phone = 2;
+    string content = 3;
+    string reply = 4;
+    string type = 5;
+    string ip = 6;
+    string createTime = 7;
+    string updateTime = 8;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Smss list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetTokenRequest {
+  string key = 1;
+}
+
+message GetTokenReply {
+  message Data {
+    string token = 1;
+  }
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message VerifyTokenRequest {
+  string key = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message VerifyTokenReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListAreasRequest {
+  uint64 parentAreaCode = 1 [(validate.rules).uint64.gte = 0];
+}
+
+message ListAreasReply {
+  message Areas {
+    uint64 areaCode = 1;
+    uint64 parentAreaCode = 2;
+    string areaName = 3;
+  }
+
+  message Data {
+    repeated Areas list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetAreasRequest {
+  uint64 areaCode = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetAreasReply {
+  message Data {
+    uint64 areaCode = 1;
+    uint64 parentAreaCode = 2;
+    string areaName = 3;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUpdateLogsReply {
+  message UpdateLogs {
+    uint64 id = 1;
+    string name = 2;
+    string content = 3;
+    string createTime = 4;
+    string updateTime = 5;
+  }
+
+  message Data {
+    repeated UpdateLogs list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUpdateLogsRequest {
+  string name = 1 [(validate.rules).string ={min_len: 1, max_len: 250}];
+  string content = 2 [(validate.rules).string ={min_len: 1}];
+}
+
+message CreateUpdateLogsReply {
+  message Data {
+    uint64 id = 1;
+    string name = 2;
+    string content = 3;
+    string createTime = 4;
+    string updateTime = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateUpdateLogsRequest {
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+  string name = 2 [(validate.rules).string ={min_len: 1, max_len: 250}];
+  string content = 3 [(validate.rules).string ={min_len: 1}];
+}
+
+message UpdateUpdateLogsReply {
+  message Data {
+    uint64 id = 1;
+    string name = 2;
+    string content = 3;
+    string createTime = 4;
+    string updateTime = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message PayRequest {
+  uint64 organizationId = 1 [(validate.rules).uint64.gt = 0];
+  string outTradeNo = 2 [(validate.rules).string ={min_len: 1}];
+  string content = 3 [(validate.rules).string ={min_len: 1}];
+  string nonceStr = 4 [(validate.rules).string ={min_len: 1}];
+  string openId = 5 [(validate.rules).string ={min_len: 1}];
+  string clientIp = 6 [(validate.rules).string ={min_len: 1}];
+  double totalFee = 7 [(validate.rules).double.gt = 0.00];
+}
+
+message PayReply {
+  message Data {
+    string timeStamp = 1;
+    string nonceStr = 2;
+    string package = 3;
+    string signType = 4;
+    string paySign = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message PayAsyncNotificationRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message PayAsyncNotificationReply {
+  message Data {
+    string outTradeNo = 1;
+    string outTransactionId = 2;
+    string transactionId = 3;
+    string payTime = 4;
+    double payAmount = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateShortUrlRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message CreateShortUrlReply {
+  message Data {
+    string shortUrl = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateShortCodeReply {
+  message Data {
+    string shortCode = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetKuaidiInfosRequest {
+  string code = 1 [(validate.rules).string ={min_len: 1}];
+  string num = 2 [(validate.rules).string ={min_len: 1}];
+  string phone = 3 [(validate.rules).string.pattern = "^$|^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+}
+
+message GetKuaidiInfosReply {
+  message KuaidiInfo {
+    string time = 1;
+    string content = 2;
+  }
+
+  message Data {
+    string code = 1;
+    string name = 2;
+    string num = 3;
+    uint32 state = 4;
+    string stateName = 5;
+    repeated KuaidiInfo list = 6;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListKuaidiCompanysRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListKuaidiCompanysReply {
+  message KuaidiCompany {
+    string name = 1;
+    string code = 2;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated KuaidiCompany list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DivideRequest {
+  string outTradeNo = 1 [(validate.rules).string ={min_len: 1}];
+  string transactionNo = 2 [(validate.rules).string ={min_len: 1}];
+}
+
+message DivideReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}

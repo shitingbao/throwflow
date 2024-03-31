@@ -1,0 +1,1349 @@
+syntax = "proto3";
+
+package weixin.v1;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+
+option go_package = "weixin/api/weixin/v1;v1";
+
+service Weixin {
+  // 微信用户管理
+  rpc GetUsers (GetUsersRequest) returns (GetUsersReply) {}
+  rpc GetByIdUsers (GetByIdUsersRequest) returns (GetByIdUsersReply) {}
+  rpc GetFollowUsers (GetFollowUsersRequest) returns (GetFollowUsersReply) {}
+  rpc CreateUsers (CreateUsersRequest) returns (CreateUsersReply) {}
+  rpc UpdateUsers (UpdateUsersRequest) returns (UpdateUsersReply) {}
+  rpc GetOpenDouyinUsers (GetOpenDouyinUsersRequest) returns (GetOpenDouyinUsersReply) {}
+  rpc ListOpenDouyinUsers (ListOpenDouyinUsersRequest) returns (ListOpenDouyinUsersReply) {}
+  rpc ListByClientKeyAndOpenIds (ListByClientKeyAndOpenIdsRequest) returns (ListByClientKeyAndOpenIdsReply) {}
+  rpc UpdateOpenDouyinUsers (UpdateOpenDouyinUsersRequest) returns (UpdateOpenDouyinUsersReply) {}
+  rpc UpdateUserInfoOpenDouyinUsers (UpdateUserInfoOpenDouyinUsersRequest) returns (UpdateUserInfoOpenDouyinUsersReply) {}
+  rpc UpdateCooperativeCodeOpenDouyinUsers (UpdateCooperativeCodeOpenDouyinUsersRequest) returns (UpdateCooperativeCodeOpenDouyinUsersReply) {}
+  rpc UpdateUserFansOpenDouyinUsers (UpdateUserFansOpenDouyinUsersRequest) returns (UpdateUserFansOpenDouyinUsersReply) {}
+  rpc DeleteOpenDouyinUsers (DeleteOpenDouyinUsersRequest) returns (DeleteOpenDouyinUsersReply) {}
+  rpc SyncIntegralUsers (google.protobuf.Empty) returns (SyncIntegralUsersReply) {}
+
+  // 微信二维码管理
+  rpc GetQrCodes (GetQrCodesRequest) returns (GetQrCodesReply) {}
+
+  // 微信用户配送地址管理
+  rpc ListUserAddresses (ListUserAddressesRequest) returns (ListUserAddressesReply) {}
+  rpc CreateUserAddresses (CreateUserAddressesRequest) returns (CreateUserAddressesReply) {}
+  rpc UpdateUserAddresses (UpdateUserAddressesRequest) returns (UpdateUserAddressesReply) {}
+  rpc UpdateDefaultUserAddresses (UpdateDefaultUserAddressesRequest) returns (UpdateDefaultUserAddressesReply) {}
+  rpc DeleteUserAddresses (DeleteUserAddressesRequest) returns (DeleteUserAddressesReply) {}
+
+  // 微信用户寄样管理
+  rpc GetKuaidiInfoUserSampleOrders (GetKuaidiInfoUserSampleOrdersRequest) returns (GetKuaidiInfoUserSampleOrdersReply) {}
+  rpc ListUserSampleOrders (ListUserSampleOrdersRequest) returns (ListUserSampleOrdersReply) {}
+  rpc StatisticsUserSampleOrders (StatisticsUserSampleOrdersRequest) returns (StatisticsUserSampleOrdersReply) {}
+  rpc VerifyUserSampleOrders (VerifyUserSampleOrdersRequest) returns (VerifyUserSampleOrdersReply) {}
+  rpc CancelUserSampleOrders (CancelUserSampleOrdersRequest) returns (CancelUserSampleOrdersReply) {}
+  rpc CreateUserSampleOrders (CreateUserSampleOrdersRequest) returns (CreateUserSampleOrdersReply) {}
+  rpc UpdateKuaidiUserSampleOrders (UpdateKuaidiUserSampleOrdersRequest) returns (UpdateKuaidiUserSampleOrdersReply) {}
+
+  // 微信用户订单管理
+  rpc ListUserOrders (ListUserOrdersRequest) returns (ListUserOrdersReply) {}
+  rpc CreateUserOrders (CreateUserOrdersRequest) returns (CreateUserOrdersReply) {}
+  rpc UpgradeUserOrders (UpgradeUserOrdersRequest) returns (UpgradeUserOrdersReply) {}
+  rpc AsyncNotificationUserOrders (AsyncNotificationUserOrdersRequest) returns (AsyncNotificationUserOrdersReply) {}
+
+  // 微信用户扫码记录管理
+  rpc CreateUserScanRecords (CreateUserScanRecordsRequest) returns (CreateUserScanRecordsReply) {}
+
+  // 微信用户机构对应关系管理
+  rpc GetUserOrganizationRelations (GetUserOrganizationRelationsRequest) returns (GetUserOrganizationRelationsReply) {}
+  rpc GetBindUserOrganizationRelations (GetBindUserOrganizationRelationsRequest) returns (GetBindUserOrganizationRelationsReply) {}
+  rpc ListParentUserOrganizationRelations (ListParentUserOrganizationRelationsRequest) returns (ListParentUserOrganizationRelationsReply) {}
+  rpc UpdateLevelUserOrganizationRelations (UpdateLevelUserOrganizationRelationsRequest) returns (UpdateLevelUserOrganizationRelationsReply) {}
+  rpc SyncUserOrganizationRelations (google.protobuf.Empty) returns (SyncUserOrganizationRelationsReply) {}
+
+  // 微信用户分佣管理
+  rpc ListUserCommissions (ListUserCommissionsRequest) returns (ListUserCommissionsReply) {}
+  rpc StatisticsUserCommissions (StatisticsUserCommissionsRequest) returns (StatisticsUserCommissionsReply) {}
+  rpc SyncOrderUserCommissions (SyncOrderUserCommissionsRequest) returns (SyncOrderUserCommissionsReply) {}
+  rpc SyncCostOrderUserCommissions (SyncCostOrderUserCommissionsRequest) returns (SyncCostOrderUserCommissionsReply) {}
+
+  // 微信用户券码管理
+  rpc GetUserCoupons (GetUserCouponsRequest) returns (GetUserCouponsReply) {}
+  rpc ListUserCoupons (ListUserCouponsRequest) returns (ListUserCouponsReply) {}
+  rpc BindUserCoupons (BindUserCouponsRequest) returns (BindUserCouponsReply) {}
+  rpc ActivateUserCoupons (ActivateUserCouponsRequest) returns (ActivateUserCouponsReply) {}
+  rpc CreateUserCoupons (CreateUserCouponsRequest) returns (CreateUserCouponsReply) {}
+  rpc SyncUserCoupons (google.protobuf.Empty) returns (SyncUserCouponsReply) {}
+
+  // 微信用户提现管理
+  rpc GetUserBalances (GetUserBalancesRequest) returns (GetUserBalancesReply) {}
+  rpc ListUserBalances (ListUserBalancesRequest) returns (ListUserBalancesReply) {}
+  rpc CreateUserBalances (CreateUserBalancesRequest) returns (CreateUserBalancesReply) {}
+  rpc AsyncNotificationUserBalances (AsyncNotificationUserBalancesRequest) returns (AsyncNotificationUserBalancesReply) {}
+  rpc SyncUserBalances (google.protobuf.Empty) returns (SyncUserBalancesReply) {}
+
+  // 微信用户用工合同管理
+  rpc GetContractUserContracts (GetContractUserContractsRequest) returns (GetContractUserContractsReply) {}
+  rpc GetUserContracts (GetUserContractsRequest) returns (GetUserContractsReply) {}
+  rpc CreateUserContracts (CreateUserContractsRequest) returns (CreateUserContractsReply) {}
+  rpc ConfirmUserContracts (ConfirmUserContractsRequest) returns (ConfirmUserContractsReply) {}
+  rpc AsyncNotificationUserContracts (AsyncNotificationUserContractsRequest) returns (AsyncNotificationUserContractsReply) {}
+
+  // 微信用户银行卡管理
+  rpc ListUserBanks (ListUserBanksRequest) returns (ListUserBanksReply) {}
+  rpc CreateUserBanks (CreateUserBanksRequest) returns (CreateUserBanksReply) {}
+  rpc DeleteUserBanks (DeleteUserBanksRequest) returns (DeleteUserBanksReply) {}
+
+  rpc ImportDatas (google.protobuf.Empty) returns (ImportDatasReply) {}
+  rpc UpdateTutorUserOrganizationRelations (google.protobuf.Empty) returns (UpdateTutorUserOrganizationRelationsReply) {}
+  rpc ParentUserDatas(google.protobuf.Empty) returns (ParentUserDatasReply) {}
+  rpc SyncQrCodeUserOrganizationRelations (google.protobuf.Empty) returns (SyncQrCodeUserOrganizationRelationsReply) {}
+}
+
+message GetUsersRequest {
+  string token = 1 [(validate.rules).string ={len: 32}];
+}
+
+message GetUsersReply {
+  message OpenId {
+    string appid = 1;
+    string openId = 2;
+  }
+
+  message Data {
+    uint64 userId = 1;
+    string phone = 2;
+    string countryCode = 3;
+    string nickName = 4;
+    string avatarUrl = 5;
+    double balance = 6;
+    uint64 integral = 7;
+    string integralLevelName = 8;
+    uint64 ranking = 9;
+    uint64 total = 10;
+    uint64 totalRanking = 11;
+    repeated OpenId openIds = 12;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetByIdUsersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetByIdUsersReply {
+  message OpenId {
+    string appid = 1;
+    string openId = 2;
+  }
+
+  message Data {
+    uint64 userId = 1;
+    string phone = 2;
+    string countryCode = 3;
+    string nickName = 4;
+    string avatarUrl = 5;
+    double balance = 6;
+    uint64 integral = 7;
+    string integralLevelName = 8;
+    uint64 ranking = 9;
+    uint64 total = 10;
+    uint64 totalRanking = 11;
+    repeated OpenId openIds = 12;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetFollowUsersRequest {
+  uint64 organizationId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 parentUserId = 2 [(validate.rules).uint64.gte = 0];
+}
+
+message GetFollowUsersReply {
+  message Data{
+    string followType = 1;
+    string followName = 2;
+    string followLogoUrl = 3;
+    string qrCodeUrl = 4;
+    uint64 totalNum = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUsersRequest {
+  uint64 organizationId = 1 [(validate.rules).uint64.gt = 0];
+  string loginCode = 2 [(validate.rules).string = {min_len: 1}];
+  string phoneCode = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message CreateUsersReply {
+  message OpenId {
+    string appid = 1;
+    string openId = 2;
+  }
+
+  message Data {
+    uint64 userId = 1;
+    string phone = 2;
+    string countryCode = 3;
+    string nickName = 4;
+    string avatarUrl = 5;
+    double balance = 6;
+    uint64 integral = 7;
+    string integralLevelName = 8;
+    uint64 ranking = 9;
+    uint64 total = 10;
+    uint64 totalRanking = 11;
+    string token = 12;
+    repeated OpenId openIds = 13;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateUsersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string nickName = 2 [(validate.rules).string = {min_len: 1, max_len: 200}];
+  string avatar = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateUsersReply {
+  message OpenId {
+    string appid = 1;
+    string openId = 2;
+  }
+
+  message Data {
+    uint64 userId = 1;
+    string phone = 2;
+    string countryCode = 3;
+    string nickName = 4;
+    string avatarUrl = 5;
+    double balance = 6;
+    uint64 integral = 7;
+    string integralLevelName = 8;
+    uint64 ranking = 9;
+    uint64 total = 10;
+    uint64 totalRanking = 11;
+    repeated OpenId openIds = 12;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetOpenDouyinUsersRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetOpenDouyinUsersReply {
+  message Data {
+    uint64 openDouyinUserId = 1;
+    string clientKey = 2;
+    string openId = 3;
+    uint64 awemeId = 4;
+    string accountId = 5;
+    string nickname = 6;
+    string avatar = 7;
+    string avatarLarger = 8;
+    string cooperativeCode = 9;
+    uint64 fans = 10;
+    string fansShow = 11;
+    string area = 12;
+    string createDate = 13;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListOpenDouyinUsersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListOpenDouyinUsersReply {
+  message OpenDouyinUser {
+    uint64 openDouyinUserId = 1;
+    string clientKey = 2;
+    string openId = 3;
+    uint64 awemeId = 4;
+    string accountId = 5;
+    string nickname = 6;
+    string avatar = 7;
+    string avatarLarger = 8;
+    string cooperativeCode = 9;
+    uint64 fans = 10;
+    string fansShow = 11;
+    string area = 12;
+    string createDate = 13;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinUser list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListByClientKeyAndOpenIdsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string clientKeyAndOpenIds = 3 [(validate.rules).string = {min_len: 0}];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListByClientKeyAndOpenIdsReply {
+  message OpenDouyinUser {
+    uint64 openDouyinUserId = 1;
+    string clientKey = 2;
+    string openId = 3;
+    uint64 awemeId = 4;
+    string accountId = 5;
+    string nickname = 6;
+    string avatar = 7;
+    string avatarLarger = 8;
+    string cooperativeCode = 9;
+    uint64 fans = 10;
+    string fansShow = 11;
+    string area = 12;
+    string createDate = 13;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinUser list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateOpenDouyinUsersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string clientKey = 2 [(validate.rules).string = {min_len: 1}];
+  string openId = 3 [(validate.rules).string = {min_len: 1}];
+  uint64 awemeId = 4 [(validate.rules).uint64.gte = 0];
+  string accountId = 5 [(validate.rules).string = {min_len: 0}];
+  string nickname = 6 [(validate.rules).string = {min_len: 1}];
+  string avatar = 7 [(validate.rules).string = {min_len: 1}];
+  string avatarLarger = 8 [(validate.rules).string = {min_len: 1}];
+  string area = 9 [(validate.rules).string = {min_len: 0}];
+
+}
+
+message UpdateOpenDouyinUsersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateUserInfoOpenDouyinUsersRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+  uint64 awemeId = 3 [(validate.rules).uint64.gt = 0];
+  string accountId = 4 [(validate.rules).string = {min_len: 0}];
+  string nickname = 5 [(validate.rules).string = {min_len: 1}];
+  string avatar = 6 [(validate.rules).string = {min_len: 1}];
+  string avatarLarger = 7 [(validate.rules).string = {min_len: 1}];
+  string area = 8 [(validate.rules).string = {min_len: 0}];
+}
+
+message UpdateUserInfoOpenDouyinUsersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCooperativeCodeOpenDouyinUsersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 openDouyinUserId = 2 [(validate.rules).uint64.gt = 0];
+  string cooperativeCode = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateCooperativeCodeOpenDouyinUsersReply {
+  message OpenDouyinUser {
+    uint64 openDouyinUserId = 1;
+    string nickname = 2;
+    string accountId = 3;
+    string avatar = 4;
+    string avatarLarger = 5;
+    string cooperativeCode = 6;
+  }
+
+  message Data {
+    repeated OpenDouyinUser list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateUserFansOpenDouyinUsersRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+  uint64 fans = 3 [(validate.rules).uint64.gte = 0];
+}
+
+message UpdateUserFansOpenDouyinUsersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DeleteOpenDouyinUsersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 openDouyinUserId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message DeleteOpenDouyinUsersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncIntegralUsersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetQrCodesRequest {
+  uint64 organizationId = 1 [(validate.rules).uint64.gt = 0];
+  string scene = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetQrCodesReply {
+  message Data {
+    string staticUrl = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserAddressesRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message ListUserAddressesReply {
+  message UserAddress {
+    uint64 userAddressId = 1;
+    string name = 2;
+    string phone = 3;
+    uint64 provinceAreaCode = 4;
+    string provinceAreaName = 5;
+    uint64 cityAreaCode = 6;
+    string cityAreaName = 7;
+    uint64 areaAreaCode = 8;
+    string areaAreaName = 9;
+    string addressInfo = 10;
+    uint32 isDefault = 11;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated UserAddress list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserAddressesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string name = 2 [(validate.rules).string = {min_len: 1}];
+  string phone = 3 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  uint64 provinceAreaCode = 4 [(validate.rules).uint64.gt = 0];
+  uint64 cityAreaCode = 5 [(validate.rules).uint64.gt = 0];
+  uint64 areaAreaCode = 6 [(validate.rules).uint64.gt = 0];
+  string addressInfo = 7 [(validate.rules).string = {min_len: 1}];
+  uint32 isDefault = 8 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message CreateUserAddressesReply {
+  message Data {
+    uint64 userAddressId = 1;
+    string name = 2;
+    string phone = 3;
+    uint64 provinceAreaCode = 4;
+    string provinceAreaName = 5;
+    uint64 cityAreaCode = 6;
+    string cityAreaName = 7;
+    uint64 areaAreaCode = 8;
+    string areaAreaName = 9;
+    string addressInfo = 10;
+    uint32 isDefault = 11;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateUserAddressesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 userAddressId = 2 [(validate.rules).uint64.gt = 0];
+  string name = 3 [(validate.rules).string = {min_len: 1}];
+  string phone = 4 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  uint64 provinceAreaCode = 5 [(validate.rules).uint64.gt = 0];
+  uint64 cityAreaCode = 6 [(validate.rules).uint64.gt = 0];
+  uint64 areaAreaCode = 7 [(validate.rules).uint64.gt = 0];
+  string addressInfo = 8 [(validate.rules).string = {min_len: 1}];
+  uint32 isDefault = 9 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message UpdateUserAddressesReply {
+  message Data {
+    uint64 userAddressId = 1;
+    string name = 2;
+    string phone = 3;
+    uint64 provinceAreaCode = 4;
+    string provinceAreaName = 5;
+    uint64 cityAreaCode = 6;
+    string cityAreaName = 7;
+    uint64 areaAreaCode = 8;
+    string areaAreaName = 9;
+    string addressInfo = 10;
+    uint32 isDefault = 11;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateDefaultUserAddressesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 userAddressId = 2 [(validate.rules).uint64.gt = 0];
+  uint32 isDefault = 3 [(validate.rules).uint32 = {in: [0, 1]}];
+}
+
+message UpdateDefaultUserAddressesReply {
+  message Data {
+    uint64 userAddressId = 1;
+    string name = 2;
+    string phone = 3;
+    uint64 provinceAreaCode = 4;
+    string provinceAreaName = 5;
+    uint64 cityAreaCode = 6;
+    string cityAreaName = 7;
+    uint64 areaAreaCode = 8;
+    string areaAreaName = 9;
+    string addressInfo = 10;
+    uint32 isDefault = 11;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DeleteUserAddressesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 userAddressId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message DeleteUserAddressesReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetKuaidiInfoUserSampleOrdersRequest {
+  uint64 userSampleOrderId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetKuaidiInfoUserSampleOrdersReply {
+  message KuaidiInfo {
+    string time = 1;
+    string content = 2;
+  }
+
+  message Data {
+    string kuaidiCompany = 1;
+    string kuaidiCode = 2;
+    string kuaidiNum = 3;
+    string kuaidiStateName = 4;
+    repeated KuaidiInfo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserSampleOrdersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string day = 3 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string keyword = 4 [(validate.rules).string = {min_len: 0}];
+  string searchType = 5 [(validate.rules).string = {in: ["product", "aweme", "address"]}];
+}
+
+message ListUserSampleOrdersReply {
+  message SampleOrder {
+    uint64 userSampleOrderId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string orderSn = 4;
+    string name = 5;
+    string phone = 6;
+    string provinceAreaName = 7;
+    string cityAreaName = 8;
+    string areaAreaName = 9;
+    string addressInfo = 10;
+    uint32 isCancel = 11;
+    string cancelNote = 12;
+    string kuaidiCompany = 13;
+    string kuaidiCode = 14;
+    string kuaidiNum = 15;
+    string kuaidiStateName = 16;
+    string note = 17;
+    string updateTime = 18;
+  }
+  message OpenDouyinUser {
+    uint64 openDouyinUserId = 1;
+    string accountId = 2;
+    string nickname = 3;
+    string avatar = 4;
+    string avatarLarger = 5;
+    uint64 fans = 6;
+    string fansShow = 7;
+    repeated SampleOrder sampleOrders = 8;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinUser list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsUserSampleOrdersRequest {
+  string day = 1 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string keyword = 2 [(validate.rules).string = {min_len: 0}];
+  string searchType = 3 [(validate.rules).string = {in: ["product", "aweme", "address"]}];
+}
+
+message StatisticsUserSampleOrdersReply {
+  message Statistic {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistic statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message VerifyUserSampleOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 openDouyinUserId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 productId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message VerifyUserSampleOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CancelUserSampleOrdersRequest {
+  uint64 userSampleOrderId = 1 [(validate.rules).uint64.gt = 0];
+  string cancelNote = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message CancelUserSampleOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserSampleOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 openDouyinUserId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 productId = 3 [(validate.rules).uint64.gt = 0];
+  uint64 userAddressId = 4 [(validate.rules).uint64.gt = 0];
+  string note = 5 [(validate.rules).string = {min_len: 0}];
+}
+
+message CreateUserSampleOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateKuaidiUserSampleOrdersRequest {
+  uint64 userSampleOrderId = 1 [(validate.rules).uint64.gt = 0];
+  string kuaidiCode = 2 [(validate.rules).string = {min_len: 1}];
+  string kuaidiNum = 3 [(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateKuaidiUserSampleOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserOrdersRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListUserOrdersReply {
+  message UserOrder {
+    string nickName = 1;
+    string avatarUrl = 2;
+    string payTime = 3;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated UserOrder list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 parentUserId = 2 [(validate.rules).uint64.gte = 0];
+  uint64 organizationId = 3 [(validate.rules).uint64.gt = 0];
+  double payAmount = 4 [(validate.rules).double.gt = 0.00];
+  string clientIp = 5 [(validate.rules).string ={min_len: 1}];
+}
+
+message CreateUserOrdersReply {
+  message Data {
+    string timeStamp = 1;
+    string nonceStr = 2;
+    string package = 3;
+    string signType = 4;
+    string paySign = 5;
+    string outTradeNo = 6;
+    string payAmount = 7;
+    string levelName = 8;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpgradeUserOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  double payAmount = 3 [(validate.rules).double.gt = 0.00];
+  string clientIp = 4 [(validate.rules).string ={min_len: 1}];
+}
+
+message UpgradeUserOrdersReply {
+  message Data {
+    string timeStamp = 1;
+    string nonceStr = 2;
+    string package = 3;
+    string signType = 4;
+    string paySign = 5;
+    string outTradeNo = 6;
+    string payAmount = 7;
+    string levelName = 8;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message AsyncNotificationUserOrdersRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message AsyncNotificationUserOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserScanRecordsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 parentUserId = 3 [(validate.rules).uint64.gte = 0];
+}
+
+message CreateUserScanRecordsReply {
+  message Data{
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetUserOrganizationRelationsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetUserOrganizationRelationsReply {
+  message CourseModule {
+    string courseModuleName = 1;
+    string courseModuleContent = 2;
+  }
+
+  message OrganizationCourse {
+    string courseName = 1;
+    string courseSubName = 2;
+    string coursePrice = 3;
+    uint64 courseDuration = 4;
+    string courseOriginalPrice = 5;
+    uint32 courseLevel = 6;
+    repeated CourseModule courseModules = 7;
+  }
+
+  message Data{
+    uint64 organizationId = 1;
+    uint64 companyId = 2;
+    string organizationName = 3;
+    string organizationLogoUrl = 4;
+    repeated OrganizationCourse organizationCourses = 5;
+    string companyName = 6;
+    string bankCode = 7;
+    string bankDeposit = 8;
+    string activationTime = 9;
+    string levelName = 10;
+    uint32 level = 11;
+    string organizationUserQrCodeUrl = 12;
+    uint64 parentUserId = 13;
+    string parentNickName = 14;
+    string parentAvatarUrl = 15;
+    uint64 total = 16;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetBindUserOrganizationRelationsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message GetBindUserOrganizationRelationsReply {
+  message Mcn {
+    string name = 1;
+    string bindStartTime = 2;
+    string bindEndTime = 3;
+  }
+
+  message Data{
+    uint64 organizationId = 1;
+    uint64 companyId = 2;
+    string parentNickName = 3;
+    uint64 tutorId = 4;
+    string tutorNickName = 5;
+    string createTime = 6;
+    repeated Mcn mcn = 7;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListParentUserOrganizationRelationsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  string relationType = 3 [(validate.rules).string = {in: ["order", "coupon"]}];
+}
+
+message ListParentUserOrganizationRelationsReply {
+  message ParentUser {
+    uint64 parentUserId = 1;
+    string parentNickName = 2;
+    string parentAvatarUrl = 3;
+    string parentUserType = 4;
+  }
+
+  message Data{
+    repeated ParentUser parentUser = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateLevelUserOrganizationRelationsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  uint32 level = 3 [(validate.rules).uint32 = {in: [1, 2, 3, 4]}];
+}
+
+message UpdateLevelUserOrganizationRelationsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncUserOrganizationRelationsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserCommissionsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 4 [(validate.rules).uint64.gt = 0];
+  string month = 5 [(validate.rules).string.pattern = "^$|^([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(0[123455789]|1[012])$"];
+  string keyword = 6 [(validate.rules).string = {min_len: 0}];
+  uint32 isDirect = 7 [(validate.rules).uint32 = {in: [0, 1, 2]}];
+}
+
+message ListUserCommissionsReply {
+  message UserCommission {
+    string nickName = 1;
+    string avatarUrl = 2;
+    string phone = 3;
+    string activationTime = 4;
+    string relationName = 5;
+    double totalPayAmount = 6;
+    double commissionPool = 7;
+    double estimatedUserCommission = 8;
+    double commissionRatio = 9;
+    double realUserCommission = 10;
+    string userCommissionTypeName = 11;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated UserCommission list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message StatisticsUserCommissionsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message StatisticsUserCommissionsReply {
+  message Statistic {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistic statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncOrderUserCommissionsRequest {
+  string day = 1 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message SyncOrderUserCommissionsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncCostOrderUserCommissionsRequest {
+  string day = 1 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message SyncCostOrderUserCommissionsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetUserCouponsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message GetUserCouponsReply {
+  message Data {
+    string couponCode = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserCouponsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 4 [(validate.rules).uint64.gt = 0];
+}
+
+message ListUserCouponsReply {
+  message UserCoupon {
+    string couponCode = 1;
+    string content = 2;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    uint64 totalUsed = 5;
+    repeated UserCoupon list = 6;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message BindUserCouponsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string phone = 2 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+}
+
+message BindUserCouponsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ActivateUserCouponsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 parentUserId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message ActivateUserCouponsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserCouponsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  uint32 level = 3 [(validate.rules).uint32 = {in: [1, 2, 3, 4, 5]}];
+  uint32 num = 4 [(validate.rules).uint32.gt = 0];
+}
+
+message CreateUserCouponsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncUserCouponsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetUserBalancesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetUserBalancesReply {
+  message Data {
+    string estimatedCommissionBalance = 1;
+    string realCommissionBalance = 2;
+    string estimatedCostBalance = 3;
+    string realCostBalance = 4;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserBalancesRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+  uint32 operationType = 4 [(validate.rules).uint32 = {in: [0, 1, 2]}];
+}
+
+message ListUserBalancesReply {
+  message UserBalance {
+    double amount = 1;
+    uint32 balanceType = 2;
+    uint32 operationType = 3;
+    string operationContent = 4;
+    uint32 balanceStatus = 5;
+    string createTime = 6;
+  }
+  
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated UserBalance list = 6;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserBalancesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string bankCode = 2 [(validate.rules).string ={min_len: 1}];
+  double amount = 3 [(validate.rules).double.gte = 10.00];
+  uint32 balanceType = 4 [(validate.rules).uint32 = {in: [1, 2]}];
+}
+
+message CreateUserBalancesReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message AsyncNotificationUserBalancesRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message AsyncNotificationUserBalancesReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncUserBalancesReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetContractUserContractsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint32 contractType = 2 [(validate.rules).uint32 = {in: [1, 2]}];
+}
+
+message GetContractUserContractsReply {
+  message Data {
+    string contractUrl = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetUserContractsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint32 contractType = 2 [(validate.rules).uint32 = {in: [1, 2]}];
+}
+
+message GetUserContractsReply {
+  message Data {
+    uint32 contractStatus = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserContractsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string name = 2 [(validate.rules).string ={min_len: 1}];
+  string phone = 3 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  string identityCard = 4 [(validate.rules).string ={len: 18}];
+  uint32 contractType = 5 [(validate.rules).uint32 = {in: [1, 2]}];
+}
+
+message CreateUserContractsReply {
+  message Data {
+    uint64 contractId = 1;
+    uint32 contractStatus = 2;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ConfirmUserContractsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 contractId = 2 [(validate.rules).uint64.gt = 0];
+  string phone = 3 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  string code = 4 [(validate.rules).string ={min_len: 1}];
+}
+
+message ConfirmUserContractsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message AsyncNotificationUserContractsRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message AsyncNotificationUserContractsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListUserBanksRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message ListUserBanksReply {
+  message UserBank {
+    string bankCode = 1;
+    string bankName = 2;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated UserBank list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateUserBanksRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string bankCode = 2 [(validate.rules).string ={min_len: 1}];
+}
+
+message CreateUserBanksReply {
+  message Data {
+    string bankCode = 1;
+    string bankName = 2;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DeleteUserBanksRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string bankCode = 2 [(validate.rules).string ={min_len: 1}];
+}
+
+message DeleteUserBanksReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ImportDatasReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateTutorUserOrganizationRelationsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ParentUserDatasReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncQrCodeUserOrganizationRelationsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}

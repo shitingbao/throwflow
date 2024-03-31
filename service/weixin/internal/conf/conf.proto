@@ -1,0 +1,147 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "weixin/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Weixin weixin = 3;
+  Gongmall gongmall = 4;
+  Volcengine volcengine = 5;
+  Company company = 6;
+  Organization organization = 7;
+  Service service = 8;
+  Registry registry = 9;
+}
+
+message Server {
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  GRPC grpc = 2;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string dsn = 2;
+  }
+  message Redis {
+    string addr = 1;
+    string password = 2;
+    int32 db = 3;
+    google.protobuf.Duration dial_timeout = 4;
+    google.protobuf.Duration read_timeout = 5;
+    google.protobuf.Duration write_timeout = 6;
+    google.protobuf.Duration login_token_timeout = 7;
+    google.protobuf.Duration user_coupon_lock_timeout = 8;
+    google.protobuf.Duration user_balance_log_timeout = 9;
+  }
+  message Mongo {
+    string dsn = 1;
+    string username = 2;
+    string password = 3;
+    string dbname = 4;
+    google.protobuf.Duration timeout = 5;
+  }
+  Database database = 1;
+  Redis redis = 2;
+  Mongo mongo = 3;
+}
+
+message Weixin {
+  message Mini {
+    string appid = 1;
+    string secret = 2;
+    string qr_code_env_version = 3;
+  }
+  message DjMini {
+    string appid = 1;
+    string secret = 2;
+    string qr_code_env_version = 3;
+  }
+  Mini mini = 1;
+  DjMini dj_mini = 2;
+}
+
+message Gongmall {
+  message Gongmall {
+    uint64 service_id = 1;
+    string app_key = 2;
+    string app_secret = 3;
+    uint64 template_id = 4;
+    string contrace_url = 5;
+    string gongmall_public_key = 6;
+    string public_key = 7;
+    string private_key = 8;
+  }
+  Gongmall default = 1;
+  Gongmall dj = 2;
+}
+
+message Volcengine {
+  message Avatar {
+    string endpoint = 1;
+    string url = 2;
+    string sub_folder = 3;
+    string region = 4;
+    string bucket_name = 5;
+    string default_avatar = 6;
+  }
+
+  message Company {
+    string endpoint = 1;
+    string url = 2;
+    string sub_folder = 3;
+    string region = 4;
+    string bucket_name = 5;
+  }
+
+  message Tos {
+    string access_key = 1;
+    string secret_key = 2;
+    Avatar avatar = 3;
+    Company company = 4;
+  }
+
+  Tos tos = 1;
+}
+
+message Company {
+  uint64 default_company_id = 1;
+}
+
+message Organization {
+  uint64 default_organization_id = 1;
+  uint64 dj_organization_id = 2;
+  string default_company_logo = 3;
+}
+
+message Service {
+  message Company {
+    string endpoint = 1;
+  }
+  message Douyin {
+    string endpoint = 1;
+  }
+  message Common {
+    string endpoint = 1;
+  }
+  Company company = 1;
+  Douyin douyin = 2;
+  Common common = 3;
+}
+
+message Registry {
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+  }
+
+  Consul consul = 1;
+}

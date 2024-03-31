@@ -1,0 +1,86 @@
+server:
+  grpc:
+    addr: 0.0.0.0:9993
+    timeout: 1s
+data:
+  database:
+    driver: mysql
+    dsn: root:123456@tcp(127.0.0.1:3306)/mengma?charset=utf8mb4&parseTime=True&loc=Local
+  redis:
+    addr: 127.0.0.1:6379
+    password:
+    db: 0
+    dial_timeout: 1s
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    login_token_timeout: 2592000s # 30 * 24 * 60 * 60
+    user_coupon_lock_timeout: 1s
+    user_balance_log_timeout: 1s
+  mongo:
+    dsn: mongodb://127.0.0.1:57017
+    username:
+    password:
+    dbname: mengma_test
+    timeout: 2s
+weixin:
+  mini:
+    appid: wx944b0843d627140a
+    secret: b4e69b1086cb1a342a6506d43bddf652
+    qr_code_env_version: trial
+  dj_mini:
+    appid: wx53e6d523eb427ddc
+    secret: 6f305b7aeddaeb1fa1c655612ed7d367
+    qr_code_env_version: trial
+gongmall:
+  default:
+    service_id: 919
+    app_key: a175f3ac4c5d40aa9be27e6059ac788e
+    app_secret: c3fe5f9a34c41644bea11a35f9d23eb2
+    template_id: 10896
+    contrace_url: https://avatar.static.mengma.cn/837d14e0b693f961/test/mini_image/contract/gm-mm.pdf
+    gongmall_public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsVezI+omYDly9Jagz5JODs5iHcgJPI2qlxX3eIBPhvaphKRj6SuBIT9o3hagbOb1j0jAhlzYdJqgNlFytnXvNJMVoqAF+khImIP9R00LdFUkhZgjTYzRBMhzR3dcb/XejoiqvwVYhHWUXyWRmv0V5JbuLdGAohKFOYvueuh0b2faj2+nHEPKtis2KirRnO2KaxHyWifsTFIBruKYCO0Gj2SBzwqJ6DPgTJPksxbyZwuJXCnI26xxv4bHuS3aE61WxuYlOvSkO8ki17xmhDjuxId1ByKahrk/5/kgaHxgZcgDpaGjpYxjVgAA746XMPl1U0fcWZX0G0zkgCqv+6IeXwIDAQAB
+    public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2hD1gOjEU/0WDOBcxaskytnxzU7Buy/R+/gaY728gVPTqtb3wm5Bv9Zo4BqdV535oSTRlmZKMig/Ka+I6gfqcxKSov59e9ZlfyVasciZGNGnjRxaXkCjbVLNlbuehBRpeyC5UooTm7KBF0cgf3LRuc0RXn9ofX+dBT6KaScBsDGOrM70Hw0m4oy+GfZi6yNX1xDPHig2s2UvdPB+jT2jCF0y5+23kIkSv6QOjAnL+ctn48QLa8D5WPe3YRpb/Wsi8/NAFiASFHfc4tuJXtOkkUor6hhsiHFs30Fnd4Fm5Iw71xlpoKiBySIG2BCmcgSk70dtQQ/u9+pfSZpiXKQFWQIDAQAB
+    private_key: MIIEowIBAAKCAQEA2hD1gOjEU/0WDOBcxaskytnxzU7Buy/R+/gaY728gVPTqtb3wm5Bv9Zo4BqdV535oSTRlmZKMig/Ka+I6gfqcxKSov59e9ZlfyVasciZGNGnjRxaXkCjbVLNlbuehBRpeyC5UooTm7KBF0cgf3LRuc0RXn9ofX+dBT6KaScBsDGOrM70Hw0m4oy+GfZi6yNX1xDPHig2s2UvdPB+jT2jCF0y5+23kIkSv6QOjAnL+ctn48QLa8D5WPe3YRpb/Wsi8/NAFiASFHfc4tuJXtOkkUor6hhsiHFs30Fnd4Fm5Iw71xlpoKiBySIG2BCmcgSk70dtQQ/u9+pfSZpiXKQFWQIDAQABAoIBAQCOvN8WPEaWe2k9kHbpZHc22KYwL0ccUdbvSZ1sgDuto8M/ZmrSt/0NpzkKyCEJwvwtgL435kjWwAVoMeA64GeUXyngyxg0QUg6i6bsDFQ6LLGx6kc0vra6zqKHSkIeToYk9GyaHIttNNDO/d3FztB9AEBITLmGvEt5rVBIOCIgw3l/7QdkdWZpWfxC9vB4FMJAgpBspuoOQovUXw5yICM0S1JmVgoJddTLZaQlEBVK8s2MMMGcnfqdrc/oEW2ZEac3pcXAYuSIrqbjiTleETQlZapwlSQkcBoJy5RhgFmcz5R3B1imQskMk5ZB0OGeQ7sYSyR77jizvmBKFd5ctLIJAoGBAP1mplyTKuypNqtQf6zdwsb1ccgCfor3fy/0xjTtNKXZe9gBhoAQMNItD5yh7mW5foOdzDwNvvuDsUjigenSFrFBOGitiWYHK+BaxT2T+HDftqHaFrHdSuF3k8hUAk7WLHkHEbgLe3exK7XOjQCqst0O5c+WIV+LcPzQIhHRbuUTAoGBANxNiArkYQ79aCI/2sessa0ZyKcInjVvszBh0gVxl2eksL0O0D6/wfk3Ue6uiWGH0/XcKOzHjdFpeRlxwdDQKSEXZencC/Rk7jmy5fb16lWobE8ZyMUH6QDcXCBeFRoaIpjSFYRESzpXACVw7T4Q54ZT5swQ0biHcQSQnI82abVjAoGAMaN4F05k7DNBmFGOkShnzV2rSkjizQoqihRi9184Hvz5e5jg5hlF1wYotsAp2Rd7JwE0TtdKgC6N/f8Q/+K9uz9Rc3/7GFdzSuG9HZDs6/+G4TG9nF4DGyO3eVirkxH1aEfwOqNVLl8wds7dZDIME62lawK3yuWf3oZPBjqGhK0CgYA7vZqiuYPIeNeAUiiV9TLJajCLez7L5tqEyEIXz9Hq/TIgUqAOJBoJ5wKE4zfGBvtntKg0bXj7zMpWKA8S/R/qJVoxrMZhI+2mH+lUqyM8z0tvt+JF6/s3jIo/DMRUK7ouDupez9ZGn8keXh03s4XVW3M+62Cz1abEQiLygyLvWQKBgAtK1/SiSY0R8WWwFUAzia2y5b/2LGx4XQYYE184RJpRVIhGTf49/vUZtduE92oxDsaVSXfzzEZfkGz2BY/dqyMNeo5ZJ4ACCc6edRqOhPjNkWIH8D20E8aHcn7fWqA5AS78HPAN5J4dDk+IYpPLQs4AS5uHl0OigWtpYqX1rIgj
+  dj:
+    service_id: 919
+    app_key: a175f3ac4c5d40aa9be27e6059ac788e
+    app_secret: c3fe5f9a34c41644bea11a35f9d23eb2
+    template_id: 10896
+    contrace_url: https://avatar.static.mengma.cn/837d14e0b693f961/test/mini_image/contract/gm-tw.pdf
+    gongmall_public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsVezI+omYDly9Jagz5JODs5iHcgJPI2qlxX3eIBPhvaphKRj6SuBIT9o3hagbOb1j0jAhlzYdJqgNlFytnXvNJMVoqAF+khImIP9R00LdFUkhZgjTYzRBMhzR3dcb/XejoiqvwVYhHWUXyWRmv0V5JbuLdGAohKFOYvueuh0b2faj2+nHEPKtis2KirRnO2KaxHyWifsTFIBruKYCO0Gj2SBzwqJ6DPgTJPksxbyZwuJXCnI26xxv4bHuS3aE61WxuYlOvSkO8ki17xmhDjuxId1ByKahrk/5/kgaHxgZcgDpaGjpYxjVgAA746XMPl1U0fcWZX0G0zkgCqv+6IeXwIDAQAB
+    public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2hD1gOjEU/0WDOBcxaskytnxzU7Buy/R+/gaY728gVPTqtb3wm5Bv9Zo4BqdV535oSTRlmZKMig/Ka+I6gfqcxKSov59e9ZlfyVasciZGNGnjRxaXkCjbVLNlbuehBRpeyC5UooTm7KBF0cgf3LRuc0RXn9ofX+dBT6KaScBsDGOrM70Hw0m4oy+GfZi6yNX1xDPHig2s2UvdPB+jT2jCF0y5+23kIkSv6QOjAnL+ctn48QLa8D5WPe3YRpb/Wsi8/NAFiASFHfc4tuJXtOkkUor6hhsiHFs30Fnd4Fm5Iw71xlpoKiBySIG2BCmcgSk70dtQQ/u9+pfSZpiXKQFWQIDAQAB
+    private_key: MIIEowIBAAKCAQEA2hD1gOjEU/0WDOBcxaskytnxzU7Buy/R+/gaY728gVPTqtb3wm5Bv9Zo4BqdV535oSTRlmZKMig/Ka+I6gfqcxKSov59e9ZlfyVasciZGNGnjRxaXkCjbVLNlbuehBRpeyC5UooTm7KBF0cgf3LRuc0RXn9ofX+dBT6KaScBsDGOrM70Hw0m4oy+GfZi6yNX1xDPHig2s2UvdPB+jT2jCF0y5+23kIkSv6QOjAnL+ctn48QLa8D5WPe3YRpb/Wsi8/NAFiASFHfc4tuJXtOkkUor6hhsiHFs30Fnd4Fm5Iw71xlpoKiBySIG2BCmcgSk70dtQQ/u9+pfSZpiXKQFWQIDAQABAoIBAQCOvN8WPEaWe2k9kHbpZHc22KYwL0ccUdbvSZ1sgDuto8M/ZmrSt/0NpzkKyCEJwvwtgL435kjWwAVoMeA64GeUXyngyxg0QUg6i6bsDFQ6LLGx6kc0vra6zqKHSkIeToYk9GyaHIttNNDO/d3FztB9AEBITLmGvEt5rVBIOCIgw3l/7QdkdWZpWfxC9vB4FMJAgpBspuoOQovUXw5yICM0S1JmVgoJddTLZaQlEBVK8s2MMMGcnfqdrc/oEW2ZEac3pcXAYuSIrqbjiTleETQlZapwlSQkcBoJy5RhgFmcz5R3B1imQskMk5ZB0OGeQ7sYSyR77jizvmBKFd5ctLIJAoGBAP1mplyTKuypNqtQf6zdwsb1ccgCfor3fy/0xjTtNKXZe9gBhoAQMNItD5yh7mW5foOdzDwNvvuDsUjigenSFrFBOGitiWYHK+BaxT2T+HDftqHaFrHdSuF3k8hUAk7WLHkHEbgLe3exK7XOjQCqst0O5c+WIV+LcPzQIhHRbuUTAoGBANxNiArkYQ79aCI/2sessa0ZyKcInjVvszBh0gVxl2eksL0O0D6/wfk3Ue6uiWGH0/XcKOzHjdFpeRlxwdDQKSEXZencC/Rk7jmy5fb16lWobE8ZyMUH6QDcXCBeFRoaIpjSFYRESzpXACVw7T4Q54ZT5swQ0biHcQSQnI82abVjAoGAMaN4F05k7DNBmFGOkShnzV2rSkjizQoqihRi9184Hvz5e5jg5hlF1wYotsAp2Rd7JwE0TtdKgC6N/f8Q/+K9uz9Rc3/7GFdzSuG9HZDs6/+G4TG9nF4DGyO3eVirkxH1aEfwOqNVLl8wds7dZDIME62lawK3yuWf3oZPBjqGhK0CgYA7vZqiuYPIeNeAUiiV9TLJajCLez7L5tqEyEIXz9Hq/TIgUqAOJBoJ5wKE4zfGBvtntKg0bXj7zMpWKA8S/R/qJVoxrMZhI+2mH+lUqyM8z0tvt+JF6/s3jIo/DMRUK7ouDupez9ZGn8keXh03s4XVW3M+62Cz1abEQiLygyLvWQKBgAtK1/SiSY0R8WWwFUAzia2y5b/2LGx4XQYYE184RJpRVIhGTf49/vUZtduE92oxDsaVSXfzzEZfkGz2BY/dqyMNeo5ZJ4ACCc6edRqOhPjNkWIH8D20E8aHcn7fWqA5AS78HPAN5J4dDk+IYpPLQs4AS5uHl0OigWtpYqX1rIgj
+volcengine:
+  tos:
+    access_key: AKLTNDE4YTZjYmQyNTkwNDJmMmEzZTY4MmIxMzMzN2E3ZWU
+    secret_key: TjJabU1UazFOak5tTWpKaU5HVTRNV0l4T0dVNU1HVTNNMkpqTnpGbU5USQ==
+    avatar:
+      endpoint: https://tos-cn-beijing.volces.com
+      url: https://avatar.static.mengma.cn
+      sub_folder: fd1859325f7119e9
+      region: cn-beijing
+      bucket_name: avatar-mengma
+      default_avatar: default.png
+    company:
+      endpoint: https://tos-cn-beijing.volces.com
+      url: https://company.static.mengma.cn
+      sub_folder: 6b665842bd3d8b39
+      region: cn-beijing
+      bucket_name: company-mengma
+company:
+  default_company_id: 13
+organization:
+  default_organization_id: 6
+  dj_organization_id: 5
+  default_company_logo: https://company.static.mengma.cn/2dc1eef0ec8ed7fcd19dc3891b03a502741d1a425344bd6bc32c6f10c5f65745.png
+service:
+  company:
+    endpoint: discovery:///mengma.company.service
+  douyin:
+    endpoint: discovery:///mengma.douyin.service
+  common:
+    endpoint: discovery:///mengma.common.service
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http
