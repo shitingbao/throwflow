@@ -1,0 +1,41 @@
+server:
+  grpc:
+    addr: 0.0.0.0:9992
+    timeout: 2s
+data:
+  database:
+    driver: mysql
+    dsn: root:123456@tcp(127.0.0.1:3306)/mengma?charset=utf8mb4&parseTime=True&loc=Local
+  redis:
+    addr: 127.0.0.1:6379
+    password:
+    db: 0
+    dial_timeout: 1s
+    read_timeout: 0.2s
+    write_timeout: 0.2s
+    material_token_timeout: 86400s # 1 * 24 * 60 * 60
+    material_lock_timeout: 1s
+company:
+  default_company_id: 13
+  material:
+    default_company_material_library_name: 爆品库
+volcengine:
+  tos:
+    access_key: AKLTNDE4YTZjYmQyNTkwNDJmMmEzZTY4MmIxMzMzN2E3ZWU
+    secret_key: TjJabU1UazFOak5tTWpKaU5HVTRNV0l4T0dVNU1HVTNNMkpqTnpGbU5USQ==
+    material:
+      endpoint: https://tos-cn-beijing.volces.com
+      url: https://material.static.mengma.cn
+      region: cn-beijing
+      bucket_name: material-mengma
+service:
+  company:
+    endpoint: discovery:///mengma.company.service
+registry:
+  consul:
+    address: 127.0.0.1:8500
+    scheme: http
+event:
+  kafka:
+    addr: 192.168.1.171:9092,192.168.2.95:9092,192.168.2.94:9092
+    topic: material_test
