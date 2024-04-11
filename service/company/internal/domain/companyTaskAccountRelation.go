@@ -8,7 +8,8 @@ import (
 const (
 	GoingStatus = iota
 	SuccessStatus
-	ExpireStatus
+	ExpireStatus  // 过期
+	SettledStatus // 已经结算
 )
 
 const (
@@ -25,6 +26,8 @@ const (
 
 type CompanyTaskAccountRelation struct {
 	Id                    uint64
+	NickName              string // 微信昵称
+	AvatarUrl             string // 微信头像
 	CompanyTaskId         uint64
 	ProductOutId          uint64
 	ProductName           string
@@ -38,6 +41,7 @@ type CompanyTaskAccountRelation struct {
 	IsCostBuy             uint8
 	ScreenshotAddress     string
 	IsScreenshotAvailable uint8
+	IsPlaySuccess         uint8
 	CompanyTaskDetails    []*CompanyTaskDetail
 	CompanyTask           CompanyTask
 	CompanyProduct        *CompanyProduct
@@ -50,14 +54,20 @@ type CompanyTaskAccountRelationList struct {
 	List     []*CompanyTaskAccountRelation
 }
 
-func NewCompanyTaskAccountRelation(ctx context.Context,
-	companyTaskId, userId, productOutId uint64, productName string) *CompanyTaskAccountRelation {
+func NewCompanyTaskAccountRelation(ctx context.Context, companyTaskId, userId, productOutId uint64) *CompanyTaskAccountRelation {
 	return &CompanyTaskAccountRelation{
 		CompanyTaskId: companyTaskId,
 		ProductOutId:  productOutId,
-		ProductName:   productName,
 		UserId:        userId,
 	}
+}
+
+func (c *CompanyTaskAccountRelation) SetNickName(ctx context.Context, nickName string) {
+	c.NickName = nickName
+}
+
+func (c *CompanyTaskAccountRelation) SetAvatarUrl(ctx context.Context, avatarUrl string) {
+	c.AvatarUrl = avatarUrl
 }
 
 func (c *CompanyTaskAccountRelation) SetClaimTime(ctx context.Context) {
@@ -93,13 +103,8 @@ func (c *CompanyTaskAccountRelation) SetIsCostBuy(ctx context.Context, isCostBuy
 	c.IsCostBuy = isCostBuy
 }
 
-type VideoStatistics struct {
-	CommentCount  int32 `json:"comment_count" bson:"comment_count"`
-	DiggCount     int32 `json:"digg_count" bson:"digg_count"`
-	DownloadCount int32 `json:"download_count" bson:"download_count"`
-	ForwardCount  int32 `json:"forward_count" bson:"forward_count"`
-	PlayCount     int32 `json:"play_count" bson:"play_count"`
-	ShareCount    int32 `json:"share_count" bson:"share_count"`
+func (c *CompanyTaskAccountRelation) SetIsPlaySuccess(ctx context.Context, isPlaySuccess uint8) {
+	c.IsPlaySuccess = isPlaySuccess
 }
 
 type UserOpenDouyin struct {
@@ -118,47 +123,4 @@ type UserOpenDouyin struct {
 	Area            string
 	CreateTime      time.Time
 	UpdateTime      time.Time
-}
-
-type OpenDouyinVideo struct {
-	ClientKey     string
-	OpenId        string
-	AwemeId       uint64
-	AccountId     string
-	Nickname      string
-	Avatar        string
-	Title         string
-	Cover         string
-	CreateTime    uint64
-	IsReviewed    bool
-	ItemId        string
-	Statistics    VideoStatistics
-	IsTop         bool
-	MediaType     uint64
-	ShareUrl      string
-	VideoId       string
-	VideoStatus   uint32
-	ProductId     string
-	ProductName   string
-	ProductImg    string
-	IsUpdateCover uint8
-}
-
-type DoukeOrderInfo struct {
-	Id                  uint64
-	UserId              uint64
-	OrderId             string
-	ProductId           string
-	ProductName         string
-	ProductImg          string
-	PaySuccessTime      time.Time
-	SettleTime          *time.Time
-	TotalPayAmount      float32
-	PayGoodsAmount      float32
-	FlowPoint           string
-	EstimatedCommission float32
-	RealCommission      float32
-	ItemNum             uint64
-	CreateTime          time.Time
-	UpdateTime          time.Time
 }

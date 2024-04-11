@@ -122,6 +122,16 @@ func (couc *CompanyOrganizationUsecase) ListSelectCompanyOrganizations(ctx conte
 		Value: "小当家",
 	})
 
+	selectCompanyOrganizations.OrganizationMcn = append(selectCompanyOrganizations.OrganizationMcn, &domain.OrganizationMcn{
+		Key:   "莲宝兔旺",
+		Value: "莲宝兔旺",
+	})
+
+	selectCompanyOrganizations.OrganizationMcn = append(selectCompanyOrganizations.OrganizationMcn, &domain.OrganizationMcn{
+		Key:   "壹玖传媒",
+		Value: "壹玖传媒",
+	})
+
 	return selectCompanyOrganizations, nil
 }
 

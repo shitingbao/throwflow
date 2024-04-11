@@ -1,6 +1,7 @@
 package biz
 
 import (
+	douyinv1 "company/api/service/douyin/v1"
 	v1 "company/api/service/weixin/v1"
 	"company/internal/conf"
 	"company/internal/domain"
@@ -11,6 +12,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
@@ -21,6 +23,7 @@ import (
 
 var (
 	CompanyTaskCreateError                 = errors.InternalServer("COMPANY_TASK_CREATE_ERROR", "领取任务失败")
+	CompanyTaskCreateLevelError            = errors.InternalServer("COMPANY_TASK_CREATE_LEVEL_ERROR", "非会员，领取任务失败")
 	CompanyTaskExists                      = errors.InternalServer("COMPANY_TASK_EXISTS", "已存在任务")
 	CompanyTaskUpperLimit                  = errors.InternalServer("COMPANY_TASK_UPPER_LIMIT", "任务领取达到上限")
 	CompanyTaskRecoverExpireTimeCountError = errors.InternalServer("COMPANY_TASK_RECOVER_EXPIRE_TIME_COUNT_ERROR", "任务恢复数量出错")
@@ -29,20 +32,22 @@ var (
 
 type CompanyTaskAccountRelationRepo interface {
 	GetById(context.Context, uint64) (*domain.CompanyTaskAccountRelation, error)
-	GetCompanyTaskUserOrderStatus(context.Context, uint64, string, string) (*domain.DoukeOrderInfo, error)
-	Save(context.Context, *domain.CompanyTaskAccountRelation) (*domain.CompanyTaskAccountRelation, error)
+	GetUserOrganizationRelations(context.Context, uint64) (*v1.GetUserOrganizationRelationsReply, error)
+	GetByProductOutIdAndUserId(context.Context, uint64, uint64) (*domain.CompanyTaskAccountRelation, error)
+	List(context.Context, uint64, uint64, int, int, int, string, string, string) ([]*domain.CompanyTaskAccountRelation, error)
+	ListOpenDouyinUsers(context.Context, uint64, uint64, uint64, string) (*v1.ListOpenDouyinUsersReply, error)
+	ListVideoTokensOpenDouyinVideos(context.Context, uint64, time.Time, []*domain.CompanyTaskClientKeyAndOpenId) ([]*douyinv1.ListVideoTokensOpenDouyinVideosReply_OpenDouyinVideo, error)
+	ListByUserIds(context.Context, uint64, []uint64) ([]*domain.CompanyTaskAccountRelation, error)
+	ListSettle(context.Context, string) ([]*domain.CompanyTaskAccountRelation, error)
 	Count(context.Context, uint64, uint64) (int64, error)
 	CountAvailableByTaskId(context.Context, uint64) (int64, error)
-	CountByProductOutId(context.Context, uint64, uint64) (int64, error)
+	CountByCondition(context.Context, uint64, uint64, int, string, string, string) (int64, error)
+	CountByUserIds(context.Context, uint64, []uint64) (int64, error)
 	Update(context.Context, *domain.CompanyTaskAccountRelation) (*domain.CompanyTaskAccountRelation, error)
-	UpdateStatusByIds(context.Context, int, []int) error
-	SoftDelete(context.Context, uint64) error
-	List(context.Context, uint64, uint64, int, int, int, string, string, string) ([]*domain.CompanyTaskAccountRelation, error)
-	CountByCondition(context.Context, uint64, uint64, int, string, string) (int64, error)
-	ListOpenDouyinUsers(context.Context, uint64, uint64, uint64, string) (*v1.ListOpenDouyinUsersReply, error)
+	UpdateStatusByIds(context.Context, int, []uint64) error
+	Save(context.Context, *domain.CompanyTaskAccountRelation) (*domain.CompanyTaskAccountRelation, error)
+
 	PutContent(context.Context, string, io.Reader) (*ctos.PutObjectV2Output, error)
-	// 通过 ClientKey 和 OpenId 查询对应素材数据
-	ListVideoTokensOpenDouyinVideos(context.Context, uint64, time.Time, []*domain.CompanyTaskClientKeyAndOpenId) ([]*domain.OpenDouyinVideo, error)
 	// UpdateCacheHash 执行 lua 扣减脚本
 	UpdateCacheHash(context.Context, string) error
 	SaveCache(context.Context, string, time.Duration) bool
@@ -50,19 +55,117 @@ type CompanyTaskAccountRelationRepo interface {
 }
 
 type CompanyTaskAccountRelationUsecase struct {
+	repo    CompanyTaskAccountRelationRepo
 	ctrepo  CompanyTaskRepo
 	ctdrepo CompanyTaskDetailRepo
 	cprepo  CompanyProductRepo
-	repo    CompanyTaskAccountRelationRepo
+	dorepo  DoukeOrderRepo
 	tm      Transaction
-	// qcrepo  QrCodeRepo
-	conf  *conf.Data
-	vconf *conf.Volcengine
-	log   *log.Helper
+	conf    *conf.Data
+	vconf   *conf.Volcengine
+	log     *log.Helper
 }
 
-func NewCompanyTaskAccountRelationUsecase(ctrepo CompanyTaskRepo, ctdrepo CompanyTaskDetailRepo, cprepo CompanyProductRepo, repo CompanyTaskAccountRelationRepo, tm Transaction, conf *conf.Data, vconf *conf.Volcengine, logger log.Logger) *CompanyTaskAccountRelationUsecase {
-	return &CompanyTaskAccountRelationUsecase{ctrepo: ctrepo, ctdrepo: ctdrepo, cprepo: cprepo, repo: repo, tm: tm, conf: conf, vconf: vconf, log: log.NewHelper(logger)}
+func NewCompanyTaskAccountRelationUsecase(repo CompanyTaskAccountRelationRepo, ctrepo CompanyTaskRepo, ctdrepo CompanyTaskDetailRepo, cprepo CompanyProductRepo, dorepo DoukeOrderRepo, tm Transaction, conf *conf.Data, vconf *conf.Volcengine, logger log.Logger) *CompanyTaskAccountRelationUsecase {
+	return &CompanyTaskAccountRelationUsecase{repo: repo, ctrepo: ctrepo, ctdrepo: ctdrepo, cprepo: cprepo, dorepo: dorepo, tm: tm, conf: conf, vconf: vconf, log: log.NewHelper(logger)}
+}
+
+// ListCompanyTaskAccountRelation
+// 反馈微信用户对应领取的任务关系，任务信息，商品信息，明细信息
+func (c *CompanyTaskAccountRelationUsecase) ListCompanyTaskAccountRelation(ctx context.Context, status int32, companyTaskId, userId, pageNum, pageSize uint64, expireTime, expiredTime, productName string) (*domain.CompanyTaskAccountRelationList, error) {
+	list, err := c.repo.List(ctx, companyTaskId, userId, int(pageNum), int(pageSize), int(status), expireTime, expiredTime, productName)
+
+	if err != nil {
+		return nil, CompanyTaskRelationListError
+	}
+
+	total, err := c.repo.CountByCondition(ctx, companyTaskId, userId, int(status), expireTime, expiredTime, productName)
+
+	if err != nil {
+		return nil, CompanyTaskRelationListError
+	}
+
+	keys := []*domain.UserOpenDouyin{}
+	productOutIds := []uint64{}
+	taskIds := []uint64{}
+	products := make(map[uint64]*domain.CompanyProduct)
+	companyTaskMap := make(map[uint64]*domain.CompanyTask)
+
+	for _, t := range list {
+		for _, ds := range t.CompanyTaskDetails {
+			keys = append(keys, &domain.UserOpenDouyin{
+				ClientKey: ds.ClientKey,
+				OpenId:    ds.OpenId,
+			})
+		}
+
+		productOutIds = append(productOutIds, t.ProductOutId)
+		taskIds = append(taskIds, t.CompanyTaskId)
+	}
+
+	// 需要用到商品信息
+	companyProducts, err := c.cprepo.ListByProductOutIds(ctx, "1", productOutIds)
+
+	if err != nil {
+		return nil, CompanyTaskRelationListError
+	}
+
+	for _, companyProduct := range companyProducts {
+		products[companyProduct.ProductOutId] = companyProduct
+	}
+
+	// 需要用到任务中的价格
+	companyTasks, err := c.ctrepo.ListByIds(ctx, taskIds)
+
+	if err != nil {
+		return nil, CompanyTaskRelationListError
+	}
+
+	for _, companyTask := range companyTasks {
+		companyTaskMap[companyTask.ProductOutId] = companyTask
+	}
+
+	b, err := json.Marshal(keys)
+
+	if err != nil {
+		return nil, CompanyTaskGetDouyinUserError
+	}
+
+	users, err := c.ctdrepo.ListByClientKeyAndOpenIds(ctx, 0, 40, string(b), "")
+
+	if err != nil {
+		return nil, CompanyTaskGetDouyinUserError
+	}
+
+	for _, t := range list {
+		for _, d := range t.CompanyTaskDetails {
+			d.SetNicknameAndAvatar(ctx, users.Data.List)
+		}
+
+		if companyTaskMap[t.ProductOutId] != nil {
+			t.CompanyTask = *(companyTaskMap[t.ProductOutId])
+		}
+
+		companyProduct := products[t.ProductOutId]
+
+		if companyProduct != nil {
+			companyProduct.SetProductImgs(ctx)
+
+			if len(companyProduct.ProductImgs) > 0 {
+				companyProduct.SetProductImg(ctx, companyProduct.ProductImgs[0])
+			}
+
+			t.CompanyProduct = companyProduct
+		}
+
+	}
+
+	return &domain.CompanyTaskAccountRelationList{
+		PageNum:  pageNum,
+		PageSize: pageSize,
+		Total:    uint64(total),
+		List:     list,
+	}, nil
 }
 
 // one people only one task
@@ -84,6 +187,16 @@ func (c *CompanyTaskAccountRelationUsecase) CreateCompanyTaskAccountRelation(ctx
 
 	if count > 0 {
 		return nil, CompanyTaskExists
+	}
+
+	res, err := c.repo.GetUserOrganizationRelations(ctx, userId)
+
+	if err != nil {
+		return nil, CompanyTaskCreateLevelError
+	}
+
+	if res.Data.Level <= 0 {
+		return nil, CompanyTaskCreateLevelError
 	}
 
 	_, err = c.ctrepo.GetCacheHash(ctx, strconv.FormatUint(companyTaskId, 10))
@@ -112,15 +225,9 @@ func (c *CompanyTaskAccountRelationUsecase) CreateCompanyTaskAccountRelation(ctx
 			return CompanyTaskUpperLimit
 		}
 
-		product, err := c.cprepo.GetByProductOutId(ctx, productOutId, "", "")
-
-		if err != nil {
-			return CompanyTaskCreateError
-		}
-
 		tm := time.Now().AddDate(0, 0, int(task.ExpireTime))
 
-		relation := domain.NewCompanyTaskAccountRelation(ctx, companyTaskId, userId, productOutId, product.ProductName)
+		relation := domain.NewCompanyTaskAccountRelation(ctx, companyTaskId, userId, productOutId)
 		relation.SetClaimTime(ctx)
 		relation.SetCreateTime(ctx)
 		relation.SetUpdateTime(ctx)
@@ -142,85 +249,85 @@ func (c *CompanyTaskAccountRelationUsecase) CreateCompanyTaskAccountRelation(ctx
 	return rel, err
 }
 
-func (c *CompanyTaskAccountRelationUsecase) ListCompanyTaskAccountRelation(ctx context.Context, status int32, companyTaskId, userId, pageNum, pageSize uint64, expireTime, expiredTime, productName string) (*domain.CompanyTaskAccountRelationList, error) {
-	list, err := c.repo.List(ctx, companyTaskId, userId, int(pageNum), int(pageSize), int(status), expireTime, expiredTime, productName)
+func (c *CompanyTaskAccountRelationUsecase) UpdateScreenshotById(ctx context.Context, relationId uint64, screenshot string) (*domain.CompanyTaskAccountRelation, error) {
+	tk, err := c.repo.GetById(ctx, relationId)
 
 	if err != nil {
-		return nil, CompanyTaskRelationListError
+		return nil, CompanyTaskDetailUpdateError
 	}
 
-	total, err := c.repo.CountByCondition(ctx, companyTaskId, userId, int(status), expireTime, expiredTime)
+	screenshots := strings.Split(screenshot, ",")
+
+	if len(screenshots) != 2 {
+		return nil, CompanyTaskDetailUpdateError
+	}
+
+	if _, ok := Mime[screenshots[0][5:len(screenshots[0])-7]]; !ok {
+		return nil, CompanyTaskDetailUpdateError
+	}
+
+	imagePath := c.vconf.Tos.Task.SubFolder + "/" + tool.GetRandCode(time.Now().String()) + Mime[screenshots[0][5:len(screenshots[0])-7]]
+	imageContent, err := base64.StdEncoding.DecodeString(screenshots[1])
 
 	if err != nil {
-		return nil, CompanyTaskRelationListError
+		return nil, CompanyTaskDetailUpdateError
 	}
 
-	keys := []*domain.UserOpenDouyin{}
-	productOutIds := []uint64{}
-	products := make(map[uint64]*domain.CompanyProduct)
+	if _, err = c.repo.PutContent(ctx, imagePath, strings.NewReader(string(imageContent))); err != nil {
+		return nil, CompanyTaskDetailUpdateError
+	}
 
-	for _, t := range list {
-		for _, ds := range t.CompanyTaskDetails {
-			keys = append(keys, &domain.UserOpenDouyin{
-				ClientKey: ds.ClientKey,
-				OpenId:    ds.OpenId,
-			})
+	tk.SetIsScreenshotAvailable(ctx, domain.ScreenshotAvailable)
+	tk.SetScreenshotAddress(ctx, c.vconf.Tos.Task.Url+"/"+imagePath)
+	tk.SetUpdateTime(ctx)
+
+	task, err := c.repo.Update(ctx, tk)
+
+	if err != nil {
+		return nil, CompanyTaskDetailUpdateError
+	}
+
+	return task, nil
+}
+
+func (c *CompanyTaskAccountRelationUsecase) UpdateScreenshotAvailableById(ctx context.Context, isScreenshotAvailable uint8, relationId uint64) (*domain.CompanyTaskAccountRelation, error) {
+	relation, err := c.repo.GetById(ctx, relationId)
+
+	if err != nil {
+		return nil, CompanyTaskDetailUpdateError
+	}
+
+	relation.SetIsScreenshotAvailable(ctx, isScreenshotAvailable)
+	relation.SetUpdateTime(ctx)
+
+	task, err := c.ctrepo.GetById(ctx, relation.CompanyTaskId)
+
+	if err != nil {
+		return nil, CompanyTaskDetailUpdateError
+	}
+
+	if task.IsGoodReviews == 1 {
+		// 需要好评情况下
+		// 取消截图有效时，判断当前的任务是否时过期状态
+		statusFlag := relation.ExpireTime.After(time.Now())
+		var status uint8 = domain.GoingStatus
+
+		if !statusFlag {
+			status = domain.ExpireStatus
 		}
 
-		productOutIds = append(productOutIds, t.ProductOutId)
-	}
-
-	for _, v := range list {
-		productOutIds = append(productOutIds, v.ProductOutId)
-	}
-
-	companyProducts, err := c.cprepo.ListByProductOutIds(ctx, "1", productOutIds)
-
-	if err != nil {
-		return nil, CompanyTaskRelationListError
-	}
-
-	for _, companyProduct := range companyProducts {
-		products[companyProduct.ProductOutId] = companyProduct
-	}
-
-	b, err := json.Marshal(keys)
-
-	if err != nil {
-		return nil, CompanyTaskGetDouyinUserError
-	}
-
-	users, err := c.ctdrepo.ListByClientKeyAndOpenIds(ctx, 0, 40, string(b), "")
-
-	if err != nil {
-		return nil, CompanyTaskGetDouyinUserError
-	}
-
-	for _, t := range list {
-		for _, d := range t.CompanyTaskDetails {
-			d.SetNicknameAndAvatar(ctx, users.Data.List)
+		if relation.Status == 1 && isScreenshotAvailable == 0 {
+			relation.SetStatus(ctx, status)
 		}
-
-		companyProduct := products[t.ProductOutId]
-
-		if companyProduct != nil {
-			companyProduct.SetProductImgs(ctx)
-
-			if len(companyProduct.ProductImgs) > 0 {
-				companyProduct.SetProductImg(ctx, companyProduct.ProductImgs[0])
-			}
-
-			t.CompanyProduct = companyProduct
-		}
-
 	}
 
-	return &domain.CompanyTaskAccountRelationList{
-		PageNum:  pageNum,
-		PageSize: pageSize,
-		Total:    uint64(total),
-		List:     list,
-	}, nil
+	newRelation, err := c.repo.Update(ctx, relation)
+
+	if err != nil {
+		return nil, CompanyTaskDetailUpdateError
+	}
+
+	return newRelation, nil
 }
 
 // 定时任务更新任务详情
@@ -234,33 +341,45 @@ func (c *CompanyTaskAccountRelationUsecase) SyncUpdateCompanyTaskDetail(ctx cont
 	// 更新任务结果，达人和任务的关系，达人视频的成功结果
 	// 检查对应任务的 redis key 值
 	// 将过期未完成的任务关系标记为失败（已过期），将任务数重新写回 redis 中
-	taskIds, err := c.ctrepo.ListIds(ctx)
+	tasks, err := c.ctrepo.List(ctx, 1, 40, 0, -1, []uint64{})
 
 	if err != nil {
 		return err
 	}
 
-	// 便利所有任务
-	for _, taskId := range taskIds {
-		if err := c.syncUpdateCompanyTaskDetailProcess(ctx, taskId); err != nil {
-			log.Info("syncUpdateCompanyTaskDetailProcess:", err)
-		}
+	wg := &sync.WaitGroup{}
+
+	for _, task := range tasks {
+		wg.Add(1)
+
+		go c.syncUpdateCompanyTaskDetailProcess(ctx, wg, task)
 	}
+
+	wg.Wait()
+
 	return nil
 }
 
-func (c *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProcess(ctx context.Context, taskId int) error {
+func (c *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProcess(ctx context.Context, wg *sync.WaitGroup, taskInfo *domain.CompanyTask) error {
+	defer wg.Done()
+
 	pageNum, pageSize := 1, 40
+
 	for {
-		taskInfo, err := c.ctrepo.GetById(ctx, uint64(taskId))
+		product, err := c.cprepo.GetByProductOutId(ctx, taskInfo.ProductOutId, "", "")
 
 		if err != nil {
 			return err
 		}
 
+		if product != nil {
+			taskInfo.SetCompanyProduct(ctx, *product)
+		}
+
 		// 分批次处理领取任务的达人关系，注意是微信信息和任务的关联
-		tm := tool.TimeToString("2006-01-02 15:04:05", time.Now())
-		relations, err := c.repo.List(ctx, uint64(taskId), 0, pageNum, pageSize, 0, tm, "", "")
+		expriedTime := tool.TimeToString("2006-01-02 15:04:05", time.Now())
+
+		relations, err := c.repo.List(ctx, taskInfo.Id, 0, pageNum, pageSize, -1, expriedTime, "", "")
 
 		if err != nil {
 			return err
@@ -271,7 +390,7 @@ func (c *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProcess(c
 			break
 		}
 
-		total, err := c.repo.CountByCondition(ctx, uint64(taskId), 0, 0, tm, "")
+		total, err := c.repo.CountByCondition(ctx, taskInfo.Id, 0, 0, expriedTime, "", "")
 
 		if err != nil {
 			return err
@@ -288,7 +407,7 @@ func (c *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProcess(c
 		pageNum++
 	}
 
-	if err := c.recoverCompanyTaskExpireTimeCount(ctx, uint64(taskId)); err != nil {
+	if err := c.recoverCompanyTaskExpireTimeCount(ctx, taskInfo.Id); err != nil {
 		return err
 	}
 
@@ -303,59 +422,28 @@ func (c *CompanyTaskAccountRelationUsecase) companyTaskDetailRelationsProcess(ct
 	// 这里的关系就是每个微信的信息
 	// 每次处理提交一次
 	err := c.tm.InTx(ctx, func(ctx context.Context) error {
-		successTaskIds := []int{}
+		successTaskIds := []uint64{}
 
 		for _, re := range relations {
-			// 获取每个微信对应的抖音信息,这里需要拿出所有，因为有删除关系操作
-			openDouyinUser, err := c.repo.ListOpenDouyinUsers(ctx, re.UserId, 0, 40, "")
-
-			if err != nil {
-				continue
-			}
-
-			clictKeys := []string{}
-			openIds := []string{}
-			tokens := []*domain.CompanyTaskClientKeyAndOpenId{}
-
-			for _, r := range openDouyinUser.Data.List {
-				clictKeys = append(clictKeys, r.ClientKey)
-				openIds = append(openIds, r.OpenId)
-				tokens = append(tokens, &domain.CompanyTaskClientKeyAndOpenId{
-					ClientKey: r.ClientKey,
-					OpenId:    r.OpenId,
-				})
-			}
-
-			if err := c.ctdrepo.DeleteOpenDouyinUsers(ctx, re.UserId, clictKeys, openIds); err != nil {
-				return err
-			}
-
-			// 抖音信息对应的素材数据
-			list, err := c.repo.ListVideoTokensOpenDouyinVideos(ctx, re.ProductOutId, re.ClaimTime, tokens)
-
-			if err != nil {
-				return err
-			}
-
-			if len(list) == 0 {
-				continue
-			}
-
-			isCostBuySuccess := re.IsCostBuy > 0
-
+			// 先获取成本购信息
 			var isCostBuy uint8 = 0
+			tokens := []*domain.CompanyTaskClientKeyAndOpenId{}
+			tokenMap := make(map[domain.CompanyTaskClientKeyAndOpenId]bool)
+			videoIdMap := make(map[string]bool)
+			deleteIds := []uint64{}
 
-			order, err := c.repo.GetCompanyTaskUserOrderStatus(ctx, re.UserId, strconv.FormatUint(taskInfo.ProductOutId, 10), "")
+			claimTime := tool.TimeToString("2006-01-02 15:04:05", re.ClaimTime)
+			// 获取一条购买成功的成本购
+			doukeOrder, err := c.dorepo.Get(ctx, re.UserId, strconv.FormatUint(taskInfo.ProductOutId, 10), domain.DoukeOrderREFUND, claimTime)
 
 			if err == nil {
-				if order.FlowPoint != domain.DoukeOrderREFUND {
-					isCostBuySuccess = true
+				if doukeOrder.Data.FlowPoint != "" && doukeOrder.Data.FlowPoint != domain.DoukeOrderREFUND {
 					isCostBuy = 1
-				} else {
-					isCostBuySuccess = false
 				}
 
 				re.SetIsCostBuy(ctx, isCostBuy)
+				re.SetUpdateTime(ctx)
+
 				// 如果已经完成，订单状态改变，取消完成状态，因为这里获取的是未过期的，所以不用判断时间
 				if re.Status == 1 && isCostBuy == 0 {
 					re.SetStatus(ctx, domain.GoingStatus)
@@ -364,24 +452,88 @@ func (c *CompanyTaskAccountRelationUsecase) companyTaskDetailRelationsProcess(ct
 				c.repo.Update(ctx, re)
 			}
 
-			isSuccess, err := c.createOrUpdateCompanyTaskDetail(ctx, isCostBuySuccess, re.IsScreenshotAvailable, re.Id, re.UserId, re.CompanyTaskId, taskInfo, list)
+			// 获取每个微信对应的抖音信息,这里需要拿出所有，因为有删除关系操作
+			openDouyinUser, err := c.repo.ListOpenDouyinUsers(ctx, re.UserId, 0, 40, "")
 
 			if err != nil {
-				return err
+				continue
+			}
+
+			for _, r := range openDouyinUser.Data.List {
+				tokens = append(tokens, &domain.CompanyTaskClientKeyAndOpenId{
+					ClientKey: r.ClientKey,
+					OpenId:    r.OpenId,
+				})
+
+				tokenMap[domain.CompanyTaskClientKeyAndOpenId{
+					ClientKey: r.ClientKey,
+					OpenId:    r.OpenId,
+				}] = true
+			}
+
+			oldDetails, err := c.ctdrepo.List(ctx, 0, 40, re.CompanyTaskId, []uint64{re.UserId}, []domain.CompanyTaskClientKeyAndOpenId{})
+
+			if err != nil {
+				continue
+			}
+
+			// 抖音信息对应的素材数据
+			list, err := c.repo.ListVideoTokensOpenDouyinVideos(ctx, re.ProductOutId, re.ClaimTime, tokens)
+
+			if err != nil {
+				log.Error("ListVideoTokensOpenDouyinVideos:", err)
+				continue
+			}
+
+			for _, v := range list {
+				videoIdMap[v.VideoId] = true
+			}
+
+			for _, detail := range oldDetails {
+				// 人员关系不存在，或者视频数据不存在，都删除明细数据
+				if !tokenMap[domain.CompanyTaskClientKeyAndOpenId{
+					ClientKey: detail.ClientKey,
+					OpenId:    detail.OpenId,
+				}] {
+					deleteIds = append(deleteIds, detail.Id)
+				}
+
+				if !videoIdMap[detail.VideoId] {
+					deleteIds = append(deleteIds, detail.Id)
+				}
+			}
+
+			if len(deleteIds) > 0 {
+				c.ctdrepo.DeleteOpenDouyinUsers(ctx, deleteIds)
+			}
+
+			isSuccess, err := c.createOrUpdateCompanyTaskDetail(ctx, isCostBuy == 1, re.IsScreenshotAvailable, re.Id, re.UserId, re.CompanyTaskId, taskInfo, list)
+
+			if err != nil {
+				continue
+			}
+
+			// 插入后查看该用户的该任务是否是已经完成任务后，视频数据不达标的（没有或者剩下的播放量不够）
+			count, err := c.ctdrepo.CountIsPlauSuccess(ctx, re.CompanyTaskId, re.UserId)
+
+			if err != nil {
+				continue
+			}
+
+			if re.Status == domain.SuccessStatus && count == 0 {
+				// 如果完成后没有符合的视频，清除完成状态
+				c.repo.UpdateStatusByIds(ctx, domain.GoingStatus, []uint64{re.Id})
 			}
 
 			if isSuccess {
-				successTaskIds = append(successTaskIds, int(re.Id))
+				successTaskIds = append(successTaskIds, re.Id)
 			}
 		}
 
 		if len(successTaskIds) > 0 {
-			err := c.repo.UpdateStatusByIds(ctx, domain.SuccessStatus, successTaskIds)
-
-			if err != nil {
-				return err
-			}
+			c.repo.UpdateStatusByIds(ctx, domain.SuccessStatus, successTaskIds)
 		}
+
 		return nil
 	})
 
@@ -391,14 +543,14 @@ func (c *CompanyTaskAccountRelationUsecase) companyTaskDetailRelationsProcess(ct
 // 获取已经存在的数据（clientKey和openId）更新，并插入
 // 判断是否完成任务
 // 如果完成，反馈 true
-func (c *CompanyTaskAccountRelationUsecase) createOrUpdateCompanyTaskDetail(ctx context.Context, isCostBuySuccess bool, isScreenshotAvailable uint8, relationId, userId, companyTaskId uint64, taskInfo *domain.CompanyTask, list []*domain.OpenDouyinVideo) (bool, error) {
+func (c *CompanyTaskAccountRelationUsecase) createOrUpdateCompanyTaskDetail(ctx context.Context, isCostBuySuccess bool, isScreenshotAvailable uint8, relationId, userId, companyTaskId uint64, taskInfo *domain.CompanyTask, list []*douyinv1.ListVideoTokensOpenDouyinVideosReply_OpenDouyinVideo) (bool, error) {
 	isSuccess := false
-	sourceDetails := make(map[domain.CompanyTaskClientKeyAndOpenId]*domain.OpenDouyinVideo)
+	sourceDetails := make(map[domain.CompanyTaskClientKeyAndOpenId]*douyinv1.ListVideoTokensOpenDouyinVideosReply_OpenDouyinVideo)
 	detailConditions := []domain.CompanyTaskClientKeyAndOpenId{}
 	userIds := []uint64{userId}
 
 	for _, v := range list {
-		if isCostBuySuccess && v.Statistics.PlayCount >= int32(taskInfo.PlayNum) && (taskInfo.IsGoodReviews == 0 || isScreenshotAvailable == 1) {
+		if isCostBuySuccess && uint64(v.Statistics.PlayCount) >= (taskInfo.PlayNum) && (taskInfo.IsGoodReviews == 0 || isScreenshotAvailable == 1) {
 			// 判断是否完成任务
 			isSuccess = true
 		}
@@ -412,6 +564,7 @@ func (c *CompanyTaskAccountRelationUsecase) createOrUpdateCompanyTaskDetail(ctx 
 		sourceDetails[domain.CompanyTaskClientKeyAndOpenId{
 			ClientKey: v.ClientKey,
 			OpenId:    v.OpenId,
+			VideoId:   v.VideoId,
 		}] = v
 	}
 
@@ -426,53 +579,56 @@ func (c *CompanyTaskAccountRelationUsecase) createOrUpdateCompanyTaskDetail(ctx 
 	existList := make(map[domain.CompanyTaskClientKeyAndOpenId]bool)
 
 	for _, detail := range updateList {
-		if detail.PlayCount >= taskInfo.PlayNum {
-			detail.IsPlaySuccess = 1
-		}
-
 		source := sourceDetails[domain.CompanyTaskClientKeyAndOpenId{
 			ClientKey: detail.ClientKey,
 			OpenId:    detail.OpenId,
+			VideoId:   detail.VideoId,
 		}]
 
 		if source != nil {
-			detail.PlayCount = uint64(source.Statistics.PlayCount)
+			detail.SetPlayCount(ctx, uint64(source.Statistics.PlayCount))
 		}
+
+		// 更新要重置该值
+		var isPlaySuccess uint8 = 0
+
+		if detail.PlayCount >= taskInfo.PlayNum {
+			isPlaySuccess = 1
+		}
+
+		detail.SetIsPlaySuccess(ctx, isPlaySuccess)
+		detail.SetUpdateTime(ctx)
 
 		existList[domain.CompanyTaskClientKeyAndOpenId{
 			ClientKey: detail.ClientKey,
 			OpenId:    detail.OpenId,
+			VideoId:   detail.VideoId,
 		}] = true
 	}
 
 	for k, v := range sourceDetails {
 		if !existList[k] {
-			de := &domain.CompanyTaskDetail{
-				CompanyTaskId:                companyTaskId,
-				CompanyTaskAccountRelationId: relationId,
-				ProductName:                  taskInfo.CompanyProduct.ProductName,
-				UserId:                       userId,
-				ClientKey:                    v.ClientKey,
-				OpenId:                       v.OpenId,
-				ItemId:                       v.ItemId,
-				PlayCount:                    uint64(v.Statistics.PlayCount),
-				Cover:                        v.Cover,
-				ReleaseTime:                  time.Unix(int64(v.CreateTime), 0),
-				Nickname:                     v.Nickname,
-				Avatar:                       v.Avatar,
+			releaseTime, err := tool.StringToTime("2006-01-02 15:04:05", v.CreateTime)
+
+			if err != nil {
+				continue
 			}
+
+			detail := domain.NewCompanyTaskDetail(ctx, companyTaskId, relationId, userId, uint64(v.Statistics.PlayCount), taskInfo.CompanyProduct.ProductName, v.ClientKey, v.OpenId, v.ItemId, v.Cover, v.Nickname, v.Avatar, releaseTime)
 
 			var isPlaySuccess uint8 = 0
 
-			if v.Statistics.PlayCount >= int32(taskInfo.PlayNum) {
+			if uint64(v.Statistics.PlayCount) >= (taskInfo.PlayNum) {
 				isPlaySuccess = 1
 			}
 
-			de.SetIsReleaseVideo(ctx)
-			de.SetCreateTime(ctx)
-			de.SetUpdateTime(ctx)
-			de.SetIsPlaySuccess(ctx, isPlaySuccess)
-			createList = append(createList, de)
+			detail.SetVideoId(ctx, v.VideoId)
+			detail.SetIsReleaseVideo(ctx)
+			detail.SetCreateTime(ctx)
+			detail.SetUpdateTime(ctx)
+			detail.SetIsPlaySuccess(ctx, isPlaySuccess)
+
+			createList = append(createList, detail)
 		}
 	}
 
@@ -504,24 +660,24 @@ func (c *CompanyTaskAccountRelationUsecase) recoverCompanyTaskExpireTimeCount(ct
 			return CompanyTaskRecoverExpireTimeCountError
 		}
 
-		ids := []int{}
+		ids := []uint64{}
 
 		for _, v := range list {
-			ids = append(ids, int(v.Id))
+			ids = append(ids, v.Id)
 		}
 
-		if err := c.repo.UpdateStatusByIds(ctx, domain.ExpireStatus, ids); err != nil {
-			return CompanyTaskRecoverExpireTimeCountError
+		if len(ids) > 0 {
+			c.repo.UpdateStatusByIds(ctx, domain.ExpireStatus, ids)
 		}
 
-		successQuota, err := c.repo.CountByCondition(ctx, taskId, 0, domain.SuccessStatus, "", "")
+		successQuota, err := c.repo.CountByCondition(ctx, taskId, 0, domain.SuccessStatus, "", "", "")
 
 		if err != nil {
 			return CompanyTaskRecoverExpireTimeCountError
 		}
 
 		// 找出成功的数量和正在运行的数量，就是领取数量
-		goingQuota, err := c.repo.CountByCondition(ctx, taskId, 0, domain.GoingStatus, "", "")
+		goingQuota, err := c.repo.CountByCondition(ctx, taskId, 0, domain.GoingStatus, "", "", "")
 
 		if err != nil {
 			return CompanyTaskRecoverExpireTimeCountError
@@ -535,6 +691,8 @@ func (c *CompanyTaskAccountRelationUsecase) recoverCompanyTaskExpireTimeCount(ct
 
 		tk.SetClaimQuota(ctx, uint64(goingQuota+successQuota))
 		tk.SetSuccessQuota(ctx, uint64(successQuota))
+		tk.SetUpdateTime(ctx)
+
 		_, err = c.ctrepo.Update(ctx, tk)
 
 		if err != nil {
@@ -573,74 +731,28 @@ func (c *CompanyTaskAccountRelationUsecase) recoverCompanyTaskExpireTimeCount(ct
 	return err
 }
 
-func (c *CompanyTaskAccountRelationUsecase) UpdateScreenshotById(ctx context.Context, relationId uint64, screenshot string) (*domain.CompanyTaskAccountRelation, error) {
-	tk, err := c.repo.GetById(ctx, relationId)
+// 结算已经完成任务的金额
+func (ctar *CompanyTaskAccountRelationUsecase) settlePrice(ctx context.Context) {
+	relations, err := ctar.repo.ListSettle(ctx, tool.TimeToString("2006-01-02 15:04:05", time.Now()))
 
 	if err != nil {
-		return nil, CompanyTaskDetailUpdateError
+		return
 	}
 
-	screenshots := strings.Split(screenshot, ",")
-
-	if len(screenshots) != 2 {
-		return nil, CompanyTaskDetailUpdateError
+	if len(relations) == 0 {
+		return
 	}
 
-	if _, ok := Mime[screenshots[0][5:len(screenshots[0])-7]]; !ok {
-		return nil, CompanyTaskDetailUpdateError
+	settleIds := []uint64{}
+
+	// uint64
+	for _, relation := range relations {
+		// 结算方法
+		// func settle
+		settleIds = append(settleIds, relation.Id)
 	}
 
-	imagePath := c.vconf.Tos.Task.SubFolder + "/" + tool.GetRandCode(time.Now().String()) + Mime[screenshots[0][5:len(screenshots[0])-7]]
-	imageContent, err := base64.StdEncoding.DecodeString(screenshots[1])
-
-	if err != nil {
-		return nil, CompanyTaskDetailUpdateError
+	if len(settleIds) > 0 {
+		ctar.repo.UpdateStatusByIds(ctx, domain.SettledStatus, settleIds)
 	}
-
-	if _, err = c.repo.PutContent(ctx, imagePath, strings.NewReader(string(imageContent))); err != nil {
-		return nil, CompanyTaskDetailUpdateError
-	}
-
-	tk.SetIsScreenshotAvailable(ctx, domain.ScreenshotAvailable)
-	tk.SetScreenshotAddress(ctx, c.vconf.Tos.Task.Url+"/"+imagePath)
-	task, err := c.repo.Update(ctx, tk)
-
-	if err != nil {
-		return nil, CompanyTaskDetailUpdateError
-	}
-
-	return task, nil
-}
-
-func (c *CompanyTaskAccountRelationUsecase) UpdateScreenshotAvailableById(ctx context.Context, isScreenshotAvailable uint8, relationId uint64) (*domain.CompanyTaskAccountRelation, error) {
-	relation, err := c.repo.GetById(ctx, relationId)
-
-	if err != nil {
-		return nil, CompanyTaskDetailUpdateError
-	}
-
-	relation.SetIsScreenshotAvailable(ctx, isScreenshotAvailable)
-
-	if relation.CompanyTask.IsGoodReviews == 1 {
-		// 需要好评情况下
-		// 取消截图有效时，判断当前的任务是否时过期状态
-		statusFlag := relation.ExpireTime.After(time.Now())
-		var status uint8 = domain.GoingStatus
-
-		if !statusFlag {
-			status = domain.ExpireStatus
-		}
-
-		if relation.Status == 1 && isScreenshotAvailable == 0 {
-			relation.SetStatus(ctx, status)
-		}
-	}
-
-	newRelation, err := c.repo.Update(ctx, relation)
-
-	if err != nil {
-		return nil, CompanyTaskDetailUpdateError
-	}
-
-	return newRelation, nil
 }

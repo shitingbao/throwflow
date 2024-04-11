@@ -4,11 +4,7 @@ import (
 	v1 "company/api/service/weixin/v1"
 	"company/internal/biz"
 	"company/internal/domain"
-	"company/internal/pkg/tool"
 	"context"
-	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -17,22 +13,21 @@ import (
 // 种草任务明细表
 // 一个任务关系，对应该表多个视频明细
 type CompanyTaskDetail struct {
-	Id                           uint64                     `gorm:"column:id;primarykey;type:bigint(20) UNSIGNED;autoIncrement;not null;comment:自增ID"`
-	CompanyTaskId                uint64                     `gorm:"column:company_task_id;type:bigint(20) UNSIGNED;not null;comment:任务ID"`
-	UserId                       uint64                     `gorm:"column:user_id;type:bigint(20) UNSIGNED;not null;index:idx_user_id;comment:微信小程序用户ID"`
-	ClientKey                    string                     `gorm:"column:client_key;type:varchar(50);not null;index:idx_client_key_open_id;comment:抖音开放平台应用Client Key"`
-	OpenId                       string                     `gorm:"column:open_id;type:varchar(100);not null;index:idx_client_key_open_id;comment:抖音开放平台授权用户唯一标识"`
-	CompanyTaskAccountRelationId uint64                     `gorm:"column:company_task_account_relation_id;type:bigint(20) UNSIGNED;not null;comment:任务关系ID"`
-	ProductName                  string                     `gorm:"column:product_name;type:varchar(250);not null;comment:商品名称"`
-	ItemId                       string                     `gorm:"column:item_id;type:varchar(250);not null;comment:视频id"` // 视频id // video_id
-	PlayCount                    uint64                     `gorm:"column:play_count;type:int(10);not null;comment:播放数"`    // 播放数
-	Cover                        string                     `gorm:"column:cover;type:text;not null;comment:视频封面"`           // 视频封面
-	ReleaseTime                  time.Time                  `gorm:"column:release_time;type:datetime;not null;comment:发布时间"`
-	IsReleaseVideo               uint8                      `gorm:"column:is_release_video;type:tinyint(3) UNSIGNED;not null;default:0;comment:视频发布,1:是,0:否"`
-	IsPlaySuccess                uint8                      `gorm:"column:is_play_success;type:tinyint(3) UNSIGNED;not null;default:0;comment:播放量达标,1:是,0:否"`
-	CreateTime                   time.Time                  `gorm:"column:create_time;type:datetime;not null;default:CURRENT_TIMESTAMP;comment:新增时间"`
-	UpdateTime                   time.Time                  `gorm:"column:update_time;type:datetime;not null;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;comment:修改时间"`
-	CompanyTaskAccountRelation   CompanyTaskAccountRelation `gorm:"foreignKey:CompanyTaskAccountRelationId"`
+	Id                           uint64    `gorm:"column:id;primarykey;type:bigint(20) UNSIGNED;autoIncrement;not null;comment:自增ID"`
+	CompanyTaskId                uint64    `gorm:"column:company_task_id;type:bigint(20) UNSIGNED;not null;comment:任务ID"`
+	UserId                       uint64    `gorm:"column:user_id;type:bigint(20) UNSIGNED;not null;index:idx_user_id;comment:微信小程序用户ID"`
+	ClientKey                    string    `gorm:"column:client_key;type:varchar(50);not null;comment:抖音开放平台应用Client Key"`
+	OpenId                       string    `gorm:"column:open_id;type:varchar(100);not null;comment:抖音开放平台授权用户唯一标识"`
+	VideoId                      string    `gorm:"column:video_id;type:varchar(100);not null;comment:视频id"`
+	CompanyTaskAccountRelationId uint64    `gorm:"column:company_task_account_relation_id;type:bigint(20) UNSIGNED;not null;comment:任务关系ID"`
+	ItemId                       string    `gorm:"column:item_id;type:varchar(250);not null;comment:视频id"` // 视频id // video_id
+	PlayCount                    uint64    `gorm:"column:play_count;type:int(10);not null;comment:播放数"`    // 播放数
+	Cover                        string    `gorm:"column:cover;type:text;not null;comment:视频封面"`           // 视频封面
+	ReleaseTime                  time.Time `gorm:"column:release_time;type:datetime;not null;comment:发布时间"`
+	IsReleaseVideo               uint8     `gorm:"column:is_release_video;type:tinyint(3) UNSIGNED;not null;default:0;comment:视频发布,1:是,0:否"`
+	IsPlaySuccess                uint8     `gorm:"column:is_play_success;type:tinyint(3) UNSIGNED;not null;default:0;comment:播放量达标,1:是,0:否"`
+	CreateTime                   time.Time `gorm:"column:create_time;type:datetime;not null;comment:新增时间"`
+	UpdateTime                   time.Time `gorm:"column:update_time;type:datetime;not null;comment:修改时间"`
 }
 
 func (CompanyTaskDetail) TableName() string {
@@ -44,7 +39,6 @@ func (c *CompanyTaskDetail) ToDomain(ctx context.Context) *domain.CompanyTaskDet
 		Id:                           c.Id,
 		CompanyTaskId:                c.CompanyTaskId,
 		CompanyTaskAccountRelationId: c.CompanyTaskAccountRelationId,
-		ProductName:                  c.ProductName,
 		ItemId:                       c.ItemId,
 		PlayCount:                    c.PlayCount,
 		Cover:                        c.Cover,
@@ -56,22 +50,7 @@ func (c *CompanyTaskDetail) ToDomain(ctx context.Context) *domain.CompanyTaskDet
 		ClientKey:                    c.ClientKey,
 		OpenId:                       c.OpenId,
 		IsReleaseVideo:               c.IsReleaseVideo,
-		CompanyTaskAccountRelation: domain.CompanyTaskAccountRelation{
-			Id:                    c.CompanyTaskAccountRelation.Id,
-			CompanyTaskId:         c.CompanyTaskAccountRelation.CompanyTaskId,
-			ProductOutId:          c.CompanyTaskAccountRelation.ProductOutId,
-			ProductName:           c.CompanyTaskAccountRelation.ProductName,
-			UserId:                c.CompanyTaskAccountRelation.UserId,
-			ClaimTime:             c.CompanyTaskAccountRelation.ClaimTime,
-			ExpireTime:            c.CompanyTaskAccountRelation.ExpireTime,
-			Status:                c.CompanyTaskAccountRelation.Status,
-			IsDel:                 c.CompanyTaskAccountRelation.IsDel,
-			CreateTime:            c.CompanyTaskAccountRelation.CreateTime,
-			UpdateTime:            c.CompanyTaskAccountRelation.UpdateTime,
-			IsCostBuy:             c.CompanyTaskAccountRelation.IsCostBuy,
-			ScreenshotAddress:     c.CompanyTaskAccountRelation.ScreenshotAddress,
-			IsScreenshotAvailable: c.CompanyTaskAccountRelation.IsScreenshotAvailable,
-		},
+		VideoId:                      c.VideoId,
 	}
 	return task
 }
@@ -102,7 +81,7 @@ func (ctr *companyTaskDetailRepo) List(ctx context.Context, pageNum, pageSize in
 	list := []*domain.CompanyTaskDetail{}
 	task := []CompanyTaskDetail{}
 
-	db := ctr.data.db.WithContext(ctx).Table("company_task_detail").Preload("CompanyTaskAccountRelation")
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskDetail{})
 
 	if taskId > 0 {
 		db = db.Where("company_task_id = ?", taskId)
@@ -145,8 +124,8 @@ func (ctr *companyTaskDetailRepo) List(ctx context.Context, pageNum, pageSize in
 	return list, nil
 }
 
-func (ctr *companyTaskDetailRepo) Count(ctx context.Context, taskId uint64, clientKeyAndOpenIds []domain.CompanyTaskClientKeyAndOpenId) (int64, error) {
-	db := ctr.data.db.WithContext(ctx).Table("company_task_detail")
+func (ctr *companyTaskDetailRepo) Count(ctx context.Context, taskId uint64, userIds []uint64, clientKeyAndOpenIds []domain.CompanyTaskClientKeyAndOpenId) (int64, error) {
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskDetail{})
 
 	if taskId > 0 {
 		db = db.Where("company_task_id = ?", taskId)
@@ -167,6 +146,23 @@ func (ctr *companyTaskDetailRepo) Count(ctx context.Context, taskId uint64, clie
 		db = db.Where(orConditions, vals...)
 	}
 
+	if len(userIds) > 0 {
+		db = db.Where("user_id in (?)", userIds)
+	}
+
+	var count int64
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (ctr *companyTaskDetailRepo) CountIsPlauSuccess(ctx context.Context, taskId, userId uint64) (int64, error) {
+	db := ctr.data.DB(ctx).Model(&CompanyTaskDetail{}).
+		Where("company_task_id = ? and user_id = ? and is_play_success = 1", taskId, userId)
+
 	var count int64
 
 	if err := db.Count(&count).Error; err != nil {
@@ -182,20 +178,19 @@ func (ctr *companyTaskDetailRepo) Save(ctx context.Context, in *domain.CompanyTa
 		UserId:                       in.UserId,
 		ClientKey:                    in.ClientKey,
 		OpenId:                       in.OpenId,
+		VideoId:                      in.VideoId,
 		CompanyTaskAccountRelationId: in.CompanyTaskAccountRelationId,
-		ProductName:                  in.ProductName,
 		ItemId:                       in.ItemId,
 		PlayCount:                    in.PlayCount,
 		Cover:                        in.Cover,
 		ReleaseTime:                  in.ReleaseTime,
 		IsPlaySuccess:                in.IsPlaySuccess,
-		// ScreenshotAddress:            in.ScreenshotAddress,
-		// Status:                       in.Status,
-		CreateTime: in.CreateTime,
-		UpdateTime: in.UpdateTime,
+		IsReleaseVideo:               1,
+		CreateTime:                   in.CreateTime,
+		UpdateTime:                   in.UpdateTime,
 	}
 
-	if err := ctr.data.DB(ctx).Table("company_task_detail").Create(detail).Error; err != nil {
+	if err := ctr.data.DB(ctx).Model(&CompanyTaskDetail{}).Create(detail).Error; err != nil {
 		return nil, err
 	}
 
@@ -211,21 +206,21 @@ func (ctr *companyTaskDetailRepo) SaveList(ctx context.Context, ins []*domain.Co
 			UserId:                       in.UserId,
 			ClientKey:                    in.ClientKey,
 			OpenId:                       in.OpenId,
+			VideoId:                      in.VideoId,
 			CompanyTaskAccountRelationId: in.CompanyTaskAccountRelationId,
-			ProductName:                  in.ProductName,
 			ItemId:                       in.ItemId,
 			PlayCount:                    in.PlayCount,
 			Cover:                        in.Cover,
 			ReleaseTime:                  in.ReleaseTime,
 			IsPlaySuccess:                in.IsPlaySuccess,
-			// ScreenshotAddress:            in.ScreenshotAddress,
-			CreateTime: in.CreateTime,
-			UpdateTime: in.UpdateTime,
+			IsReleaseVideo:               1,
+			CreateTime:                   in.CreateTime,
+			UpdateTime:                   in.UpdateTime,
 		}
 		details = append(details, detail)
 	}
 
-	return ctr.data.DB(ctx).Table("company_task_detail").Create(details).Error
+	return ctr.data.DB(ctx).Model(&CompanyTaskDetail{}).Create(details).Error
 }
 
 func (ctr *companyTaskDetailRepo) Update(ctx context.Context, in *domain.CompanyTaskDetail) (*domain.CompanyTaskDetail, error) {
@@ -233,21 +228,16 @@ func (ctr *companyTaskDetailRepo) Update(ctx context.Context, in *domain.Company
 		Id:                           in.Id,
 		CompanyTaskId:                in.CompanyTaskId,
 		CompanyTaskAccountRelationId: in.CompanyTaskAccountRelationId,
-		ProductName:                  in.ProductName,
 		ItemId:                       in.ItemId,
 		PlayCount:                    in.PlayCount,
 		Cover:                        in.Cover,
 		ReleaseTime:                  in.ReleaseTime,
 		IsPlaySuccess:                in.IsPlaySuccess,
-		// ScreenshotAddress:            in.ScreenshotAddress,
-		CreateTime: in.CreateTime,
-		UpdateTime: in.UpdateTime,
-		UserId:     in.UserId,
-		ClientKey:  in.ClientKey,
-		OpenId:     in.OpenId,
-		// IsCostBuy:             in.IsCostBuy,
-		// IsScreenshotAvailable: in.IsScreenshotAvailable,
-		// Status:                       in.Status,
+		CreateTime:                   in.CreateTime,
+		UpdateTime:                   in.UpdateTime,
+		UserId:                       in.UserId,
+		ClientKey:                    in.ClientKey,
+		OpenId:                       in.OpenId,
 	}
 
 	if err := ctr.data.DB(ctx).Save(task).Error; err != nil {
@@ -257,60 +247,32 @@ func (ctr *companyTaskDetailRepo) Update(ctx context.Context, in *domain.Company
 	return task.ToDomain(ctx), nil
 }
 
-func (ctr *companyTaskDetailRepo) UpdateOnDuplicateKey(ctx context.Context, in []*domain.CompanyTaskDetail) error {
-	values := []string{}
+func (ctr *companyTaskDetailRepo) UpdateOnDuplicateKey(ctx context.Context, ins []*domain.CompanyTaskDetail) error {
+	tasks := []*CompanyTaskDetail{}
 
-	for _, v := range in {
-		val := "("
-		val += strconv.FormatUint(v.Id, 10) + ","
-		val += strconv.FormatUint(v.CompanyTaskId, 10) + ","
-		val += strconv.FormatUint(v.UserId, 10) + ","
-		val += "'" + v.ClientKey + "',"
-		val += "'" + v.OpenId + "',"
-		val += strconv.FormatUint(v.CompanyTaskAccountRelationId, 10) + ","
-		val += "'" + v.ProductName + "',"
-		val += "'" + v.ItemId + "',"
-		val += strconv.FormatUint(v.PlayCount, 10) + ","
-		val += "'" + v.Cover + "',"
-		val += "'" + tool.TimeToString("2006-01-02 15:04", v.ReleaseTime) + "',"
-		// val += strconv.Itoa(int(v.IsCostBuy)) + ","
-		val += strconv.Itoa(int(v.IsReleaseVideo)) + ","
-		val += strconv.Itoa(int(v.IsPlaySuccess)) + ","
-		// val += "'" + v.ScreenshotAddress + "',"
-		// val += strconv.Itoa(int(v.IsScreenshotAvailable)) + ","
-		// val += strconv.Itoa(int(v.Status)) + ","
-		val += "'" + tool.TimeToString("2006-01-02 15:04", v.CreateTime) + "',"
-		val += "'" + tool.TimeToString("2006-01-02 15:04", v.UpdateTime) + "'"
-		val += ")"
-		values = append(values, val)
+	for _, in := range ins {
+		task := &CompanyTaskDetail{
+			Id:                           in.Id,
+			CompanyTaskId:                in.CompanyTaskId,
+			UserId:                       in.UserId,
+			ClientKey:                    in.ClientKey,
+			OpenId:                       in.OpenId,
+			VideoId:                      in.VideoId,
+			CompanyTaskAccountRelationId: in.CompanyTaskAccountRelationId,
+			ItemId:                       in.ItemId,
+			PlayCount:                    in.PlayCount,
+			Cover:                        in.Cover,
+			ReleaseTime:                  in.ReleaseTime,
+			IsReleaseVideo:               in.IsReleaseVideo,
+			IsPlaySuccess:                in.IsPlaySuccess,
+			CreateTime:                   in.CreateTime,
+			UpdateTime:                   in.UpdateTime,
+		}
+
+		tasks = append(tasks, task)
 	}
 
-	sql := `
-	INSERT INTO company_task_detail (
-		id, 
-		company_task_id, 
-		user_id, 
-		client_key, 
-		open_id, 
-		company_task_account_relation_id, 
-		product_name,
-		item_id,
-		play_count, 
-		cover, 
-		release_time, 
-		is_release_video, 
-		is_play_success, 
-		create_time, 
-		update_time
-	) VALUES 
-		 %s
-	ON DUPLICATE KEY UPDATE
-	play_count = VALUES(play_count),
-	is_play_success = VALUES(is_play_success);
-		`
-	exec := fmt.Sprintf(sql, strings.Join(values, ","))
-
-	return ctr.data.DB(ctx).Exec(exec).Error
+	return ctr.data.DB(ctx).Save(&tasks).Error
 }
 
 func (ctr *companyTaskDetailRepo) GetByIdUsers(ctx context.Context, userId uint64) (*v1.GetByIdUsersReply, error) {
@@ -328,11 +290,14 @@ func (ctr *companyTaskDetailRepo) ListByClientKeyAndOpenIds(ctx context.Context,
 	})
 }
 
-// DeleteOpenDouyinUsers 删除没有对应关系的抖音账号
-func (ctr *companyTaskDetailRepo) DeleteOpenDouyinUsers(ctx context.Context, userId uint64, clientKeys, openIds []string) error {
-	sql := `delete from company_task_detail where user_id = ? and (client_key not in (?) or open_id not in (?))`
+// DeleteOpenDouyinUsers
+// 同时更新视频信息，可能视频已经删除或者状态更新
 
-	if err := ctr.data.db.WithContext(ctx).Exec(sql, userId, clientKeys, openIds).Error; err != nil {
+func (ctr *companyTaskDetailRepo) DeleteOpenDouyinUsers(ctx context.Context, userIds []uint64) error {
+	db := ctr.data.db.WithContext(ctx).
+		Where("id in (?)", userIds)
+
+	if err := db.Delete(&CompanyTaskDetail{}).Error; err != nil {
 		return err
 	}
 

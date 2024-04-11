@@ -10,7 +10,7 @@ type CompanyTask struct {
 	ProductOutId   uint64
 	ExpireTime     uint64
 	PlayNum        uint64
-	Price          uint64
+	Price          float64
 	Quota          uint64
 	ClaimQuota     uint64
 	SuccessQuota   uint64
@@ -19,6 +19,7 @@ type CompanyTask struct {
 	IsGoodReviews  uint8
 	CreateTime     time.Time
 	UpdateTime     time.Time
+	IsUserExist    uint32
 	CompanyProduct CompanyProduct
 }
 
@@ -29,7 +30,7 @@ type CompanyTaskList struct {
 	List     []*CompanyTask
 }
 
-func NewCompanyTask(ctx context.Context, productOutId, expireTime, playNum, price, quota uint64, isGoodReviews uint8) *CompanyTask {
+func NewCompanyTask(ctx context.Context, productOutId, expireTime, playNum, quota uint64, isGoodReviews uint8, price float64) *CompanyTask {
 	return &CompanyTask{
 		ProductOutId:  productOutId,
 		ExpireTime:    expireTime,
@@ -62,4 +63,12 @@ func (c *CompanyTask) SetUpdateTime(ctx context.Context) {
 
 func (c *CompanyTask) SetCreateTime(ctx context.Context) {
 	c.CreateTime = time.Now()
+}
+
+func (c *CompanyTask) SetIsUserExist(ctx context.Context) {
+	c.IsUserExist = 1
+}
+
+func (c *CompanyTask) SetCompanyProduct(ctx context.Context, product CompanyProduct) {
+	c.CompanyProduct = product
 }

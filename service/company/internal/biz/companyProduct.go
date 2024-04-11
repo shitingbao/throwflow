@@ -33,6 +33,7 @@ var (
 	CompanyProductUploadError               = errors.InternalServer("COMPANY_PRODUCT_UPLOAD_ERROR", "上传失败")
 	CompanyProductUploadAbortError          = errors.InternalServer("COMPANY_PRODUCT_UPLOAD_ABORT_ERROR", "上传任务取消失败")
 	CompanyProductListError                 = errors.InternalServer("COMPANY_PRODUCT_LIST_ERROR", "企业商品列表获取失败")
+	CompanyProductCountError                = errors.InternalServer("COMPANY_PRODUCT_COUNT_ERROR", "企业商品列表总数获取失败")
 	CompanyProductReportProductListError    = errors.InternalServer("COMPANY_PRODUCT_REPORT_PRODUCT_LIST_ERROR", "企业商品商品报表列表获取失败")
 	CompanyProductMaterialOutUrlError       = errors.InternalServer("COMPANY_PRODUCT_MATERIAL_OUT_URL_ERROR", "企业商品素材链接错误")
 	CompanyProductMaterialUpdateError       = errors.InternalServer("COMPANY_PRODUCT_MATERIAL_UPDATE_ERROR", "企业商品素材链接更新失败")
@@ -43,9 +44,11 @@ type CompanyProductRepo interface {
 	GetById(context.Context, uint64, string, string) (*domain.CompanyProduct, error)
 	GetByProductOutId(context.Context, uint64, string, string) (*domain.CompanyProduct, error)
 	List(context.Context, int, int, uint64, uint64, uint64, string, string, string) ([]*domain.CompanyProduct, error)
-	ListExternal(ctx context.Context, pageNum, pageSize int, industryId, categoryId, subCategoryId uint64, productStatus, keyword string) ([]*domain.CompanyProduct, error)
 	ListByProductOutIds(context.Context, string, []uint64) ([]*domain.CompanyProduct, error)
-	Count(context.Context, uint64, uint64, uint64, string, string, string) (int64, error)
+	ListExternal(context.Context, int, int, uint64, uint64, uint64, uint8, string, string) ([]*domain.CompanyProduct, error)
+	ListByProductOutIdOrName(ctx context.Context, pageNum, pageSize int, keyword string) ([]*domain.CompanyProduct, error)
+	Count(context.Context, uint64, uint64, uint64, uint8, string, string, string) (int64, error)
+	CountByProductOutIdOrName(ctx context.Context, keyword string) (int64, error)
 	Statistics(context.Context, uint64, uint64, uint64, string, string, string) (int64, error)
 	Save(context.Context, *domain.CompanyProduct) (*domain.CompanyProduct, error)
 	Update(context.Context, *domain.CompanyProduct) (*domain.CompanyProduct, error)
@@ -70,6 +73,7 @@ type CompanyProductUsecase struct {
 	cmlrepo  CompanyMaterialLibraryRepo
 	crepo    CompanyRepo
 	csrepo   CompanySetRepo
+	ctrepo   CompanyTaskRepo
 	oduirepo OpenDouyinUserInfoRepo
 	jsrepo   JinritemaiStoreRepo
 	jorepo   JinritemaiOrderRepo
@@ -84,8 +88,8 @@ type CompanyProductUsecase struct {
 	log      *log.Helper
 }
 
-func NewCompanyProductUsecase(repo CompanyProductRepo, cpcrepo CompanyProductCategoryRepo, cmlrepo CompanyMaterialLibraryRepo, crepo CompanyRepo, csrepo CompanySetRepo, oduirepo OpenDouyinUserInfoRepo, jsrepo JinritemaiStoreRepo, jorepo JinritemaiOrderRepo, wusrrepo WeixinUserScanRecordRepo, mmrepo MaterialMaterialRepo, dpsrepo DoukeProductShareRepo, tm Transaction, conf *conf.Data, cconf *conf.Company, vconf *conf.Volcengine, econf *conf.Event, logger log.Logger) *CompanyProductUsecase {
-	return &CompanyProductUsecase{repo: repo, cpcrepo: cpcrepo, cmlrepo: cmlrepo, crepo: crepo, csrepo: csrepo, oduirepo: oduirepo, jsrepo: jsrepo, jorepo: jorepo, wusrrepo: wusrrepo, mmrepo: mmrepo, dpsrepo: dpsrepo, tm: tm, conf: conf, cconf: cconf, vconf: vconf, econf: econf, log: log.NewHelper(logger)}
+func NewCompanyProductUsecase(repo CompanyProductRepo, cpcrepo CompanyProductCategoryRepo, cmlrepo CompanyMaterialLibraryRepo, crepo CompanyRepo, csrepo CompanySetRepo, ctrepo CompanyTaskRepo, oduirepo OpenDouyinUserInfoRepo, jsrepo JinritemaiStoreRepo, jorepo JinritemaiOrderRepo, wusrrepo WeixinUserScanRecordRepo, mmrepo MaterialMaterialRepo, dpsrepo DoukeProductShareRepo, tm Transaction, conf *conf.Data, cconf *conf.Company, vconf *conf.Volcengine, econf *conf.Event, logger log.Logger) *CompanyProductUsecase {
+	return &CompanyProductUsecase{repo: repo, cpcrepo: cpcrepo, cmlrepo: cmlrepo, crepo: crepo, csrepo: csrepo, ctrepo: ctrepo, oduirepo: oduirepo, jsrepo: jsrepo, jorepo: jorepo, wusrrepo: wusrrepo, mmrepo: mmrepo, dpsrepo: dpsrepo, tm: tm, conf: conf, cconf: cconf, vconf: vconf, econf: econf, log: log.NewHelper(logger)}
 }
 
 func (cpuc *CompanyProductUsecase) GetCompanyProducts(ctx context.Context, productId uint64, productStatus string) (*domain.CompanyProduct, error) {
@@ -118,8 +122,8 @@ func (cpuc *CompanyProductUsecase) GetCompanyProductByProductOutIds(ctx context.
 	return companyProduct, nil
 }
 
-func (cpuc *CompanyProductUsecase) GetExternalCompanyProducts(ctx context.Context, productId, userId uint64) (*domain.CompanyProduct, error) {
-	companyProduct, err := cpuc.repo.GetByProductOutId(ctx, productId, "1", "")
+func (cpuc *CompanyProductUsecase) GetExternalCompanyProducts(ctx context.Context, productId uint64) (*domain.CompanyProduct, error) {
+	companyProduct, err := cpuc.repo.GetByProductOutId(ctx, productId, "2", "")
 
 	if err != nil {
 		return nil, CompanyProductNotFound
@@ -147,6 +151,8 @@ func (cpuc *CompanyProductUsecase) GetExternalCompanyProducts(ctx context.Contex
 	}
 
 	if companyProduct.IsExist == 1 {
+		companyProduct.SetCommissions(ctx)
+
 		if companyProduct.SampleThresholdType == 0 && sampleThreshold != nil {
 			companyProduct.SetSampleThresholdType(ctx, sampleThreshold.SetValueSampleThreshold.Type)
 			companyProduct.SetSampleThresholdValue(ctx, sampleThreshold.SetValueSampleThreshold.Value)
@@ -172,7 +178,6 @@ func (cpuc *CompanyProductUsecase) GetExternalCompanyProducts(ctx context.Contex
 	companyProduct.SetProductUrl(ctx)
 	companyProduct.SetProductImgs(ctx)
 	companyProduct.SetProductDetailImgs(ctx)
-	companyProduct.SetCommissions(ctx)
 	companyProduct.SetMaterialOutUrls(ctx)
 	companyProduct.SetAwemes(ctx, awemes)
 
@@ -182,7 +187,7 @@ func (cpuc *CompanyProductUsecase) GetExternalCompanyProducts(ctx context.Contex
 func (cpuc *CompanyProductUsecase) GetExternalProductShareCompanyProducts(ctx context.Context, productId, userId uint64) (*v1.CreateDoukeProductSharesReply, error) {
 	productUrl := ""
 
-	companyProduct, err := cpuc.repo.GetByProductOutId(ctx, productId, "1", "")
+	companyProduct, err := cpuc.repo.GetByProductOutId(ctx, productId, "2", "")
 
 	if err != nil {
 		return nil, CompanyProductNotFound
@@ -235,16 +240,32 @@ func (cpuc *CompanyProductUsecase) ListCompanyProducts(ctx context.Context, page
 		return nil, CompanyProductListError
 	}
 
+	productOutIds := make([]string, 0)
+
 	for _, companyProduct := range companyProducts {
 		companyProduct.SetProductUrl(ctx)
 		companyProduct.SetProductImgs(ctx)
 		companyProduct.SetCommissions(ctx)
 		companyProduct.SetMaterialOutUrls(ctx)
 
+		productOutIds = append(productOutIds, strconv.FormatUint(companyProduct.ProductOutId, 10))
+
 		list = append(list, companyProduct)
 	}
 
-	total, err := cpuc.repo.Count(ctx, industryId, categoryId, subCategoryId, productStatus, "1", keyword)
+	companyTasks, _ := cpuc.ctrepo.ListByProductOutId(ctx, productOutIds)
+
+	for _, l := range list {
+		for _, companyTask := range companyTasks {
+			if l.ProductOutId == companyTask.ProductOutId {
+				l.IsTask = 1
+
+				break
+			}
+		}
+	}
+
+	total, err := cpuc.repo.Count(ctx, industryId, categoryId, subCategoryId, 0, productStatus, "1", keyword)
 
 	if err != nil {
 		return nil, CompanyProductListError
@@ -258,35 +279,53 @@ func (cpuc *CompanyProductUsecase) ListCompanyProducts(ctx context.Context, page
 	}, nil
 }
 
-func (cpuc *CompanyProductUsecase) ListExternalCompanyProducts(ctx context.Context, pageNum, pageSize, industryId, categoryId, subCategoryId uint64, keyword string) (*domain.CompanyProductList, error) {
+func (cpuc *CompanyProductUsecase) ListExternalCompanyProducts(ctx context.Context, pageNum, pageSize, industryId, categoryId, subCategoryId uint64, isInvestment uint8, keyword string) (*domain.CompanyProductList, error) {
 	list := make([]*domain.CompanyProduct, 0)
 
-	companyProducts, err := cpuc.repo.ListExternal(ctx, int(pageNum), int(pageSize), industryId, categoryId, subCategoryId, "2", keyword)
+	companyProducts, err := cpuc.repo.ListExternal(ctx, int(pageNum), int(pageSize), industryId, categoryId, subCategoryId, isInvestment, "2", keyword)
 
 	if err != nil {
 		return nil, CompanyProductListError
 	}
 
-	total, err := cpuc.repo.Count(ctx, industryId, categoryId, subCategoryId, "2", "", keyword)
+	total, err := cpuc.repo.Count(ctx, industryId, categoryId, subCategoryId, isInvestment, "2", "", keyword)
 
 	if err != nil {
 		return nil, CompanyProductListError
 	}
+
+	productOutIds := make([]string, 0)
 
 	for _, companyProduct := range companyProducts {
 		if companyProduct.IsExist == 1 {
+			companyProduct.SetCommissions(ctx)
+
 			pureCommission, pureServiceCommission, _ := companyProduct.GetCommission(ctx)
 
 			companyProduct.SetPureCommission(ctx, pureCommission)
 			companyProduct.SetPureServiceCommission(ctx, pureServiceCommission)
 
-			companyProduct.SetProductUrl(ctx)
-			companyProduct.SetProductImgs(ctx)
-			companyProduct.SetCommissions(ctx)
 			companyProduct.SetMaterialOutUrls(ctx)
 		}
 
+		companyProduct.SetProductUrl(ctx)
+		companyProduct.SetProductImgs(ctx)
+
+		productOutIds = append(productOutIds, strconv.FormatUint(companyProduct.ProductOutId, 10))
+
 		list = append(list, companyProduct)
+	}
+
+	companyTasks, _ := cpuc.ctrepo.ListByProductOutId(ctx, productOutIds)
+
+	for _, l := range list {
+		for _, companyTask := range companyTasks {
+			if l.ProductOutId == companyTask.ProductOutId {
+				l.IsTask = 1
+
+				break
+			}
+		}
 	}
 
 	return &domain.CompanyProductList{
@@ -357,10 +396,69 @@ func (cpuc *CompanyProductUsecase) ListCompanyProductCategorys(ctx context.Conte
 	return list, nil
 }
 
+func (cpuc *CompanyProductUsecase) ListCompanyTaskProducts(ctx context.Context, pageNum, pageSize uint64, keyword string) (*domain.CompanyProductList, error) {
+	list := make([]*domain.CompanyProduct, 0)
+	productMap := make(map[uint64]bool)
+
+	companyProducts, err := cpuc.repo.ListByProductOutIdOrName(ctx, int(pageNum), int(pageSize), keyword)
+
+	if err != nil {
+		return nil, CompanyProductListError
+	}
+
+	productOutIds := []string{}
+
+	for _, companyProduct := range companyProducts {
+		companyProduct.SetProductUrl(ctx)
+		companyProduct.SetProductImgs(ctx)
+		companyProduct.SetCommissions(ctx)
+		companyProduct.SetMaterialOutUrls(ctx)
+
+		productOutIds = append(productOutIds, strconv.FormatUint(companyProduct.ProductOutId, 10))
+
+		list = append(list, companyProduct)
+	}
+
+	companyTasks, err := cpuc.ctrepo.ListByProductOutId(ctx, productOutIds)
+
+	if err != nil {
+		return nil, CompanyProductListError
+	}
+
+	for _, companyTask := range companyTasks {
+		productMap[companyTask.ProductOutId] = true
+	}
+
+	for _, l := range list {
+		if productMap[l.ProductOutId] {
+			l.SetIsTask(ctx, 1)
+		}
+	}
+
+	total, err := cpuc.repo.CountByProductOutIdOrName(ctx, keyword)
+
+	if err != nil {
+		return nil, CompanyProductCountError
+	}
+
+	return &domain.CompanyProductList{
+		PageNum:  pageNum,
+		PageSize: pageSize,
+		Total:    uint64(total),
+		List:     list,
+	}, nil
+}
+
 func (cpuc *CompanyProductUsecase) StatisticsCompanyProducts(ctx context.Context, industryId, categoryId, subCategoryId uint64, productStatus, keyword string) ([]*domain.StatisticsCompanyProduct, error) {
 	statistics := make([]*domain.StatisticsCompanyProduct, 0)
 
-	count, _ := cpuc.repo.Statistics(ctx, industryId, categoryId, subCategoryId, productStatus, "1", keyword)
+	var count int64
+
+	if productStatus == "2" {
+		count, _ = cpuc.repo.Statistics(ctx, industryId, categoryId, subCategoryId, productStatus, "", keyword)
+	} else {
+		count, _ = cpuc.repo.Statistics(ctx, industryId, categoryId, subCategoryId, productStatus, "1", keyword)
+	}
 
 	statistics = append(statistics, &domain.StatisticsCompanyProduct{
 		Key:   "所有",
@@ -387,12 +485,22 @@ func (cpuc *CompanyProductUsecase) CreateCompanyProducts(ctx context.Context, co
 
 	isNotExist := true
 
-	if companyProduct, err := cpuc.repo.GetByProductOutId(ctx, iproductOutId, "", ""); err == nil {
-		if companyProduct.IsExist == 1 {
+	if tmpCompanyProduct, err := cpuc.repo.GetByProductOutId(ctx, iproductOutId, "", ""); err == nil {
+		if tmpCompanyProduct.IsExist == 1 {
 			return nil, CompanyProductExistError
 		}
 
-		isNotExist = false
+		tmpCompanyProduct.SetCommission(ctx, commission)
+		tmpCompanyProduct.SetIsExist(ctx, 1)
+		tmpCompanyProduct.SetUpdateTime(ctx, time.Now())
+
+		companyProduct, err := cpuc.repo.Update(ctx, tmpCompanyProduct)
+
+		if err != nil {
+			return nil, CompanyProductCreateError
+		}
+
+		return companyProduct, nil
 	}
 
 	inCompanyProduct.SetProductOutId(ctx, iproductOutId)
@@ -427,7 +535,7 @@ func (cpuc *CompanyProductUsecase) CreateCompanyProducts(ctx context.Context, co
 }
 
 func (cpuc *CompanyProductUsecase) CreateJinritemaiStoreCompanyProducts(ctx context.Context, userId, productId uint64, openDouyinUserIds string) (*domain.CompanyProductCreateJinritemaiStore, error) {
-	companyProduct, err := cpuc.repo.GetById(ctx, productId, "", "")
+	companyProduct, err := cpuc.repo.GetByProductOutId(ctx, productId, "", "")
 
 	if err != nil {
 		return nil, CompanyProductNotFound

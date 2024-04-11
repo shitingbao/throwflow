@@ -5,10 +5,11 @@ import (
 	"company/internal/pkg/tool"
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"math"
 	"strconv"
 	"time"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (cs *CompanyService) GetCompanyProducts(ctx context.Context, in *v1.GetCompanyProductsRequest) (*v1.GetCompanyProductsReply, error) {
@@ -120,7 +121,7 @@ func (cs *CompanyService) GetCompanyProductByProductOutIds(ctx context.Context, 
 }
 
 func (cs *CompanyService) GetExternalCompanyProducts(ctx context.Context, in *v1.GetExternalCompanyProductsRequest) (*v1.GetExternalCompanyProductsReply, error) {
-	companyProduct, err := cs.cprouc.GetExternalCompanyProducts(ctx, in.ProductId, in.UserId)
+	companyProduct, err := cs.cprouc.GetExternalCompanyProducts(ctx, in.ProductId)
 
 	if err != nil {
 		return nil, err
@@ -167,10 +168,11 @@ func (cs *CompanyService) GetExternalCompanyProducts(ctx context.Context, in *v1
 			SampleThresholdValue:  companyProduct.SampleThresholdValue,
 			PureCommission:        companyProduct.PureCommission,
 			PureServiceCommission: companyProduct.PureServiceCommission,
-			CommonCommission:      fmt.Sprintf("%.2f", tool.Decimal(float64(companyProduct.CommissionRatio), 2)),
+			CommonCommission:      fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.CommissionRatio), 2)),
 			IsHot:                 uint32(companyProduct.IsHot),
 			ProductUrl:            companyProduct.ProductUrl,
 			TotalSale:             companyProduct.TotalSale,
+			InvestmentRatio:       fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.InvestmentRatio), 2)),
 			Awemes:                awemes,
 		},
 	}, nil
@@ -337,7 +339,7 @@ func (cs *CompanyService) ListExternalCompanyProducts(ctx context.Context, in *v
 		in.SubCategoryId = 0
 	}
 
-	companyProducts, err := cs.cprouc.ListExternalCompanyProducts(ctx, in.PageNum, in.PageSize, in.IndustryId, in.CategoryId, in.SubCategoryId, in.Keyword)
+	companyProducts, err := cs.cprouc.ListExternalCompanyProducts(ctx, in.PageNum, in.PageSize, in.IndustryId, in.CategoryId, in.SubCategoryId, uint8(in.IsInvestment), in.Keyword)
 
 	if err != nil {
 		return nil, err
@@ -360,8 +362,8 @@ func (cs *CompanyService) ListExternalCompanyProducts(ctx context.Context, in *v
 			IsTop:                 uint32(companyProduct.IsTop),
 			PureCommission:        companyProduct.PureCommission,
 			PureServiceCommission: companyProduct.PureServiceCommission,
-			CommonCommission:      fmt.Sprintf("%.2f", tool.Decimal(float64(companyProduct.CommissionRatio), 2)),
-			InvestmentRatio:       fmt.Sprintf("%.2f", tool.Decimal(float64(companyProduct.InvestmentRatio), 2)),
+			CommonCommission:      fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.CommissionRatio), 2)),
+			InvestmentRatio:       fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.InvestmentRatio), 2)),
 			IsHot:                 uint32(companyProduct.IsHot),
 			TotalSale:             companyProduct.TotalSale,
 			IsTask:                uint32(companyProduct.IsTask),
@@ -422,6 +424,74 @@ func (cs *CompanyService) ListCompanyProductCategorys(ctx context.Context, in *e
 		Code: 200,
 		Data: &v1.ListCompanyProductCategorysReply_Data{
 			Category: list,
+		},
+	}, nil
+}
+
+func (cs *CompanyService) ListCompanyTaskProducts(ctx context.Context, in *v1.ListCompanyTaskProductsRequest) (*v1.ListCompanyTaskProductsReply, error) {
+	companyProducts, err := cs.cprouc.ListCompanyTaskProducts(ctx, in.PageNum, in.PageSize, in.Keyword)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*v1.ListCompanyTaskProductsReply_CompanyProduct, 0)
+
+	for _, companyProduct := range companyProducts.List {
+		productImgs := make([]*v1.ListCompanyTaskProductsReply_ProductImg, 0)
+		materialOutUrls := make([]*v1.ListCompanyTaskProductsReply_MaterialOutUrl, 0)
+		commissions := make([]*v1.ListCompanyTaskProductsReply_Commission, 0)
+
+		for _, productImg := range companyProduct.ProductImgs {
+			productImgs = append(productImgs, &v1.ListCompanyTaskProductsReply_ProductImg{
+				ProductImg: productImg,
+			})
+		}
+
+		for _, materialOutUrl := range companyProduct.MaterialOutUrls {
+			materialOutUrls = append(materialOutUrls, &v1.ListCompanyTaskProductsReply_MaterialOutUrl{
+				MaterialOutUrl: materialOutUrl,
+			})
+		}
+
+		for _, commission := range companyProduct.Commissions {
+			commissions = append(commissions, &v1.ListCompanyTaskProductsReply_Commission{
+				CommissionRatio:  float64(commission.CommissionRatio),
+				ServiceRatio:     float64(commission.ServiceRatio),
+				CommissionOutUrl: commission.CommissionOutUrl,
+			})
+		}
+
+		list = append(list, &v1.ListCompanyTaskProductsReply_CompanyProduct{
+			ProductId:            companyProduct.Id,
+			ProductOutId:         companyProduct.ProductOutId,
+			ProductType:          uint32(companyProduct.ProductType),
+			ProductStatus:        uint32(companyProduct.ProductStatus),
+			ProductName:          companyProduct.ProductName,
+			ProductImgs:          productImgs,
+			ProductPrice:         companyProduct.ProductPrice,
+			ProductUrl:           companyProduct.ProductUrl,
+			IsTop:                uint32(companyProduct.IsTop),
+			MaterialOutUrls:      materialOutUrls,
+			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
+			SampleThresholdValue: companyProduct.SampleThresholdValue,
+			Commissions:          commissions,
+			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
+			ForbidReason:         companyProduct.ForbidReason,
+			IsTask:               uint32(companyProduct.IsTask),
+		})
+	}
+
+	totalPage := uint64(math.Ceil(float64(companyProducts.Total) / float64(companyProducts.PageSize)))
+
+	return &v1.ListCompanyTaskProductsReply{
+		Code: 200,
+		Data: &v1.ListCompanyTaskProductsReply_Data{
+			PageNum:   companyProducts.PageNum,
+			PageSize:  companyProducts.PageSize,
+			Total:     companyProducts.Total,
+			TotalPage: totalPage,
+			List:      list,
 		},
 	}, nil
 }

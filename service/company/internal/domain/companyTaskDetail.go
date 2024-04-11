@@ -14,6 +14,7 @@ type CompanyTaskDetail struct {
 	UserId                       uint64
 	ClientKey                    string
 	OpenId                       string
+	VideoId                      string
 	ItemId                       string
 	PlayCount                    uint64
 	Cover                        string
@@ -25,7 +26,6 @@ type CompanyTaskDetail struct {
 	Avatar                       string
 	ClaimTime                    time.Time
 	IsReleaseVideo               uint8
-	CompanyTaskAccountRelation   CompanyTaskAccountRelation
 }
 
 type CompanyTaskDetailList struct {
@@ -35,15 +35,20 @@ type CompanyTaskDetailList struct {
 	List     []*CompanyTaskDetail
 }
 
-func NewCompanyTaskDetail(ctx context.Context, isPlaySuccess uint8, companyTaskId, companyTaskAccountRelationId, playCount uint64, itemId, cover string, releaseTime time.Time) *CompanyTaskDetail {
+func NewCompanyTaskDetail(ctx context.Context, companyTaskId, relationId, userId, playCount uint64, productName, clientKey, openId, itemId, cover, nickname, avatar string, releaseTime time.Time) *CompanyTaskDetail {
 	return &CompanyTaskDetail{
 		CompanyTaskId:                companyTaskId,
-		CompanyTaskAccountRelationId: companyTaskAccountRelationId,
+		CompanyTaskAccountRelationId: relationId,
+		ProductName:                  productName,
+		UserId:                       userId,
+		ClientKey:                    clientKey,
+		OpenId:                       openId,
 		ItemId:                       itemId,
 		PlayCount:                    playCount,
 		Cover:                        cover,
+		Nickname:                     nickname,
+		Avatar:                       avatar,
 		ReleaseTime:                  releaseTime,
-		IsPlaySuccess:                isPlaySuccess,
 	}
 }
 
@@ -58,15 +63,16 @@ func (c *CompanyTaskDetail) SetCreateTime(ctx context.Context) {
 type CompanyTaskClientKeyAndOpenId struct {
 	ClientKey string
 	OpenId    string
+	VideoId   string
 }
 
 func (c *CompanyTaskDetail) SetPlayCount(ctx context.Context, count uint64) {
 	c.PlayCount = count
 }
 
-// func (c *CompanyTaskDetail) SetIsScreenshotAvailable(ctx context.Context, isScreenshotAvailable uint8) {
-// 	c.IsScreenshotAvailable = isScreenshotAvailable
-// }
+func (c *CompanyTaskDetail) SetVideoId(ctx context.Context, videoId string) {
+	c.VideoId = videoId
+}
 
 func (c *CompanyTaskDetail) SetNicknameAndAvatar(ctx context.Context, list []*v1.ListByClientKeyAndOpenIdsReply_OpenDouyinUser) {
 	for _, v := range list {

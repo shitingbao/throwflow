@@ -230,7 +230,7 @@ func (co *CompanyOrganization) SetCreateTime(ctx context.Context) {
 }
 
 func (co *CompanyOrganization) VerifyOrganizationMcn(ctx context.Context) bool {
-	mcns := [2]string{"星达小当家", "小当家"}
+	mcns := [4]string{"星达小当家", "小当家", "莲宝兔旺", "壹玖传媒"}
 
 	organizationMcns := make([]string, 0)
 

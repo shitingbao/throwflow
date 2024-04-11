@@ -19,6 +19,7 @@ service Material {
   rpc GetUploadIdMaterials (GetUploadIdMaterialsRequest) returns (GetUploadIdMaterialsReply) {}
   rpc GetFileSizeMaterials (GetFileSizeMaterialsRequest) returns (GetFileSizeMaterialsReply) {}
   rpc GetIsTopMaterials (GetIsTopMaterialsRequest) returns (GetIsTopMaterialsReply) {}
+  rpc GetMaterials (GetMaterialsRequest) returns (GetMaterialsReply) {}
   rpc StatisticsMaterials (google.protobuf.Empty) returns (StatisticsMaterialsReply) {}
   rpc CreateMaterials (CreateMaterialsRequest) returns (CreateMaterialsReply) {}
   rpc UploadMaterials (UploadMaterialsRequest) returns (UploadMaterialsReply) {}
@@ -314,6 +315,46 @@ message GetIsTopMaterialsRequest {
 message GetIsTopMaterialsReply {
   message Data {
     uint32 isTop = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetMaterialsRequest {
+  uint64 videoId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetMaterialsReply {
+  message Data {
+    uint64 videoId = 1;
+    string videoName = 2;
+    string videoUrl = 3;
+    string videoCover = 4;
+    uint64 videoLike = 5;
+    string videoLikeShowA = 6;
+    string videoLikeShowB = 7;
+    uint64 awemeId = 8;
+    string awemeName = 9;
+    string awemeAccount = 10;
+    string awemeFollowers = 11;
+    string awemeFollowersShow = 12;
+    string awemeImg = 13;
+    string awemeLandingPage = 14;
+    uint64 productId = 15;
+    string productName = 16;
+    string productImg = 17;
+    string productLandingPage = 18;
+    string productPrice = 19;
+    string pureCommission = 20;
+    string pureServiceCommission = 21;
+    string commonCommission = 22;
+    uint32 isHot = 23;
+    uint64 TotalItemNum = 24;
+    string platformName = 25;
+    uint32 isCollect = 26;
+    string updateTime = 27;
+    string updateTimeF = 28;
   }
 
   uint32 code = 1;

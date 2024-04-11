@@ -17,6 +17,7 @@ service Weixin {
   rpc GetOpenDouyinUsers (GetOpenDouyinUsersRequest) returns (GetOpenDouyinUsersReply) {}
   rpc ListOpenDouyinUsers (ListOpenDouyinUsersRequest) returns (ListOpenDouyinUsersReply) {}
   rpc ListByClientKeyAndOpenIds (ListByClientKeyAndOpenIdsRequest) returns (ListByClientKeyAndOpenIdsReply) {}
+  rpc ListByIds (ListByIdsRequest) returns (ListByIdsReply) {}
   rpc UpdateOpenDouyinUsers (UpdateOpenDouyinUsersRequest) returns (UpdateOpenDouyinUsersReply) {}
   rpc UpdateUserInfoOpenDouyinUsers (UpdateUserInfoOpenDouyinUsersRequest) returns (UpdateUserInfoOpenDouyinUsersReply) {}
   rpc UpdateCooperativeCodeOpenDouyinUsers (UpdateCooperativeCodeOpenDouyinUsersRequest) returns (UpdateCooperativeCodeOpenDouyinUsersReply) {}
@@ -55,6 +56,7 @@ service Weixin {
   // 微信用户机构对应关系管理
   rpc GetUserOrganizationRelations (GetUserOrganizationRelationsRequest) returns (GetUserOrganizationRelationsReply) {}
   rpc GetBindUserOrganizationRelations (GetBindUserOrganizationRelationsRequest) returns (GetBindUserOrganizationRelationsReply) {}
+  rpc ListParentUserOrganizationRelations (ListParentUserOrganizationRelationsRequest) returns (ListParentUserOrganizationRelationsReply) {}
   rpc UpdateLevelUserOrganizationRelations (UpdateLevelUserOrganizationRelationsRequest) returns (UpdateLevelUserOrganizationRelationsReply) {}
   rpc SyncUserOrganizationRelations (google.protobuf.Empty) returns (SyncUserOrganizationRelationsReply) {}
 
@@ -93,7 +95,15 @@ service Weixin {
 
   rpc ImportDatas (google.protobuf.Empty) returns (ImportDatasReply) {}
   rpc UpdateTutorUserOrganizationRelations (google.protobuf.Empty) returns (UpdateTutorUserOrganizationRelationsReply) {}
-  rpc ParentUserDatas(google.protobuf.Empty) returns (ParentUserDatasReply) {}
+  rpc ParentUserDatas (google.protobuf.Empty) returns (ParentUserDatasReply) {}
+  rpc DecryptDatas (DecryptDatasRequest) returns (DecryptDatasReply) {}
+
+  // 课程视频
+  rpc ListCourseRoot(ListCourseRootRequest) returns (ListCourseRootReply){}
+  rpc ListCourseVideo(ListCourseVideoRequest) returns (ListCourseVideoReply){}
+  rpc UpdateCourseUser(UpdateCourseUserRequest) returns (UpdateCourseUserReply){}
+  
+  rpc SyncQrCodeUserOrganizationRelations (google.protobuf.Empty) returns (SyncQrCodeUserOrganizationRelationsReply) {}
 }
 
 message GetUsersRequest {
@@ -283,6 +293,7 @@ message ListOpenDouyinUsersReply {
     string fansShow = 11;
     string area = 12;
     string createDate = 13;
+    string level = 14;
   }
 
   message Data {
@@ -333,13 +344,42 @@ message ListByClientKeyAndOpenIdsReply {
   Data data = 2;
 }
 
+message ListByIdsRequest {
+  string phone = 1 [(validate.rules).string = {min_len: 0}];
+  string keyword = 2 [(validate.rules).string = {min_len: 0}];
+  string userIds = 3 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListByIdsReply {
+  message User{
+    uint64 id = 1;
+    string nickName = 2;
+    string avatarUrl = 3;
+  }
+
+  message Data{
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated User list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message UpdateOpenDouyinUsersRequest {
   uint64 userId = 1 [(validate.rules).uint64.gt = 0];
   string clientKey = 2 [(validate.rules).string = {min_len: 1}];
   string openId = 3 [(validate.rules).string = {min_len: 1}];
-  string nickname = 4 [(validate.rules).string = {min_len: 1}];
-  string avatar = 5 [(validate.rules).string = {min_len: 1}];
-  string avatarLarger = 6 [(validate.rules).string = {min_len: 1}];
+  uint64 awemeId = 4 [(validate.rules).uint64.gte = 0];
+  string accountId = 5 [(validate.rules).string = {min_len: 0}];
+  string nickname = 6 [(validate.rules).string = {min_len: 1}];
+  string avatar = 7 [(validate.rules).string = {min_len: 1}];
+  string avatarLarger = 8 [(validate.rules).string = {min_len: 1}];
+  string area = 9 [(validate.rules).string = {min_len: 0}];
+
 }
 
 message UpdateOpenDouyinUsersReply {
@@ -751,7 +791,7 @@ message ListUserOrdersReply {
 
 message CreateUserOrdersRequest {
   uint64 userId = 1 [(validate.rules).uint64.gt = 0];
-  uint64 parentUserId = 2 [(validate.rules).uint64.gte = 0];
+  uint64 parentUserId = 2 [(validate.rules).uint64.gt = 0];
   uint64 organizationId = 3 [(validate.rules).uint64.gt = 0];
   double payAmount = 4 [(validate.rules).double.gt = 0.00];
   string clientIp = 5 [(validate.rules).string ={min_len: 1}];
@@ -837,8 +877,9 @@ message GetUserOrganizationRelationsReply {
     string courseSubName = 2;
     string coursePrice = 3;
     uint64 courseDuration = 4;
-    uint32 courseLevel = 5;
-    repeated CourseModule courseModules = 6;
+    string courseOriginalPrice = 5;
+    uint32 courseLevel = 6;
+    repeated CourseModule courseModules = 7;
   }
 
   message Data{
@@ -847,14 +888,17 @@ message GetUserOrganizationRelationsReply {
     string organizationName = 3;
     string organizationLogoUrl = 4;
     repeated OrganizationCourse organizationCourses = 5;
-    string activationTime = 6;
-    string levelName = 7;
-    uint32 level = 8;
-    string organizationUserQrCodeUrl = 9;
-    uint64 parentUserId = 10;
-    string parentNickName = 11;
-    string parentAvatarUrl = 12;
-    uint64 total = 13;
+    string companyName = 6;
+    string bankCode = 7;
+    string bankDeposit = 8;
+    string activationTime = 9;
+    string levelName = 10;
+    uint32 level = 11;
+    string organizationUserQrCodeUrl = 12;
+    uint64 parentUserId = 13;
+    string parentNickName = 14;
+    string parentAvatarUrl = 15;
+    uint64 total = 16;
   }
 
   uint32 code = 1;
@@ -887,10 +931,32 @@ message GetBindUserOrganizationRelationsReply {
   Data data = 2;
 }
 
+message ListParentUserOrganizationRelationsRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  string relationType = 3 [(validate.rules).string = {in: ["order", "coupon"]}];
+}
+
+message ListParentUserOrganizationRelationsReply {
+  message ParentUser {
+    uint64 parentUserId = 1;
+    string parentNickName = 2;
+    string parentAvatarUrl = 3;
+    string parentUserType = 4;
+  }
+
+  message Data{
+    repeated ParentUser parentUser = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message UpdateLevelUserOrganizationRelationsRequest {
   uint64 userId = 1 [(validate.rules).uint64.gt = 0];
   uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
-  uint32 level = 3 [(validate.rules).uint32 = {in: [1, 2, 3]}];
+  uint32 level = 3 [(validate.rules).uint32 = {in: [1, 2, 3, 4]}];
 }
 
 message UpdateLevelUserOrganizationRelationsReply {
@@ -997,6 +1063,7 @@ message GetUserCouponsRequest {
 message GetUserCouponsReply {
   message Data {
     string couponCode = 1;
+    uint32 level = 2;
   }
 
   uint32 code = 1;
@@ -1008,6 +1075,7 @@ message ListUserCouponsRequest {
   uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
   uint64 userId = 3 [(validate.rules).uint64.gt = 0];
   uint64 organizationId = 4 [(validate.rules).uint64.gt = 0];
+  uint32 level = 5 [(validate.rules).uint32 = {in: [1, 2, 3, 4]}];
 }
 
 message ListUserCouponsReply {
@@ -1032,6 +1100,7 @@ message ListUserCouponsReply {
 message BindUserCouponsRequest {
   uint64 userId = 1 [(validate.rules).uint64.gt = 0];
   string phone = 2 [(validate.rules).string.pattern = "^((\\+|00)86)?(1[3-9]|9[28])\\d{9}$"];
+  uint32 level = 3 [(validate.rules).uint32 = {in: [1, 2, 3, 4]}];
 }
 
 message BindUserCouponsReply {
@@ -1301,6 +1370,111 @@ message UpdateTutorUserOrganizationRelationsReply {
 }
 
 message ParentUserDatasReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message DecryptDatasRequest {
+  uint64 organizationId = 1 [(validate.rules).uint64.gt = 0];
+  string content = 2 [(validate.rules).string ={min_len: 1}];
+}
+
+message DecryptDatasReply {
+  message Data {
+    string content = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCourseRootRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListCourseRootReply {
+  message Course {
+    uint64 id = 1;
+    string courseName = 2;    
+	  string imgurl = 3;
+	  uint32 level = 4;
+	  uint64 courseSort = 5;  
+	  uint64 studyCount = 6;
+	  uint64 studyDuration = 7;
+	  uint64 totalDuration = 8;
+	  string createTime = 9;
+	  string updateTime = 10;
+  }
+
+  message Data {
+    repeated Course list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCourseVideoRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 organizationId = 2 [(validate.rules).uint64.gt = 0];
+  uint64 courseId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message ListCourseVideoReply {
+  message Children {
+    uint64 id = 1;
+    string courseName = 2;    
+	  string imgurl = 3;
+	  uint32 level = 4;
+    string videoUrl = 5;
+    uint64 courseSort = 6; 
+    uint64 duration = 7;
+    uint64 userDuration = 8;
+	  string createTime = 9;
+	  string updateTime = 10;
+  }
+
+  message Course {
+    uint64 id = 1;
+    string courseName = 2;    
+	  string imgurl = 3;
+	  uint32 level = 4;
+    string videoUrl = 5;
+    uint64 courseSort = 6; 
+    uint64 duration = 7;
+    uint64 userDuration = 8;
+	  string createTime = 9;
+	  string updateTime = 10;
+    repeated Children children = 11;
+  }
+
+  message Data {
+    repeated Course list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCourseUserRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 duration = 2 [(validate.rules).uint64.gt = 0];
+  uint64 courseId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message UpdateCourseUserReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncQrCodeUserOrganizationRelationsReply {
   message Data {
   }
 

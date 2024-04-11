@@ -7,6 +7,7 @@ import (
 	"company/internal/domain"
 	"company/internal/pkg/tool"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"time"
@@ -34,20 +35,18 @@ var (
 type CompanyTaskAccountRelation struct {
 	Id                    uint64               `gorm:"column:id;primarykey;type:bigint(20) UNSIGNED;autoIncrement;not null;comment:自增ID"`
 	CompanyTaskId         uint64               `gorm:"column:company_task_id;type:bigint(20) UNSIGNED;not null;comment:任务ID"`
-	ProductName           string               `gorm:"column:product_name;type:varchar(250);not null;comment:商品名称"`
 	ProductOutId          uint64               `gorm:"column:product_out_id;type:bigint(20) UNSIGNED;not null;comment:商品ID"`
 	UserId                uint64               `gorm:"column:user_id;type:bigint(20) UNSIGNED;not null;index:idx_user_id;comment:微信小程序用户ID"`
 	ClaimTime             time.Time            `gorm:"column:claim_time;type:datetime;not null;comment:认领任务的时间"`
 	ExpireTime            time.Time            `gorm:"column:expire_time;type:datetime;not null;comment:过期时间"`
-	Status                uint8                `gorm:"column:status;type:tinyint(3) UNSIGNED;not null;default:0;comment:1:任务完成,0:未完成,2:已过期"`
+	Status                uint8                `gorm:"column:status;type:tinyint(3) UNSIGNED;not null;default:0;comment:1:任务完成,0:未完成,2:已过期,3:已结算"`
 	IsDel                 uint8                `gorm:"column:is_del;type:tinyint(3) UNSIGNED;not null;default:0;comment:是否移除,1:已移除,0:未移除"`
 	IsCostBuy             uint8                `gorm:"column:is_cost_buy;type:tinyint(3) UNSIGNED;not null;default:0;comment:成本购买,1:是,0:否"`
 	ScreenshotAddress     string               `gorm:"column:screenshot_address;type:varchar(250);not null;comment:截图地址"`
 	IsScreenshotAvailable uint8                `gorm:"column:is_screenshot_available;type:tinyint(3) UNSIGNED;not null;default:0;comment:截图是否有效,1:是,0:否"`
-	CreateTime            time.Time            `gorm:"column:create_time;type:datetime;not null;default:CURRENT_TIMESTAMP;comment:新增时间"`
-	UpdateTime            time.Time            `gorm:"column:update_time;type:datetime;not null;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;comment:修改时间"`
+	CreateTime            time.Time            `gorm:"column:create_time;type:datetime;not null;comment:新增时间"`
+	UpdateTime            time.Time            `gorm:"column:update_time;type:datetime;not null;comment:修改时间"`
 	CompanyTaskDetails    []*CompanyTaskDetail `gorm:"foreignKey:CompanyTaskAccountRelationId;references:Id"`
-	CompanyTask           CompanyTask          `gorm:"foreignKey:CompanyTaskId;references:Id"`
 }
 
 func (CompanyTaskAccountRelation) TableName() string {
@@ -74,7 +73,6 @@ func (c *CompanyTaskAccountRelation) ToDomain(ctx context.Context) *domain.Compa
 			Id:                           v.Id,
 			CompanyTaskId:                v.CompanyTaskId,
 			CompanyTaskAccountRelationId: v.CompanyTaskAccountRelationId,
-			ProductName:                  v.ProductName,
 			UserId:                       v.UserId,
 			ClientKey:                    v.ClientKey,
 			OpenId:                       v.OpenId,
@@ -94,7 +92,6 @@ func (c *CompanyTaskAccountRelation) ToDomain(ctx context.Context) *domain.Compa
 		CompanyTaskId:         c.CompanyTaskId,
 		ProductOutId:          c.ProductOutId,
 		UserId:                c.UserId,
-		ProductName:           c.ProductName,
 		ClaimTime:             c.ClaimTime,
 		ExpireTime:            c.ExpireTime,
 		Status:                c.Status,
@@ -105,21 +102,6 @@ func (c *CompanyTaskAccountRelation) ToDomain(ctx context.Context) *domain.Compa
 		ScreenshotAddress:     c.ScreenshotAddress,
 		IsScreenshotAvailable: c.IsScreenshotAvailable,
 		CompanyTaskDetails:    list,
-		CompanyTask: domain.CompanyTask{
-			Id:            c.CompanyTask.Id,
-			ProductOutId:  c.CompanyTask.ProductOutId,
-			ExpireTime:    c.CompanyTask.ExpireTime,
-			PlayNum:       c.CompanyTask.PlayNum,
-			Price:         c.CompanyTask.Price,
-			Quota:         c.CompanyTask.Quota,
-			ClaimQuota:    c.CompanyTask.ClaimQuota,
-			SuccessQuota:  c.CompanyTask.SuccessQuota,
-			IsTop:         c.CompanyTask.IsTop,
-			IsDel:         c.CompanyTask.IsDel,
-			IsGoodReviews: c.CompanyTask.IsGoodReviews,
-			CreateTime:    c.CompanyTask.CreateTime,
-			UpdateTime:    c.CompanyTask.UpdateTime,
-		},
 	}
 
 	return task
@@ -128,119 +110,49 @@ func (c *CompanyTaskAccountRelation) ToDomain(ctx context.Context) *domain.Compa
 func (ctr *companyTaskAccountRelationRepo) GetById(ctx context.Context, id uint64) (*domain.CompanyTaskAccountRelation, error) {
 	task := &CompanyTaskAccountRelation{}
 
-	if err := ctr.data.db.WithContext(ctx).Preload("CompanyTask").First(task, id).Error; err != nil {
+	if err := ctr.data.db.WithContext(ctx).First(task, id).Error; err != nil {
 		return nil, err
 	}
 
 	return task.ToDomain(ctx), nil
 }
 
-// UpdateCacheHash 执行 lua 扣减脚本
-func (ctr *companyTaskAccountRelationRepo) UpdateCacheHash(ctx context.Context, taskId string) error {
-	res, err := ctr.data.rdb.Eval(ctx, CompanyTaskDeductionLua, []string{RedisCompanyTaskPre + taskId}).Result()
+func (ctr *companyTaskAccountRelationRepo) GetByProductOutIdAndUserId(ctx context.Context, productOutId, userId uint64) (*domain.CompanyTaskAccountRelation, error) {
+	task := &CompanyTaskAccountRelation{}
 
-	if err != nil {
-		return err
-	}
+	db := ctr.data.db.WithContext(ctx)
 
-	if res == "0" {
-		return errors.New("decr task err")
-	}
-
-	return nil
-}
-
-// 注意扣减的过程，lua 控制 redis 中的可使用数量
-// 并查询当前已经被领取到任务数量
-func (ctr *companyTaskAccountRelationRepo) Save(ctx context.Context, in *domain.CompanyTaskAccountRelation) (*domain.CompanyTaskAccountRelation, error) {
-	relation := &CompanyTaskAccountRelation{
-		CompanyTaskId: in.CompanyTaskId,
-		ProductOutId:  in.ProductOutId,
-		UserId:        in.UserId,
-		// ClientKey:     in.ClientKey,
-		// OpenId:        in.OpenId,
-		ProductName: in.ProductName,
-		ClaimTime:   in.ClaimTime,
-		ExpireTime:  in.ExpireTime,
-		Status:      in.Status,
-		CreateTime:  in.CreateTime,
-		UpdateTime:  in.UpdateTime,
-	}
-
-	if err := ctr.data.DB(ctx).Table("company_task_account_relation").Create(relation).Error; err != nil {
-		return nil, err
-	}
-
-	return relation.ToDomain(ctx), nil
-}
-
-func (ctr *companyTaskAccountRelationRepo) Count(ctx context.Context, companyTaskId, userId uint64) (int64, error) {
-	var count int64
-	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskDetail{}).Table("company_task_account_relation")
-
-	if companyTaskId > 0 {
-		db = db.Where("company_task_id = ?", companyTaskId)
+	if productOutId > 0 {
+		db = db.Where("product_out_id = ?", productOutId)
 	}
 
 	if userId > 0 {
 		db = db.Where("user_id = ?", userId)
 	}
 
-	if err := db.Count(&count).Error; err != nil {
-		return 0, err
+	if err := db.First(task).Error; err != nil {
+		return nil, err
 	}
 
-	return count, nil
+	return task.ToDomain(ctx), nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) CountAvailableByTaskId(ctx context.Context, companyTaskId uint64) (int64, error) {
-	var count int64
-
-	err := ctr.data.db.WithContext(ctx).Model(&CompanyTaskDetail{}).
-		Table("company_task_account_relation").
-		Where("company_task_id = ? and (expire_time > ? or status = 1)", companyTaskId, time.Now()).
-		Count(&count).Error
-
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-func (ctr *companyTaskAccountRelationRepo) CountByProductOutId(ctx context.Context, productOutId, userId uint64) (int64, error) {
-	var count int64
-
-	err := ctr.data.db.WithContext(ctx).Model(&CompanyTaskDetail{}).
-		Table("company_task_account_relation").
-		Where("product_out_id = ? and user_id = ?", productOutId, userId).
-		Count(&count).Error
-
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func (ctr *companyTaskAccountRelationRepo) SoftDelete(ctx context.Context, id uint64) error {
-	return ctr.data.DB(ctx).Table("company_task_account_relation").Where("company_task_id = ?", id).Update("is_del", 1).Error
+func (ctr *companyTaskAccountRelationRepo) GetUserOrganizationRelations(ctx context.Context, userId uint64) (*v1.GetUserOrganizationRelationsReply, error) {
+	return ctr.data.weixinuc.GetUserOrganizationRelations(ctx, &v1.GetUserOrganizationRelationsRequest{
+		UserId: userId,
+	})
 }
 
 // List 反馈基本列表
 // status -1 表示没有
-func (ctr *companyTaskAccountRelationRepo) List(ctx context.Context, companyTaskId, userId uint64, pageNum, pageSize, status int, expireTime, expiredTime, productName string) ([]*domain.CompanyTaskAccountRelation, error) {
+func (ctr *companyTaskAccountRelationRepo) List(ctx context.Context, companyTaskId, userId uint64, pageNum, pageSize, status int, expireTime, expiredTime, keyword string) ([]*domain.CompanyTaskAccountRelation, error) {
 	list := []*domain.CompanyTaskAccountRelation{}
 	taskDetails := []CompanyTaskAccountRelation{}
 
 	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
-		Table("company_task_account_relation").
 		Where("is_del = 0")
 
-	db = db.Preload("CompanyTaskDetails").Preload("CompanyTask")
-
-	if len(productName) > 0 {
-		db = db.Where("LOCATE(?,product_name)>0", productName)
-	}
+	db = db.Preload("CompanyTaskDetails")
 
 	if companyTaskId > 0 {
 		db = db.Where("company_task_id = ?", companyTaskId)
@@ -278,11 +190,117 @@ func (ctr *companyTaskAccountRelationRepo) List(ctx context.Context, companyTask
 	return list, nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) CountByCondition(ctx context.Context, companyTaskId, userId uint64, status int, expireTime, expiredTime string) (int64, error) {
+func (ctr *companyTaskAccountRelationRepo) ListByUserIds(ctx context.Context, taskId uint64, userIds []uint64) ([]*domain.CompanyTaskAccountRelation, error) {
+	list := []*domain.CompanyTaskAccountRelation{}
+	taskDetails := []CompanyTaskAccountRelation{}
+
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
+		Preload("CompanyTaskDetails").
+		Where("is_del = 0 and company_task_id = ? and user_id in (?)", taskId, userIds)
+
+	if err := db.Find(&taskDetails).Error; err != nil {
+		return nil, err
+	}
+
+	for _, v := range taskDetails {
+		list = append(list, v.ToDomain(ctx))
+	}
+
+	return list, nil
+}
+
+func (ctr *companyTaskAccountRelationRepo) ListOpenDouyinUsers(ctx context.Context, userId, pageNum, pageSize uint64, keyword string) (*v1.ListOpenDouyinUsersReply, error) {
+	return ctr.data.weixinuc.ListOpenDouyinUsers(ctx, &v1.ListOpenDouyinUsersRequest{
+		PageNum:  pageNum,
+		PageSize: pageSize,
+		UserId:   userId,
+		Keyword:  keyword,
+	})
+}
+
+func (ctr *companyTaskAccountRelationRepo) ListVideoTokensOpenDouyinVideos(ctx context.Context, productOutId uint64, claimTime time.Time, tokens []*domain.CompanyTaskClientKeyAndOpenId) ([]*douyinv1.ListVideoTokensOpenDouyinVideosReply_OpenDouyinVideo, error) {
+	tks := []*douyinv1.ListVideoTokensOpenDouyinVideosRequestToken{}
+
+	for _, v := range tokens {
+		tks = append(tks, &douyinv1.ListVideoTokensOpenDouyinVideosRequestToken{
+			ClientKey: v.ClientKey,
+			OpenId:    v.OpenId,
+		})
+	}
+
+	res, err := ctr.data.douyinuc.ListVideoTokensOpenDouyinVideos(ctx, &douyinv1.ListVideoTokensOpenDouyinVideosRequest{
+		ProductOutId: productOutId,
+		Tokens:       tks,
+		ClaimTime:    tool.TimeToString("2006-01-02 15:04:05", claimTime),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Data.List, nil
+}
+
+// 结算状态为到过期时间，并且状态为完成（status = 1）
+func (ctr *companyTaskAccountRelationRepo) ListSettle(ctx context.Context, expiredTime string) ([]*domain.CompanyTaskAccountRelation, error) {
+	list := []*domain.CompanyTaskAccountRelation{}
+	taskDetails := []CompanyTaskAccountRelation{}
+
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
+		Where("status = 1")
+
+	if len(expiredTime) > 0 {
+		// 已经过期的条件
+		db = db.Where("expire_time <= ?", expiredTime)
+	}
+
+	if err := db.Find(&taskDetails).Error; err != nil {
+		return nil, err
+	}
+
+	for _, v := range taskDetails {
+		list = append(list, v.ToDomain(ctx))
+	}
+
+	return list, nil
+}
+
+func (ctr *companyTaskAccountRelationRepo) Count(ctx context.Context, companyTaskId, userId uint64) (int64, error) {
+	var count int64
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{})
+
+	if companyTaskId > 0 {
+		db = db.Where("company_task_id = ?", companyTaskId)
+	}
+
+	if userId > 0 {
+		db = db.Where("user_id = ?", userId)
+	}
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (ctr *companyTaskAccountRelationRepo) CountAvailableByTaskId(ctx context.Context, companyTaskId uint64) (int64, error) {
+	var count int64
+
+	err := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
+		Where("company_task_id = ? and (expire_time > ? or status = 1)", companyTaskId, time.Now()).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (ctr *companyTaskAccountRelationRepo) CountByCondition(ctx context.Context, companyTaskId, userId uint64, status int, expireTime, expiredTime, keyword string) (int64, error) {
 	var count int64
 
 	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
-		Table("company_task_account_relation").
 		Where("is_del = 0")
 
 	if companyTaskId > 0 {
@@ -313,86 +331,27 @@ func (ctr *companyTaskAccountRelationRepo) CountByCondition(ctx context.Context,
 	return count, nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) ListOpenDouyinUsers(ctx context.Context, userId, pageNum, pageSize uint64, keyword string) (*v1.ListOpenDouyinUsersReply, error) {
-	return ctr.data.weixinuc.ListOpenDouyinUsers(ctx, &v1.ListOpenDouyinUsersRequest{
-		PageNum:  pageNum,
-		PageSize: pageSize,
-		UserId:   userId,
-		Keyword:  keyword,
-	})
+func (ctr *companyTaskAccountRelationRepo) CountByUserIds(ctx context.Context, companyTaskId uint64, userIds []uint64) (int64, error) {
+	var count int64
+
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
+		Where("is_del = 0 and company_task_id = ? and user_id in (?)", companyTaskId, userIds)
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) ListVideoTokensOpenDouyinVideos(ctx context.Context, productOutId uint64, claimTime time.Time, tokens []*domain.CompanyTaskClientKeyAndOpenId) ([]*domain.OpenDouyinVideo, error) {
-	tks := []*douyinv1.ListVideoTokensOpenDouyinVideosRequestToken{}
-
-	for _, v := range tokens {
-		tks = append(tks, &douyinv1.ListVideoTokensOpenDouyinVideosRequestToken{
-			ClientKey: v.ClientKey,
-			OpenId:    v.OpenId,
-		})
-	}
-
-	list := []*domain.OpenDouyinVideo{}
-
-	res, err := ctr.data.douyinuc.ListVideoTokensOpenDouyinVideos(ctx, &douyinv1.ListVideoTokensOpenDouyinVideosRequest{
-		ProductOutId: productOutId,
-		Tokens:       tks,
-		ClaimTime:    tool.TimeToString("2006-01-02 15:04:05", claimTime),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, v := range res.Data.List {
-		t, err := time.Parse("2006-01-02 15:04:05", v.CreateTime)
-
-		if err != nil {
-			continue
-		}
-
-		list = append(list, &domain.OpenDouyinVideo{
-			ClientKey:  v.ClientKey,
-			OpenId:     v.OpenId,
-			AwemeId:    v.AwemeId,
-			AccountId:  v.AccountId,
-			Nickname:   v.Nickname,
-			Avatar:     v.Avatar,
-			Title:      v.Title,
-			Cover:      v.Cover,
-			CreateTime: uint64(t.Unix()),
-			ItemId:     v.ItemId,
-			Statistics: domain.VideoStatistics{
-				CommentCount:  int32(v.Statistics.CommentCount),
-				DiggCount:     int32(v.Statistics.DiggCount),
-				DownloadCount: int32(v.Statistics.DownloadCount),
-				ForwardCount:  int32(v.Statistics.ForwardCount),
-				PlayCount:     int32(v.Statistics.PlayCount),
-				ShareCount:    int32(v.Statistics.ShareCount),
-			},
-			IsTop:       v.IsTop,
-			MediaType:   v.MediaType,
-			ShareUrl:    v.ShareUrl,
-			VideoId:     v.VideoId,
-			VideoStatus: v.VideoStatus,
-			ProductId:   v.ProductId,
-			ProductName: v.ProductName,
-			ProductImg:  v.ProductImg,
-		})
-	}
-
-	return list, nil
-}
-
-func (ctr *companyTaskAccountRelationRepo) UpdateStatusByIds(ctx context.Context, status int, ids []int) error {
-	return ctr.data.DB(ctx).Table("company_task_account_relation").Where("id in (?)", ids).Update("status", status).Error
+func (ctr *companyTaskAccountRelationRepo) UpdateStatusByIds(ctx context.Context, status int, ids []uint64) error {
+	return ctr.data.DB(ctx).Model(&CompanyTaskAccountRelation{}).Where("id in (?)", ids).Update("status", status).Error
 }
 
 func (ctr *companyTaskAccountRelationRepo) Update(ctx context.Context, in *domain.CompanyTaskAccountRelation) (*domain.CompanyTaskAccountRelation, error) {
 	task := &CompanyTaskAccountRelation{
 		Id:                    in.Id,
 		CompanyTaskId:         in.CompanyTaskId,
-		ProductName:           in.ProductName,
 		ProductOutId:          in.ProductOutId,
 		UserId:                in.UserId,
 		ClaimTime:             in.ClaimTime,
@@ -413,23 +372,46 @@ func (ctr *companyTaskAccountRelationRepo) Update(ctx context.Context, in *domai
 	return task.ToDomain(ctx), nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) GetCompanyTaskUserOrderStatus(ctx context.Context, userId uint64, productOutId, FlowPoint string) (*domain.DoukeOrderInfo, error) {
-	res, err := ctr.data.douyinuc.GetCompanyTaskUserOrderStatus(ctx, &douyinv1.GetCompanyTaskUserOrderStatusRequest{
-		UserId:    userId,
-		ProductId: productOutId,
-		FlowPoint: FlowPoint,
-	})
+// UpdateCacheHash 执行 lua 扣减脚本
+func (ctr *companyTaskAccountRelationRepo) UpdateCacheHash(ctx context.Context, taskId string) error {
+	res, err := ctr.data.rdb.Eval(ctx, CompanyTaskDeductionLua, []string{RedisCompanyTaskPre + taskId}).Result()
 
 	if err != nil {
+		return err
+	}
+
+	b, err := json.Marshal(res)
+
+	if err != nil {
+		return err
+	}
+
+	if string(b) == "0" {
+		return errors.New("decr task err")
+	}
+
+	return nil
+}
+
+// 注意扣减的过程，lua 控制 redis 中的可使用数量
+// 并查询当前已经被领取到任务数量
+func (ctr *companyTaskAccountRelationRepo) Save(ctx context.Context, in *domain.CompanyTaskAccountRelation) (*domain.CompanyTaskAccountRelation, error) {
+	relation := &CompanyTaskAccountRelation{
+		CompanyTaskId: in.CompanyTaskId,
+		ProductOutId:  in.ProductOutId,
+		UserId:        in.UserId,
+		ClaimTime:     in.ClaimTime,
+		ExpireTime:    in.ExpireTime,
+		Status:        in.Status,
+		CreateTime:    in.CreateTime,
+		UpdateTime:    in.UpdateTime,
+	}
+
+	if err := ctr.data.DB(ctx).Model(&CompanyTaskAccountRelation{}).Create(relation).Error; err != nil {
 		return nil, err
 	}
 
-	return &domain.DoukeOrderInfo{
-		Id:        res.Data.Id,
-		UserId:    res.Data.UserId,
-		ProductId: res.Data.ProductId,
-		FlowPoint: res.Data.FlowPoint,
-	}, nil
+	return relation.ToDomain(ctx), nil
 }
 
 func (cor *companyTaskAccountRelationRepo) PutContent(ctx context.Context, fileName string, content io.Reader) (*ctos.PutObjectV2Output, error) {

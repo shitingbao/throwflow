@@ -276,8 +276,8 @@ func (cp *CompanyProduct) GetCommission(ctx context.Context) (pureCommission, pu
 	}
 
 	if isExistPureCommission {
-		pureCommission = fmt.Sprintf("%.f%%", tool.Decimal(float64(fpureCommission), 0))
-		pureServiceCommission = fmt.Sprintf("%.f%%", tool.Decimal(float64(fpureServiceCommission), 0))
+		pureCommission = fmt.Sprintf("%.f", tool.Decimal(float64(fpureCommission), 0))
+		pureServiceCommission = fmt.Sprintf("%.f", tool.Decimal(float64(fpureServiceCommission), 0))
 	}
 
 	return
@@ -309,6 +309,10 @@ func (cp *CompanyProduct) SetUpdateTime(ctx context.Context, time time.Time) {
 
 func (cp *CompanyProduct) SetCreateTime(ctx context.Context) {
 	cp.CreateTime = time.Now()
+}
+
+func (cp *CompanyProduct) SetIsTask(ctx context.Context, isTask uint8) {
+	cp.IsTask = isTask
 }
 
 func (cp *CompanyProduct) VerifyCommission(ctx context.Context) bool {

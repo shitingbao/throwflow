@@ -17,7 +17,7 @@ import (
 // 企业爆品库表
 type CompanyProduct struct {
 	Id                   uint64    `gorm:"column:id;primarykey;type:bigint(20) UNSIGNED;autoIncrement;not null;comment:自增ID"`
-	ProductOutId         uint64    `gorm:"column:product_out_id;type:bigint(20) UNSIGNED;uniqueIndex:company_id_product_out_id;not null;comment:外部商品ID"`
+	ProductOutId         uint64    `gorm:"column:product_out_id;type:bigint(20) UNSIGNED;uniqueIndex:product_out_id;not null;comment:外部商品ID"`
 	ProductType          uint8     `gorm:"column:product_type;type:tinyint(3) UNSIGNED;not null;default:1;comment:公司类型，1：抖音平台商品"`
 	ProductStatus        uint8     `gorm:"column:product_status;type:tinyint(3) UNSIGNED;not null;default:0;comment:上架：1：否(爬虫下架)，0：否，2：是"`
 	ProductName          string    `gorm:"column:product_name;type:varchar(250);not null;comment:商品名称"`
@@ -65,6 +65,7 @@ func (cp *CompanyProduct) ToDomain() *domain.CompanyProduct {
 		ProductStatus:        cp.ProductStatus,
 		ProductName:          cp.ProductName,
 		ProductImg:           cp.ProductImg,
+		ProductDetailImg:     cp.ProductDetailImg,
 		ProductPrice:         cp.ProductPrice,
 		IndustryId:           cp.IndustryId,
 		IndustryName:         cp.IndustryName,
@@ -192,7 +193,28 @@ func (cpr *companyProductRepo) List(ctx context.Context, pageNum, pageSize int, 
 	return list, nil
 }
 
-func (cpr *companyProductRepo) ListExternal(ctx context.Context, pageNum, pageSize int, industryId, categoryId, subCategoryId uint64, productStatus, keyword string) ([]*domain.CompanyProduct, error) {
+func (cpr *companyProductRepo) ListByProductOutIds(ctx context.Context, isExist string, productOutIds []uint64) ([]*domain.CompanyProduct, error) {
+	var companyProducts []CompanyProduct
+	list := make([]*domain.CompanyProduct, 0)
+
+	db := cpr.data.db.WithContext(ctx).Where("product_out_id in (?)", productOutIds)
+
+	if len(isExist) > 0 {
+		db = db.Where("is_exist = ?", isExist)
+	}
+
+	if result := db.Find(&companyProducts); result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, companyProduct := range companyProducts {
+		list = append(list, companyProduct.ToDomain())
+	}
+
+	return list, nil
+}
+
+func (cpr *companyProductRepo) ListExternal(ctx context.Context, pageNum, pageSize int, industryId, categoryId, subCategoryId uint64, isInvestment uint8, productStatus, keyword string) ([]*domain.CompanyProduct, error) {
 	var companyProducts []CompanyProduct
 	list := make([]*domain.CompanyProduct, 0)
 
@@ -214,6 +236,10 @@ func (cpr *companyProductRepo) ListExternal(ctx context.Context, pageNum, pageSi
 		db = db.Where("sub_category_id = ?", subCategoryId)
 	}
 
+	if isInvestment == 1 {
+		db = db.Where("investment_ratio > 0")
+	}
+
 	if l := utf8.RuneCountInString(keyword); l > 0 {
 		db = db.Where("product_name like ?", "%"+keyword+"%")
 	}
@@ -231,7 +257,30 @@ func (cpr *companyProductRepo) ListExternal(ctx context.Context, pageNum, pageSi
 	return list, nil
 }
 
-func (cpr *companyProductRepo) Count(ctx context.Context, industryId, categoryId, subCategoryId uint64, productStatus, isExist, keyword string) (int64, error) {
+func (cpr *companyProductRepo) ListByProductOutIdOrName(ctx context.Context, pageNum, pageSize int, keyword string) ([]*domain.CompanyProduct, error) {
+	var companyProducts []CompanyProduct
+	list := make([]*domain.CompanyProduct, 0)
+
+	db := cpr.data.db.WithContext(ctx).Where("is_exist = 1")
+
+	if len(keyword) > 0 {
+		db = db.Where("product_out_id = ? or product_name like ?", keyword, "%"+keyword+"%")
+	}
+
+	if err := db.Order("is_top DESC,id DESC").
+		Limit(pageSize).Offset((pageNum - 1) * pageSize).
+		Find(&companyProducts).Error; err != nil {
+		return nil, err
+	}
+
+	for _, companyProduct := range companyProducts {
+		list = append(list, companyProduct.ToDomain())
+	}
+
+	return list, nil
+}
+
+func (cpr *companyProductRepo) Count(ctx context.Context, industryId, categoryId, subCategoryId uint64, isInvestment uint8, productStatus, isExist, keyword string) (int64, error) {
 	var count int64
 
 	db := cpr.data.db.WithContext(ctx)
@@ -256,6 +305,10 @@ func (cpr *companyProductRepo) Count(ctx context.Context, industryId, categoryId
 		db = db.Where("sub_category_id = ?", subCategoryId)
 	}
 
+	if isInvestment == 1 {
+		db = db.Where("investment_ratio > 0")
+	}
+
 	if l := utf8.RuneCountInString(keyword); l > 0 {
 		db = db.Where("product_name like ?", "%"+keyword+"%")
 	}
@@ -264,6 +317,22 @@ func (cpr *companyProductRepo) Count(ctx context.Context, industryId, categoryId
 
 	if result := db.Model(&CompanyProduct{}).Count(&count); result.Error != nil {
 		return 0, result.Error
+	}
+
+	return count, nil
+}
+
+func (cpr *companyProductRepo) CountByProductOutIdOrName(ctx context.Context, keyword string) (int64, error) {
+	var count int64
+
+	db := cpr.data.db.WithContext(ctx).Model(&CompanyProduct{}).Where("is_exist = 1")
+
+	if len(keyword) > 0 {
+		db = db.Where("product_out_id = ? or product_name like ?", keyword, "%"+keyword+"%")
+	}
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
 	}
 
 	return count, nil
@@ -314,6 +383,7 @@ func (cpr *companyProductRepo) Save(ctx context.Context, in *domain.CompanyProdu
 		ProductStatus:        in.ProductStatus,
 		ProductName:          in.ProductName,
 		ProductImg:           in.ProductImg,
+		ProductDetailImg:     in.ProductDetailImg,
 		ProductPrice:         in.ProductPrice,
 		IndustryId:           in.IndustryId,
 		IndustryName:         in.IndustryName,
@@ -354,6 +424,7 @@ func (cpr *companyProductRepo) Update(ctx context.Context, in *domain.CompanyPro
 		ProductStatus:        in.ProductStatus,
 		ProductName:          in.ProductName,
 		ProductImg:           in.ProductImg,
+		ProductDetailImg:     in.ProductDetailImg,
 		ProductPrice:         in.ProductPrice,
 		IndustryId:           in.IndustryId,
 		IndustryName:         in.IndustryName,
@@ -510,26 +581,4 @@ func (cpr *companyProductRepo) AbortMultipartUpload(ctx context.Context, objectK
 	}
 
 	return nil, errors.New("tos is not exist")
-}
-
-func (cpr *companyProductRepo) ListByProductOutIds(ctx context.Context, isExist string, productOutIds []uint64) ([]*domain.CompanyProduct, error) {
-	companyProducts := []CompanyProduct{}
-	list := []*domain.CompanyProduct{}
-
-	db := cpr.data.db.WithContext(ctx).
-		Where("product_out_id in (?)", productOutIds)
-
-	if len(isExist) > 0 {
-		db = db.Where("is_exist = ?", isExist)
-	}
-
-	if result := db.Find(&companyProducts); result.Error != nil {
-		return nil, result.Error
-	}
-
-	for _, v := range companyProducts {
-		list = append(list, v.ToDomain())
-	}
-
-	return list, nil
 }
