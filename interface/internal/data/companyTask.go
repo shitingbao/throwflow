@@ -20,35 +20,10 @@ func NewCompanyTaskRepo(data *Data, logger log.Logger) biz.CompanyTaskRepo {
 	}
 }
 
-func (ctr *companyTaskRepo) CreateCompanyTask(ctx context.Context, productOutId, expireTime, playNum, price, quota uint64, isGoodReviews uint32) (*v1.CreateCompanyTaskReply, error) {
-	return ctr.data.companyuc.CreateCompanyTask(ctx, &v1.CreateCompanyTaskRequest{
-		ProductOutId:  productOutId,
-		ExpireTime:    expireTime,
-		PlayNum:       playNum,
-		Price:         price,
-		Quota:         quota,
-		IsGoodReviews: isGoodReviews,
-	})
-}
-
 func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId, userId uint64) (*v1.GetByProductOutIdReply, error) {
 	return ctr.data.companyuc.GetByProductOutId(ctx, &v1.GetByProductOutIdRequest{
 		ProductOutId: productOutId,
 		UserId:       userId,
-	})
-}
-
-func (ctr *companyTaskRepo) UpdateCompanyTaskQuota(ctx context.Context, taskId, quota uint64) (*v1.UpdateCompanyTaskReply, error) {
-	return ctr.data.companyuc.UpdateCompanyTaskQuota(ctx, &v1.UpdateCompanyTaskQuotaRequest{
-		CompanyTaskId: taskId,
-		Quota:         quota,
-	})
-}
-
-func (ctr *companyTaskRepo) UpdateCompanyTaskIsTop(ctx context.Context, taskId uint64, isTop uint32) (*v1.UpdateCompanyTaskReply, error) {
-	return ctr.data.companyuc.UpdateCompanyTaskIsTop(ctx, &v1.UpdateCompanyTaskIsTopRequest{
-		CompanyTaskId: taskId,
-		IsTop:         isTop,
 	})
 }
 
@@ -59,21 +34,6 @@ func (ctr *companyTaskRepo) ListCompanyTask(ctx context.Context, isTop uint32, i
 		Keyword:  keyword,
 		IsTop:    isTop,
 		IsDel:    isDel,
-	})
-}
-
-func (ctr *companyTaskRepo) UpdateCompanyTaskIsDel(ctx context.Context, taskId uint64) (*v1.UpdateCompanyTaskIsDelReply, error) {
-	return ctr.data.companyuc.UpdateCompanyTaskIsDel(ctx, &v1.UpdateCompanyTaskIsDelRequest{
-		CompanyTaskId: taskId,
-	})
-}
-
-func (ctr *companyTaskRepo) CreateCompanyTaskAccountRelation(ctx context.Context,
-	companyTaskId, productOutId, userId uint64) (*v1.CreateCompanyTaskAccountRelationReply, error) {
-	return ctr.data.companyuc.CreateCompanyTaskAccountRelation(ctx, &v1.CreateCompanyTaskAccountRelationRequest{
-		CompanyTaskId: companyTaskId,
-		ProductOutId:  productOutId,
-		UserId:        userId,
 	})
 }
 
@@ -91,6 +51,56 @@ func (ctr *companyTaskRepo) ListCompanyTaskAccountRelation(ctx context.Context,
 	})
 }
 
+func (ctr *companyTaskRepo) ListCompanyTaskDetail(ctx context.Context,
+	pageNum, pageSize, taskId uint64, nickname string) (*v1.ListCompanyTaskDetailReply, error) {
+	return ctr.data.companyuc.ListCompanyTaskDetail(ctx, &v1.ListCompanyTaskDetailRequest{
+		PageNum:       pageNum,
+		PageSize:      pageSize,
+		CompanyTaskId: taskId,
+		Nickname:      nickname,
+	})
+}
+
+func (ctr *companyTaskRepo) CreateCompanyTask(ctx context.Context, productOutId, expireTime, playNum, quota uint64, isGoodReviews uint32, price float64) (*v1.CreateCompanyTaskReply, error) {
+	return ctr.data.companyuc.CreateCompanyTask(ctx, &v1.CreateCompanyTaskRequest{
+		ProductOutId:  productOutId,
+		ExpireTime:    expireTime,
+		PlayNum:       playNum,
+		Price:         price,
+		Quota:         quota,
+		IsGoodReviews: isGoodReviews,
+	})
+}
+
+func (ctr *companyTaskRepo) CreateCompanyTaskAccountRelation(ctx context.Context,
+	companyTaskId, productOutId, userId uint64) (*v1.CreateCompanyTaskAccountRelationReply, error) {
+	return ctr.data.companyuc.CreateCompanyTaskAccountRelation(ctx, &v1.CreateCompanyTaskAccountRelationRequest{
+		CompanyTaskId: companyTaskId,
+		ProductOutId:  productOutId,
+		UserId:        userId,
+	})
+}
+
+func (ctr *companyTaskRepo) UpdateCompanyTaskIsDel(ctx context.Context, taskId uint64) (*v1.UpdateCompanyTaskIsDelReply, error) {
+	return ctr.data.companyuc.UpdateCompanyTaskIsDel(ctx, &v1.UpdateCompanyTaskIsDelRequest{
+		CompanyTaskId: taskId,
+	})
+}
+
+func (ctr *companyTaskRepo) UpdateCompanyTaskQuota(ctx context.Context, taskId, quota uint64) (*v1.UpdateCompanyTaskReply, error) {
+	return ctr.data.companyuc.UpdateCompanyTaskQuota(ctx, &v1.UpdateCompanyTaskQuotaRequest{
+		CompanyTaskId: taskId,
+		Quota:         quota,
+	})
+}
+
+func (ctr *companyTaskRepo) UpdateCompanyTaskIsTop(ctx context.Context, taskId uint64, isTop uint32) (*v1.UpdateCompanyTaskReply, error) {
+	return ctr.data.companyuc.UpdateCompanyTaskIsTop(ctx, &v1.UpdateCompanyTaskIsTopRequest{
+		CompanyTaskId: taskId,
+		IsTop:         isTop,
+	})
+}
+
 func (ctr *companyTaskRepo) UpdateCompanyTaskDetailScreenshotAvailable(ctx context.Context,
 	isScreenshotAvailable uint32, id uint64) (*v1.UpdateCompanyTaskDetailScreenshotAvailableReply, error) {
 	return ctr.data.companyuc.UpdateCompanyTaskDetailScreenshotAvailable(ctx, &v1.UpdateCompanyTaskDetailScreenshotAvailableRequest{
@@ -104,15 +114,5 @@ func (ctr *companyTaskRepo) UpdateCompanyTaskDetailScreenshot(ctx context.Contex
 	return ctr.data.companyuc.UpdateCompanyTaskDetailScreenshot(ctx, &v1.UpdateCompanyTaskDetailScreenshotRequest{
 		Id:         id,
 		Screenshot: Screenshot,
-	})
-}
-
-func (ctr *companyTaskRepo) ListCompanyTaskDetail(ctx context.Context,
-	pageNum, pageSize, taskId uint64, nickname string) (*v1.ListCompanyTaskDetailReply, error) {
-	return ctr.data.companyuc.ListCompanyTaskDetail(ctx, &v1.ListCompanyTaskDetailRequest{
-		PageNum:       pageNum,
-		PageSize:      pageSize,
-		CompanyTaskId: taskId,
-		Nickname:      nickname,
 	})
 }

@@ -16,6 +16,7 @@ type UserOrganizationRepo interface {
 	ListParent(context.Context, uint64, uint64, string) (*v1.ListParentUserOrganizationRelationsReply, error)
 	ListCommission(context.Context, uint64, uint64, uint64, uint64, uint32, string, string) (*v1.ListUserCommissionsReply, error)
 	Statistics(context.Context, uint64, uint64) (*v1.StatisticsUserCommissionsReply, error)
+	StatisticsDetail(context.Context, uint64, uint64, uint32, string, string) (*v1.StatisticsDetailUserCommissionsReply, error)
 }
 
 type UserOrganizationUsecase struct {
@@ -73,12 +74,12 @@ func (uouc *UserOrganizationUsecase) ListParentMiniUserOrganizationRelations(ctx
 	return list, nil
 }
 
-func (uouc *UserOrganizationUsecase) ListMiniUserOrganizations(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, isDirect uint32, month, keyword string) (*v1.ListUserCommissionsReply, error) {
+func (uouc *UserOrganizationUsecase) ListMiniUserOrganizations(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, commissionType uint32, month, keyword string) (*v1.ListUserCommissionsReply, error) {
 	if pageSize == 0 {
 		pageSize = uint64(uouc.conf.Database.PageSize)
 	}
 
-	list, err := uouc.repo.ListCommission(ctx, pageNum, pageSize, userId, organizationId, isDirect, month, keyword)
+	list, err := uouc.repo.ListCommission(ctx, pageNum, pageSize, userId, organizationId, commissionType, month, keyword)
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_LIST_USER_COMMISSION_FAILED", tool.GetGRPCErrorInfo(err))
@@ -116,6 +117,16 @@ func (uouc *UserOrganizationUsecase) StatisticsMiniUserOrganizations(ctx context
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_STATISTIC_USER_ORGANIZATION_FAILED", tool.GetGRPCErrorInfo(err))
+	}
+
+	return statistics, nil
+}
+
+func (uouc *UserOrganizationUsecase) StatisticsDetailMiniUserOrganizationRelations(ctx context.Context, userId, organizationId uint64, commissionType uint32, month, keyword string) (*v1.StatisticsDetailUserCommissionsReply, error) {
+	statistics, err := uouc.repo.StatisticsDetail(ctx, userId, organizationId, commissionType, month, keyword)
+
+	if err != nil {
+		return nil, errors.InternalServer("INTERFACE_STATISTIC_DETAIL_USER_ORGANIZATION_FAILED", tool.GetGRPCErrorInfo(err))
 	}
 
 	return statistics, nil

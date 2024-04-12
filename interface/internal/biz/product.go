@@ -2,17 +2,19 @@ package biz
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/log"
 	v1 "interface/api/service/company/v1"
 	"interface/internal/conf"
 	"interface/internal/pkg/tool"
+
+	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 type ProductRepo interface {
 	List(context.Context, uint64, uint64, uint64, uint64, uint64, string, string) (*v1.ListCompanyProductsReply, error)
 	ListExternal(context.Context, uint64, uint64, uint64, uint64, uint64, uint32, string) (*v1.ListExternalCompanyProductsReply, error)
 	ListCategory(context.Context) (*v1.ListCompanyProductCategorysReply, error)
+	ListCompanyTaskProducts(context.Context, uint64, uint64, string) (*v1.ListCompanyTaskProductsReply, error)
 	Statistics(context.Context, uint64, uint64, uint64, string, string) (*v1.StatisticsCompanyProductsReply, error)
 	GetUploadId(context.Context, string) (*v1.GetUploadIdCompanyProductsReply, error)
 	GetExternal(context.Context, uint64) (*v1.GetExternalCompanyProductsReply, error)
@@ -24,6 +26,7 @@ type ProductRepo interface {
 	UpdateSampleThreshold(context.Context, uint64, uint64, uint32) (*v1.UpdateSampleThresholdCompanyProductsReply, error)
 	UpdateMaterial(context.Context, uint64, string) (*v1.UpdateMaterialCompanyProductsReply, error)
 	UpdateInvestmentRatio(context.Context, uint64, float64) (*v1.UpdateInvestmentRatioCompanyProductsReply, error)
+	Parse(context.Context, string) (*v1.ParseCompanyProductsReply, error)
 	UploadPart(context.Context, uint64, uint64, uint64, string, string) (*v1.UploadPartCompanyProductsReply, error)
 	CompleteUpload(context.Context, string) (*v1.CompleteUploadCompanyProductsReply, error)
 	AbortUpload(context.Context, string) (*v1.AbortUploadCompanyProductsReply, error)
@@ -84,6 +87,16 @@ func (puc *ProductUsecase) ListMiniCategorys(ctx context.Context) (*v1.ListCompa
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_LIST_PRODUCT_CATEGORY_FAILED", tool.GetGRPCErrorInfo(err))
+	}
+
+	return list, nil
+}
+
+func (puc *ProductUsecase) ListCompanyTaskProducts(ctx context.Context, pageNum, pageSize uint64, keyword string) (*v1.ListCompanyTaskProductsReply, error) {
+	list, err := puc.repo.ListCompanyTaskProducts(ctx, pageNum, pageSize, keyword)
+
+	if err != nil {
+		return nil, errors.InternalServer("INTERFACE_LIST_PRODUCT_FAILED", tool.GetGRPCErrorInfo(err))
 	}
 
 	return list, nil
@@ -194,6 +207,16 @@ func (puc *ProductUsecase) UpdateInvestmentRatioProducts(ctx context.Context, pr
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_UPDATE_INVESTMENTRATIO_PRODUCT_FAILED", tool.GetGRPCErrorInfo(err))
+	}
+
+	return product, nil
+}
+
+func (puc *ProductUsecase) ParseMiniProductProducts(ctx context.Context, content string) (*v1.ParseCompanyProductsReply, error) {
+	product, err := puc.repo.Parse(ctx, content)
+
+	if err != nil {
+		return nil, errors.InternalServer("INTERFACE_PARSE_PRODUCT_FAILED", tool.GetGRPCErrorInfo(err))
 	}
 
 	return product, nil

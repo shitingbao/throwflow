@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "interface/api/interface/v1"
 	"interface/internal/biz"
 	"time"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (is *InterfaceService) ListProducts(ctx context.Context, in *v1.ListProductsRequest) (*v1.ListProductsReply, error) {
@@ -79,10 +80,6 @@ func (is *InterfaceService) ListProducts(ctx context.Context, in *v1.ListProduct
 }
 
 func (is *InterfaceService) ListMiniProducts(ctx context.Context, in *v1.ListMiniProductsRequest) (*v1.ListMiniProductsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	products, err := is.prouc.ListMiniProducts(ctx, in.PageNum, in.PageSize, in.IndustryId, in.CategoryId, in.SubCategoryId, in.IsInvestment, in.Keyword)
 
 	if err != nil {
@@ -169,10 +166,6 @@ func (is *InterfaceService) ListCategoryProducts(ctx context.Context, in *emptyp
 }
 
 func (is *InterfaceService) ListMiniCategorys(ctx context.Context, in *emptypb.Empty) (*v1.ListMiniCategorysReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	productCategories, err := is.prouc.ListMiniCategorys(ctx)
 
 	if err != nil {
@@ -216,11 +209,77 @@ func (is *InterfaceService) ListMiniCategorys(ctx context.Context, in *emptypb.E
 	}, nil
 }
 
-func (is *InterfaceService) StatisticsMiniProducts(ctx context.Context, in *v1.StatisticsMiniProductsRequest) (*v1.StatisticsMiniProductsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
+func (is *InterfaceService) ListCompanyTaskProducts(ctx context.Context, in *v1.ListCompanyTaskProductsRequest) (*v1.ListCompanyTaskProductsReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, "product"); err != nil {
 		return nil, err
 	}
 
+	products, err := is.prouc.ListCompanyTaskProducts(ctx, in.PageNum, in.PageSize, in.Keyword)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*v1.ListCompanyTaskProductsReply_CompanyProduct, 0)
+
+	for _, product := range products.Data.List {
+		productImgs := make([]*v1.ListCompanyTaskProductsReply_ProductImg, 0)
+		materialOutUrls := make([]*v1.ListCompanyTaskProductsReply_MaterialOutUrl, 0)
+		commissions := make([]*v1.ListCompanyTaskProductsReply_Commission, 0)
+
+		for _, productImg := range product.ProductImgs {
+			productImgs = append(productImgs, &v1.ListCompanyTaskProductsReply_ProductImg{
+				ProductImg: productImg.ProductImg,
+			})
+		}
+
+		for _, materialOutUrl := range product.MaterialOutUrls {
+			materialOutUrls = append(materialOutUrls, &v1.ListCompanyTaskProductsReply_MaterialOutUrl{
+				MaterialOutUrl: materialOutUrl.MaterialOutUrl,
+			})
+		}
+
+		for _, commission := range product.Commissions {
+			commissions = append(commissions, &v1.ListCompanyTaskProductsReply_Commission{
+				CommissionRatio:  float64(commission.CommissionRatio),
+				ServiceRatio:     float64(commission.ServiceRatio),
+				CommissionOutUrl: commission.CommissionOutUrl,
+			})
+		}
+
+		list = append(list, &v1.ListCompanyTaskProductsReply_CompanyProduct{
+			ProductId:            product.ProductId,
+			ProductOutId:         product.ProductOutId,
+			ProductType:          product.ProductType,
+			ProductStatus:        product.ProductStatus,
+			ProductName:          product.ProductName,
+			ProductImgs:          productImgs,
+			ProductPrice:         product.ProductPrice,
+			ProductUrl:           product.ProductUrl,
+			IsTop:                product.IsTop,
+			MaterialOutUrls:      materialOutUrls,
+			SampleThresholdType:  product.SampleThresholdType,
+			SampleThresholdValue: product.SampleThresholdValue,
+			Commissions:          commissions,
+			InvestmentRatio:      product.InvestmentRatio,
+			ForbidReason:         product.ForbidReason,
+			IsTask:               product.IsTask,
+		})
+	}
+
+	return &v1.ListCompanyTaskProductsReply{
+		Code: 200,
+		Data: &v1.ListCompanyTaskProductsReply_Data{
+			PageNum:   products.Data.PageNum,
+			PageSize:  products.Data.PageSize,
+			Total:     products.Data.Total,
+			TotalPage: products.Data.TotalPage,
+			List:      list,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) StatisticsMiniProducts(ctx context.Context, in *v1.StatisticsMiniProductsRequest) (*v1.StatisticsMiniProductsReply, error) {
 	statistics, err := is.prouc.StatisticsMiniProducts(ctx, in.IndustryId, in.CategoryId, in.SubCategoryId, in.Keyword)
 
 	if err != nil {
@@ -264,10 +323,6 @@ func (is *InterfaceService) GetUploadIdProducts(ctx context.Context, in *v1.GetU
 }
 
 func (is *InterfaceService) GetMiniProducts(ctx context.Context, in *v1.GetMiniProductsRequest) (*v1.GetMiniProductsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	product, err := is.prouc.GetMiniProducts(ctx, in.ProductId)
 
 	if err != nil {
@@ -717,6 +772,40 @@ func (is *InterfaceService) UpdateInvestmentRatioProducts(ctx context.Context, i
 			InvestmentRatio:      product.Data.InvestmentRatio,
 			ForbidReason:         product.Data.ForbidReason,
 			IsTask:               product.Data.IsTask,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) ParseMiniProductProducts(ctx context.Context, in *v1.ParseMiniProductProductsRequest) (*v1.ParseMiniProductProductsReply, error) {
+	if ok := is.verifyToken(ctx, in.Token); !ok {
+		return nil, biz.InterfaceTokenVerifyError
+	}
+
+	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
+		return nil, err
+	}
+
+	product, err := is.prouc.ParseMiniProductProducts(ctx, in.Content)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.ParseMiniProductProductsReply{
+		Code: 200,
+		Data: &v1.ParseMiniProductProductsReply_Data{
+			ProductId:             product.Data.ProductId,
+			ProductName:           product.Data.ProductName,
+			ProductImg:            product.Data.ProductImg,
+			ProductPrice:          product.Data.ProductPrice,
+			IsTop:                 product.Data.IsTop,
+			PureCommission:        product.Data.PureCommission,
+			PureServiceCommission: product.Data.PureServiceCommission,
+			CommonCommission:      product.Data.CommonCommission,
+			InvestmentRatio:       product.Data.InvestmentRatio,
+			IsHot:                 product.Data.IsHot,
+			TotalSale:             product.Data.TotalSale,
+			IsTask:                product.Data.IsTask,
 		},
 	}, nil
 }

@@ -32,8 +32,8 @@ func (is *InterfaceService) GetUsers(ctx context.Context, in *emptypb.Empty) (*v
 			Integral:          user.Data.Integral,
 			IntegralLevelName: user.Data.IntegralLevelName,
 			Ranking:           user.Data.Ranking,
-			Total:             10000 + user.Data.Total,
-			TotalRanking:      10000 + user.Data.TotalRanking,
+			Total:             user.Data.Total,
+			TotalRanking:      user.Data.TotalRanking,
 		},
 	}, nil
 }

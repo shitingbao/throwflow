@@ -2,10 +2,11 @@ package data
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/log"
-	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "interface/api/service/company/v1"
 	"interface/internal/biz"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type productRepo struct {
@@ -58,6 +59,20 @@ func (pr *productRepo) ListExternal(ctx context.Context, industryId, categoryId,
 
 func (pr *productRepo) ListCategory(ctx context.Context) (*v1.ListCompanyProductCategorysReply, error) {
 	list, err := pr.data.companyuc.ListCompanyProductCategorys(ctx, &emptypb.Empty{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
+}
+
+func (pr *productRepo) ListCompanyTaskProducts(ctx context.Context, pageNum, pageSize uint64, keyword string) (*v1.ListCompanyTaskProductsReply, error) {
+	list, err := pr.data.companyuc.ListCompanyTaskProducts(ctx, &v1.ListCompanyTaskProductsRequest{
+		PageNum:  pageNum,
+		PageSize: pageSize,
+		Keyword:  keyword,
+	})
 
 	if err != nil {
 		return nil, err
@@ -208,6 +223,18 @@ func (pr *productRepo) UpdateInvestmentRatio(ctx context.Context, productId uint
 	}
 
 	return list, err
+}
+
+func (pr *productRepo) Parse(ctx context.Context, content string) (*v1.ParseCompanyProductsReply, error) {
+	companyProduct, err := pr.data.companyuc.ParseCompanyProducts(ctx, &v1.ParseCompanyProductsRequest{
+		Content: content,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return companyProduct, err
 }
 
 func (pr *productRepo) UploadPart(ctx context.Context, partNumber, totalPart, contentLength uint64, uploadId, content string) (*v1.UploadPartCompanyProductsReply, error) {

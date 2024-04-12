@@ -22,7 +22,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewDiscovery, NewIndustryRepo, NewAreaRepo, NewSmsRepo, NewTokenRepo, NewKuaidiCompanyRepo, NewLoginRepo, NewCompanyUserRepo, NewCompanySetRepo, NewQianchuanAdvertiserRepo, NewClueRepo, NewOceanengineConfigRepo, NewMaterialRepo, NewPerformanceRuleRepo, NewPerformanceRepo, NewPerformanceRebalanceRepo, NewUpdateLogRepo, NewUserRepo, NewProductRepo, NewCompanyRepo, NewCompanyMaterialRepo, NewCompanyOrganizationRepo, NewUserAddressRepo, NewUserStoreRepo, NewUserOpenDouyinRepo, NewUserSampleOrderRepo, NewUserScanRecordRepo, NewJinritemailOrderRepo, NewDoukeOrderRepo, NewCommonServiceClient, NewDouyinServiceClient, NewUserOrderRepo, NewUserOrganizationRepo, NewUserCouponRepo, NewUserBalanceRepo, NewUserContractRepo, NewUserBankRepo, NewCompanyTaskRepo, NewCompanyServiceClient, NewMaterialServiceClient, NewWeixinServiceClient)
+var ProviderSet = wire.NewSet(NewData, NewDiscovery, NewIndustryRepo, NewAreaRepo, NewSmsRepo, NewTokenRepo, NewKuaidiCompanyRepo, NewLoginRepo, NewCompanyUserRepo, NewCompanySetRepo, NewQianchuanAdvertiserRepo, NewClueRepo, NewOceanengineConfigRepo, NewMaterialRepo, NewPerformanceRuleRepo, NewPerformanceRepo, NewPerformanceRebalanceRepo, NewUpdateLogRepo, NewUserRepo, NewProductRepo, NewCompanyRepo, NewCompanyMaterialRepo, NewCompanyOrganizationRepo, NewUserAddressRepo, NewUserStoreRepo, NewUserOpenDouyinRepo, NewUserSampleOrderRepo, NewUserScanRecordRepo, NewJinritemailOrderRepo, NewDoukeOrderRepo, NewCommonServiceClient, NewDouyinServiceClient, NewUserOrderRepo, NewUserOrganizationRepo, NewUserCouponRepo, NewUserBalanceRepo, NewUserContractRepo, NewUserBankRepo, NewCompanyTaskRepo, NewCourseRepo, NewCompanyServiceClient, NewMaterialServiceClient, NewWeixinServiceClient)
 
 // Data .
 type Data struct {
@@ -52,7 +52,7 @@ func NewCommonServiceClient(sr *conf.Service, rr registry.Discovery) commonv1.Co
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(20*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
@@ -71,7 +71,7 @@ func NewDouyinServiceClient(sr *conf.Service, rr registry.Discovery) douyinv1.Do
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(20*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
@@ -90,7 +90,7 @@ func NewCompanyServiceClient(sr *conf.Service, rr registry.Discovery) companyv1.
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(50*time.Second),
+		grpc.WithTimeout(5*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {

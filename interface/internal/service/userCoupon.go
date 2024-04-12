@@ -23,6 +23,7 @@ func (is *InterfaceService) GetBindMinUserCoupons(ctx context.Context, in *v1.Ge
 		Code: 200,
 		Data: &v1.GetBindMinUserCouponsReply_Data{
 			CouponCode: bindUserCoupon.Data.CouponCode,
+			Level:      bindUserCoupon.Data.Level,
 		},
 	}, nil
 }
@@ -34,7 +35,7 @@ func (is *InterfaceService) ListMinUserCoupons(ctx context.Context, in *v1.ListM
 		return nil, err
 	}
 
-	userCoupons, err := is.ucuc.ListMinUserCoupons(ctx, in.PageNum, in.PageSize, userInfo.Data.UserId, in.OrganizationId)
+	userCoupons, err := is.ucuc.ListMinUserCoupons(ctx, in.PageNum, in.PageSize, userInfo.Data.UserId, in.OrganizationId, in.Level)
 
 	if err != nil {
 		return nil, err
@@ -73,7 +74,7 @@ func (is *InterfaceService) BindMiniUserCoupons(ctx context.Context, in *v1.Bind
 		return nil, err
 	}
 
-	if _, err := is.ucuc.BindMiniUserCoupons(ctx, userInfo.Data.UserId, in.Phone); err != nil {
+	if _, err := is.ucuc.BindMiniUserCoupons(ctx, userInfo.Data.UserId, in.Level, in.Phone); err != nil {
 		return nil, err
 	}
 

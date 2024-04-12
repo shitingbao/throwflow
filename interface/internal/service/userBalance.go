@@ -23,10 +23,12 @@ func (is *InterfaceService) GetMiniUserBalances(ctx context.Context, in *empty.E
 	return &v1.GetMiniUserBalancesReply{
 		Code: 200,
 		Data: &v1.GetMiniUserBalancesReply_Data{
-			EstimatedCommissionBalance: userBalance.Data.EstimatedCommissionBalance,
-			RealCommissionBalance:      userBalance.Data.RealCommissionBalance,
-			EstimatedCostBalance:       userBalance.Data.EstimatedCostBalance,
-			RealCostBalance:            userBalance.Data.RealCostBalance,
+			EstimatedCommissionBalance:     userBalance.Data.EstimatedCommissionBalance,
+			SettleCommissionBalance:        userBalance.Data.SettleCommissionBalance,
+			CashableCommissionBalance:      userBalance.Data.CashableCommissionBalance,
+			EstimatedCommissionCostBalance: userBalance.Data.EstimatedCommissionCostBalance,
+			SettleCommissionCostBalance:    userBalance.Data.SettleCommissionCostBalance,
+			CashableCommissionCostBalance:  userBalance.Data.CashableCommissionCostBalance,
 		},
 	}, nil
 }
@@ -38,7 +40,7 @@ func (is *InterfaceService) ListMinUserBalances(ctx context.Context, in *v1.List
 		return nil, err
 	}
 
-	userBalances, err := is.ubuc.ListMinUserBalances(ctx, in.PageNum, in.PageSize, userInfo.Data.UserId, in.OperationType)
+	userBalances, err := is.ubuc.ListMinUserBalances(ctx, in.PageNum, in.PageSize, userInfo.Data.UserId, in.OperationType, in.Keyword)
 
 	if err != nil {
 		return nil, err
@@ -48,12 +50,13 @@ func (is *InterfaceService) ListMinUserBalances(ctx context.Context, in *v1.List
 
 	for _, userBalance := range userBalances.Data.List {
 		list = append(list, &v1.ListMinUserBalancesReply_UserBalance{
-			Amount:           userBalance.Amount,
-			BalanceType:      userBalance.BalanceType,
-			OperationType:    userBalance.OperationType,
-			OperationContent: userBalance.OperationContent,
-			BalanceStatus:    userBalance.BalanceStatus,
-			CreateTime:       userBalance.CreateTime,
+			Amount:             userBalance.Amount,
+			NickName:           userBalance.NickName,
+			Phone:              userBalance.Phone,
+			CommissionTypeName: userBalance.CommissionTypeName,
+			OperationType:      userBalance.OperationType,
+			OperationContent:   userBalance.OperationContent,
+			CreateTime:         userBalance.CreateTime,
 		})
 	}
 

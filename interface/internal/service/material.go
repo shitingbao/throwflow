@@ -72,10 +72,6 @@ func (is *InterfaceService) ListMaterials(ctx context.Context, in *v1.ListMateri
 }
 
 func (is *InterfaceService) ListMiniMaterials(ctx context.Context, in *v1.ListMiniMaterialsRequest) (*v1.ListMiniMaterialsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -134,10 +130,6 @@ func (is *InterfaceService) ListMiniMaterials(ctx context.Context, in *v1.ListMi
 }
 
 func (is *InterfaceService) ListMiniMaterialProducts(ctx context.Context, in *v1.ListMiniMaterialProductsRequest) (*v1.ListMiniMaterialProductsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -401,10 +393,6 @@ func (is *InterfaceService) StatisticsMaterials(ctx context.Context, in *emptypb
 }
 
 func (is *InterfaceService) StatisticsMiniMaterials(ctx context.Context, in *emptypb.Empty) (*v1.StatisticsMaterialsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	statistics, err := is.muc.StatisticsMaterials(ctx)
 
 	if err != nil {
@@ -575,10 +563,6 @@ func (is *InterfaceService) GetPromotions(ctx context.Context, in *v1.GetPromoti
 }
 
 func (is *InterfaceService) GetMiniMaterials(ctx context.Context, in *v1.GetMiniMaterialsRequest) (*v1.GetMiniMaterialsReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	material, err := is.muc.GetMiniMaterials(ctx, in.VideoId)
 
 	if err != nil {

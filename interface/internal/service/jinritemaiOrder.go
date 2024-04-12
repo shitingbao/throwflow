@@ -148,10 +148,6 @@ func (is *InterfaceService) StatisticsUserOrders(ctx context.Context, in *v1.Sta
 }
 
 func (is *InterfaceService) GetVideoUrlUserOrders(ctx context.Context, in *v1.GetVideoUrlUserOrdersRequest) (*v1.GetVideoUrlUserOrdersReply, error) {
-	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
-		return nil, err
-	}
-
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

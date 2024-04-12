@@ -61,7 +61,7 @@ func (is *InterfaceService) GetMiniUserOrganizationRelations(ctx context.Context
 			ParentUserId:              userOrganization.Data.ParentUserId,
 			ParentNickName:            userOrganization.Data.ParentNickName,
 			ParentAvatarUrl:           userOrganization.Data.ParentAvatarUrl,
-			Total:                     10000 + userOrganization.Data.Total,
+			Total:                     userOrganization.Data.Total,
 		},
 	}, nil
 }
@@ -175,7 +175,7 @@ func (is *InterfaceService) ListMiniUserOrganizationRelations(ctx context.Contex
 		return nil, err
 	}
 
-	userCommissions, err := is.uouc.ListMiniUserOrganizations(ctx, in.PageNum, in.PageSize, userInfo.Data.UserId, in.OrganizationId, in.IsDirect, in.Month, in.Keyword)
+	userCommissions, err := is.uouc.ListMiniUserOrganizations(ctx, in.PageNum, in.PageSize, userInfo.Data.UserId, in.OrganizationId, in.CommissionType, in.Month, in.Keyword)
 
 	if err != nil {
 		return nil, err
@@ -185,17 +185,16 @@ func (is *InterfaceService) ListMiniUserOrganizationRelations(ctx context.Contex
 
 	for _, userCommission := range userCommissions.Data.List {
 		list = append(list, &v1.ListMiniUserOrganizationRelationsReply_UserCommission{
-			NickName:                userCommission.NickName,
-			AvatarUrl:               userCommission.AvatarUrl,
-			Phone:                   userCommission.Phone,
-			ActivationTime:          userCommission.ActivationTime,
-			RelationName:            userCommission.RelationName,
-			TotalPayAmount:          userCommission.TotalPayAmount,
-			CommissionPool:          userCommission.CommissionPool,
-			EstimatedUserCommission: userCommission.EstimatedUserCommission,
-			CommissionRatio:         userCommission.CommissionRatio,
-			RealUserCommission:      userCommission.RealUserCommission,
-			UserCommissionTypeName:  userCommission.UserCommissionTypeName,
+			NickName:           userCommission.NickName,
+			AvatarUrl:          userCommission.AvatarUrl,
+			Phone:              userCommission.Phone,
+			ActivationTime:     userCommission.ActivationTime,
+			RelationName:       userCommission.RelationName,
+			CommissionTypeName: userCommission.CommissionTypeName,
+			TotalPayAmount:     userCommission.TotalPayAmount,
+			CommissionPool:     userCommission.CommissionPool,
+			CommissionRatio:    userCommission.CommissionRatio,
+			CommissionAmount:   userCommission.CommissionAmount,
 		})
 	}
 
@@ -300,6 +299,36 @@ func (is *InterfaceService) StatisticsMiniUserOrganizationRelations(ctx context.
 	return &v1.StatisticsMiniUserOrganizationRelationsReply{
 		Code: 200,
 		Data: &v1.StatisticsMiniUserOrganizationRelationsReply_Data{
+			Statistics: list,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) StatisticsDetailMiniUserOrganizationRelations(ctx context.Context, in *v1.StatisticsDetailMiniUserOrganizationRelationsRequest) (*v1.StatisticsDetailMiniUserOrganizationRelationsReply, error) {
+	userInfo, err := is.verifyMiniUserLogin(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	statistics, err := is.uouc.StatisticsDetailMiniUserOrganizationRelations(ctx, userInfo.Data.UserId, in.OrganizationId, in.CommissionType, in.Month, in.Keyword)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*v1.StatisticsDetailMiniUserOrganizationRelationsReply_Statistic, 0)
+
+	for _, statistic := range statistics.Data.Statistics {
+		list = append(list, &v1.StatisticsDetailMiniUserOrganizationRelationsReply_Statistic{
+			Key:   statistic.Key,
+			Value: statistic.Value,
+		})
+	}
+
+	return &v1.StatisticsDetailMiniUserOrganizationRelationsReply{
+		Code: 200,
+		Data: &v1.StatisticsDetailMiniUserOrganizationRelationsReply_Data{
 			Statistics: list,
 		},
 	}, nil

@@ -110,6 +110,7 @@ func (is *InterfaceService) ListUserOpenDouyins(ctx context.Context, in *v1.List
 			AvatarLarger:     userOpenDouyin.AvatarLarger,
 			CooperativeCode:  userOpenDouyin.CooperativeCode,
 			Fans:             userOpenDouyin.FansShow,
+			Level:            userOpenDouyin.Level,
 		})
 	}
 

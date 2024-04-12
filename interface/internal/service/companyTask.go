@@ -5,33 +5,11 @@ import (
 	v1 "interface/api/interface/v1"
 )
 
-func (is *InterfaceService) CreateCompanyTask(ctx context.Context, in *v1.CreateCompanyTaskRequest) (*v1.CreateCompanyTaskReply, error) {
-	task, err := is.ctuc.CreateCompanyTask(ctx, in.ProductOutId, in.ExpireTime, in.PlayNum, in.Price, in.Quota, in.IsGoodReviews)
-
-	if err != nil {
+func (is *InterfaceService) GetByProductOutId(ctx context.Context, in *v1.GetByProductOutIdRequest) (*v1.GetByProductOutIdReply, error) {
+	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
 		return nil, err
 	}
 
-	return &v1.CreateCompanyTaskReply{
-		Code: 200,
-		Data: &v1.CreateCompanyTaskReply_CompanyTask{
-			Id:            task.Data.Id,
-			ProductOutId:  task.Data.ProductOutId,
-			ExpireTime:    task.Data.ExpireTime,
-			PlayNum:       task.Data.PlayNum,
-			Price:         task.Data.Price,
-			Quota:         task.Data.Quota,
-			ClaimQuota:    task.Data.ClaimQuota,
-			SuccessQuota:  task.Data.SuccessQuota,
-			IsTop:         task.Data.IsTop,
-			IsDel:         task.Data.IsDel,
-			CreateTime:    task.Data.CreateTime,
-			IsGoodReviews: task.Data.IsGoodReviews,
-		},
-	}, nil
-}
-
-func (is *InterfaceService) GetByProductOutId(ctx context.Context, in *v1.GetByProductOutIdRequest) (*v1.GetByProductOutIdReply, error) {
 	task, err := is.ctuc.GetByProductOutId(ctx, in.ProductOutId, in.UserId)
 
 	if err != nil {
@@ -58,61 +36,11 @@ func (is *InterfaceService) GetByProductOutId(ctx context.Context, in *v1.GetByP
 	}, nil
 }
 
-// GetByProductOutId(ctx context.Context, productOutId, userId uint64) (*v1.GetByProductOutIdReply, error) {
-
-func (is *InterfaceService) UpdateCompanyTaskQuota(ctx context.Context, in *v1.UpdateCompanyTaskQuotaRequest) (*v1.UpdateCompanyTaskReply, error) {
-	task, err := is.ctuc.UpdateCompanyTaskQuota(ctx, in.CompanyTaskId, in.Quota)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &v1.UpdateCompanyTaskReply{
-		Code: 200,
-		Data: &v1.UpdateCompanyTaskReply_Data{
-			Id:            task.Data.Id,
-			ProductOutId:  task.Data.ProductOutId,
-			ExpireTime:    task.Data.ExpireTime,
-			PlayNum:       task.Data.PlayNum,
-			Price:         task.Data.Price,
-			Quota:         task.Data.Quota,
-			ClaimQuota:    task.Data.ClaimQuota,
-			SuccessQuota:  task.Data.SuccessQuota,
-			IsTop:         task.Data.IsTop,
-			IsDel:         task.Data.IsDel,
-			CreateTime:    task.Data.CreateTime,
-			IsGoodReviews: task.Data.IsGoodReviews,
-		},
-	}, nil
-}
-
-func (is *InterfaceService) UpdateCompanyTaskIsTop(ctx context.Context, in *v1.UpdateCompanyTaskIsTopRequest) (*v1.UpdateCompanyTaskReply, error) {
-	task, err := is.ctuc.UpdateCompanyTaskIsTop(ctx, in.CompanyTaskId, in.IsTop)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &v1.UpdateCompanyTaskReply{
-		Code: 200,
-		Data: &v1.UpdateCompanyTaskReply_Data{
-			Id:            task.Data.Id,
-			ProductOutId:  task.Data.ProductOutId,
-			ExpireTime:    task.Data.ExpireTime,
-			PlayNum:       task.Data.PlayNum,
-			Price:         task.Data.Price,
-			Quota:         task.Data.Quota,
-			ClaimQuota:    task.Data.ClaimQuota,
-			SuccessQuota:  task.Data.SuccessQuota,
-			IsTop:         task.Data.IsTop,
-			IsDel:         task.Data.IsDel,
-			CreateTime:    task.Data.CreateTime,
-			IsGoodReviews: task.Data.IsGoodReviews,
-		},
-	}, nil
-}
-
 func (is *InterfaceService) ListCompanyTask(ctx context.Context, in *v1.ListCompanyTaskRequest) (*v1.ListCompanyTaskReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
 	res, err := is.ctuc.ListCompanyTask(ctx, 0, -1, in.PageNum, in.PageSize, in.Keyword)
 
 	if err != nil {
@@ -208,49 +136,12 @@ func (is *InterfaceService) ListCompanyTaskUsable(ctx context.Context, in *v1.Li
 	return tasks, nil
 }
 
-func (is *InterfaceService) UpdateCompanyTaskIsDel(ctx context.Context, in *v1.UpdateCompanyTaskIsDelRequest) (*v1.UpdateCompanyTaskIsDelReply, error) {
-	_, err := is.ctuc.UpdateCompanyTaskIsDel(ctx, in.CompanyTaskId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &v1.UpdateCompanyTaskIsDelReply{
-		Code: 200,
-		Data: &v1.UpdateCompanyTaskIsDelReply_Data{},
-	}, nil
-}
-
-func (is *InterfaceService) CreateCompanyTaskAccountRelation(ctx context.Context, in *v1.CreateCompanyTaskAccountRelationRequest) (*v1.CreateCompanyTaskAccountRelationReply, error) {
-	task, err := is.ctuc.CreateCompanyTaskAccountRelation(ctx, in.CompanyTaskId, in.ProductOutId, in.UserId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &v1.CreateCompanyTaskAccountRelationReply{
-		Code: 200,
-		Data: &v1.CreateCompanyTaskAccountRelationReply_Data{
-			Id:                    task.Data.Id,
-			CompanyTaskId:         task.Data.CompanyTaskId,
-			ProductName:           task.Data.ProductName,
-			ProductOutId:          task.Data.ProductOutId,
-			UserId:                task.Data.UserId,
-			ClaimTime:             task.Data.ClaimTime,
-			ExpireTime:            task.Data.ExpireTime,
-			Status:                task.Data.Status,
-			IsDel:                 task.Data.IsDel,
-			IsCostBuy:             task.Data.IsCostBuy,
-			ScreenshotAddress:     task.Data.ScreenshotAddress,
-			IsScreenshotAvailable: task.Data.IsScreenshotAvailable,
-			CreateTime:            task.Data.CreateTime,
-			UpdateTime:            task.Data.UpdateTime,
-		},
-	}, nil
-}
-
 // 达人个人任务列表
 func (is *InterfaceService) ListCompanyTaskAccountRelation(ctx context.Context, in *v1.ListCompanyTaskAccountRelationRequest) (*v1.ListCompanyTaskAccountRelationReply, error) {
+	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
+		return nil, err
+	}
+
 	task, err := is.ctuc.ListCompanyTaskAccountRelation(ctx, in.PageNum, in.PageSize, in.CompanyTaskId, in.UserId, in.Status, in.ExpireTime, in.ExpiredTime, in.ProductName)
 
 	if err != nil {
@@ -347,7 +238,221 @@ func (is *InterfaceService) ListCompanyTaskAccountRelation(ctx context.Context, 
 	}, nil
 }
 
+func (is *InterfaceService) ListCompanyTaskDetail(ctx context.Context, in *v1.ListCompanyTaskDetailRequest) (*v1.ListCompanyTaskDetailReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
+	taskDetails, err := is.ctuc.ListCompanyTaskDetail(ctx, in.PageNum, in.PageSize, in.CompanyTaskId, in.Nickname)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := []*v1.ListCompanyTaskDetailReply_CompanyTaskAccountRelation{}
+
+	for _, relation := range taskDetails.Data.List {
+		details := []*v1.ListCompanyTaskDetailReply_CompanyTaskDetail{}
+
+		for _, detail := range relation.CompanyTaskDetails {
+			details = append(details, &v1.ListCompanyTaskDetailReply_CompanyTaskDetail{
+				Id:                           detail.Id,
+				CompanyTaskId:                detail.CompanyTaskId,
+				UserId:                       detail.UserId,
+				ClientKey:                    detail.ClientKey,
+				OpenId:                       detail.OpenId,
+				CompanyTaskAccountRelationId: detail.CompanyTaskAccountRelationId,
+				ProductName:                  detail.ProductName,
+				ItemId:                       detail.ItemId,
+				PlayCount:                    detail.PlayCount,
+				Cover:                        detail.Cover,
+				ReleaseTime:                  detail.ReleaseTime,
+				IsReleaseVideo:               detail.IsReleaseVideo,
+				IsPlaySuccess:                detail.IsPlaySuccess,
+				CreateTime:                   detail.CreateTime,
+				Nickname:                     detail.Nickname,
+				Avatar:                       detail.Avatar,
+			})
+		}
+
+		list = append(list, &v1.ListCompanyTaskDetailReply_CompanyTaskAccountRelation{
+			Id:                    relation.Id,
+			NickName:              relation.NickName,
+			AvatarUrl:             relation.AvatarUrl,
+			CompanyTaskId:         relation.CompanyTaskId,
+			ProductName:           relation.ProductName,
+			ProductOutId:          relation.ProductOutId,
+			UserId:                relation.UserId,
+			ClaimTime:             relation.ClaimTime,
+			ExpireTime:            relation.ExpireTime,
+			Status:                relation.Status,
+			IsDel:                 relation.IsDel,
+			IsCostBuy:             relation.IsCostBuy,
+			ScreenshotAddress:     relation.ScreenshotAddress,
+			IsScreenshotAvailable: relation.IsScreenshotAvailable,
+			IsPlaySuccess:         uint32(relation.IsPlaySuccess),
+			CreateTime:            relation.CreateTime,
+			UpdateTime:            relation.UpdateTime,
+			CompanyTaskDetails:    details,
+		})
+	}
+
+	return &v1.ListCompanyTaskDetailReply{
+		Code: 200,
+		Data: &v1.ListCompanyTaskDetailReply_Data{
+			PageNum:   taskDetails.Data.PageNum,
+			PageSize:  taskDetails.Data.PageSize,
+			Total:     taskDetails.Data.Total,
+			TotalPage: taskDetails.Data.TotalPage,
+			List:      list,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) CreateCompanyTask(ctx context.Context, in *v1.CreateCompanyTaskRequest) (*v1.CreateCompanyTaskReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
+	task, err := is.ctuc.CreateCompanyTask(ctx, in.ProductOutId, in.ExpireTime, in.PlayNum, in.Quota, in.IsGoodReviews, in.Price)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.CreateCompanyTaskReply{
+		Code: 200,
+		Data: &v1.CreateCompanyTaskReply_CompanyTask{
+			Id:            task.Data.Id,
+			ProductOutId:  task.Data.ProductOutId,
+			ExpireTime:    task.Data.ExpireTime,
+			PlayNum:       task.Data.PlayNum,
+			Price:         task.Data.Price,
+			Quota:         task.Data.Quota,
+			ClaimQuota:    task.Data.ClaimQuota,
+			SuccessQuota:  task.Data.SuccessQuota,
+			IsTop:         task.Data.IsTop,
+			IsDel:         task.Data.IsDel,
+			CreateTime:    task.Data.CreateTime,
+			IsGoodReviews: task.Data.IsGoodReviews,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) CreateCompanyTaskAccountRelation(ctx context.Context, in *v1.CreateCompanyTaskAccountRelationRequest) (*v1.CreateCompanyTaskAccountRelationReply, error) {
+	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
+		return nil, err
+	}
+
+	task, err := is.ctuc.CreateCompanyTaskAccountRelation(ctx, in.CompanyTaskId, in.ProductOutId, in.UserId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.CreateCompanyTaskAccountRelationReply{
+		Code: 200,
+		Data: &v1.CreateCompanyTaskAccountRelationReply_Data{
+			Id:                    task.Data.Id,
+			CompanyTaskId:         task.Data.CompanyTaskId,
+			ProductName:           task.Data.ProductName,
+			ProductOutId:          task.Data.ProductOutId,
+			UserId:                task.Data.UserId,
+			ClaimTime:             task.Data.ClaimTime,
+			ExpireTime:            task.Data.ExpireTime,
+			Status:                task.Data.Status,
+			IsDel:                 task.Data.IsDel,
+			IsCostBuy:             task.Data.IsCostBuy,
+			ScreenshotAddress:     task.Data.ScreenshotAddress,
+			IsScreenshotAvailable: task.Data.IsScreenshotAvailable,
+			CreateTime:            task.Data.CreateTime,
+			UpdateTime:            task.Data.UpdateTime,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) UpdateCompanyTaskQuota(ctx context.Context, in *v1.UpdateCompanyTaskQuotaRequest) (*v1.UpdateCompanyTaskReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
+	task, err := is.ctuc.UpdateCompanyTaskQuota(ctx, in.CompanyTaskId, in.Quota)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.UpdateCompanyTaskReply{
+		Code: 200,
+		Data: &v1.UpdateCompanyTaskReply_Data{
+			Id:            task.Data.Id,
+			ProductOutId:  task.Data.ProductOutId,
+			ExpireTime:    task.Data.ExpireTime,
+			PlayNum:       task.Data.PlayNum,
+			Price:         task.Data.Price,
+			Quota:         task.Data.Quota,
+			ClaimQuota:    task.Data.ClaimQuota,
+			SuccessQuota:  task.Data.SuccessQuota,
+			IsTop:         task.Data.IsTop,
+			IsDel:         task.Data.IsDel,
+			CreateTime:    task.Data.CreateTime,
+			IsGoodReviews: task.Data.IsGoodReviews,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) UpdateCompanyTaskIsTop(ctx context.Context, in *v1.UpdateCompanyTaskIsTopRequest) (*v1.UpdateCompanyTaskReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
+	task, err := is.ctuc.UpdateCompanyTaskIsTop(ctx, in.CompanyTaskId, in.IsTop)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.UpdateCompanyTaskReply{
+		Code: 200,
+		Data: &v1.UpdateCompanyTaskReply_Data{
+			Id:            task.Data.Id,
+			ProductOutId:  task.Data.ProductOutId,
+			ExpireTime:    task.Data.ExpireTime,
+			PlayNum:       task.Data.PlayNum,
+			Price:         task.Data.Price,
+			Quota:         task.Data.Quota,
+			ClaimQuota:    task.Data.ClaimQuota,
+			SuccessQuota:  task.Data.SuccessQuota,
+			IsTop:         task.Data.IsTop,
+			IsDel:         task.Data.IsDel,
+			CreateTime:    task.Data.CreateTime,
+			IsGoodReviews: task.Data.IsGoodReviews,
+		},
+	}, nil
+}
+
+func (is *InterfaceService) UpdateCompanyTaskIsDel(ctx context.Context, in *v1.UpdateCompanyTaskIsDelRequest) (*v1.UpdateCompanyTaskIsDelReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
+	_, err := is.ctuc.UpdateCompanyTaskIsDel(ctx, in.CompanyTaskId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.UpdateCompanyTaskIsDelReply{
+		Code: 200,
+		Data: &v1.UpdateCompanyTaskIsDelReply_Data{},
+	}, nil
+}
+
 func (is *InterfaceService) UpdateCompanyTaskDetailScreenshot(ctx context.Context, in *v1.UpdateCompanyTaskDetailScreenshotRequest) (*v1.UpdateCompanyTaskDetailScreenshotReply, error) {
+	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
+		return nil, err
+	}
+
 	_, err := is.ctuc.UpdateCompanyTaskDetailScreenshot(ctx, in.Screenshot, in.Id)
 
 	if err != nil {
@@ -361,6 +466,10 @@ func (is *InterfaceService) UpdateCompanyTaskDetailScreenshot(ctx context.Contex
 }
 
 func (is *InterfaceService) UpdateCompanyTaskDetailScreenshotAvailable(ctx context.Context, in *v1.UpdateCompanyTaskDetailScreenshotAvailableRequest) (*v1.UpdateCompanyTaskDetailScreenshotAvailableReply, error) {
+	if _, err := is.verifyLogin(ctx, true, false, ""); err != nil {
+		return nil, err
+	}
+
 	_, err := is.ctuc.UpdateCompanyTaskDetailScreenshotAvailable(ctx, in.IsScreenshotAvailable, in.Id)
 
 	if err != nil {
@@ -370,65 +479,5 @@ func (is *InterfaceService) UpdateCompanyTaskDetailScreenshotAvailable(ctx conte
 	return &v1.UpdateCompanyTaskDetailScreenshotAvailableReply{
 		Code: 200,
 		Data: &v1.UpdateCompanyTaskDetailScreenshotAvailableReply_Data{},
-	}, nil
-}
-
-func (is *InterfaceService) ListCompanyTaskDetail(ctx context.Context, in *v1.ListCompanyTaskDetailRequest) (*v1.ListCompanyTaskDetailReply, error) {
-	task, err := is.ctuc.ListCompanyTaskDetail(ctx, in.PageNum, in.PageSize, in.CompanyTaskId, in.Nickname)
-
-	if err != nil {
-		return nil, err
-	}
-
-	list := []*v1.ListCompanyTaskDetailReply_CompanyTaskDetail{}
-
-	for _, v := range task.Data.List {
-		d := &v1.ListCompanyTaskDetailReply_CompanyTaskDetail{
-			Id:                           v.Id,
-			CompanyTaskId:                v.CompanyTaskId,
-			UserId:                       v.UserId,
-			ClientKey:                    v.ClientKey,
-			OpenId:                       v.OpenId,
-			CompanyTaskAccountRelationId: v.CompanyTaskAccountRelationId,
-			ProductName:                  v.ProductName,
-			ItemId:                       v.ItemId,
-			PlayCount:                    v.PlayCount,
-			Cover:                        v.Cover,
-			ReleaseTime:                  v.ReleaseTime,
-			IsReleaseVideo:               v.IsReleaseVideo,
-			IsPlaySuccess:                v.IsPlaySuccess,
-			CreateTime:                   v.CreateTime,
-			Nickname:                     v.Nickname,
-			Avatar:                       v.Avatar,
-			CompanyTaskAccountRelation: &v1.ListCompanyTaskDetailReply_CompanyTaskAccountRelation{
-				Id:                    v.CompanyTaskAccountRelation.Id,
-				CompanyTaskId:         v.CompanyTaskAccountRelation.CompanyTaskId,
-				ProductName:           v.CompanyTaskAccountRelation.ProductName,
-				ProductOutId:          v.CompanyTaskAccountRelation.ProductOutId,
-				UserId:                v.CompanyTaskAccountRelation.UserId,
-				ClaimTime:             v.CompanyTaskAccountRelation.ClaimTime,
-				ExpireTime:            v.CompanyTaskAccountRelation.ExpireTime,
-				Status:                v.CompanyTaskAccountRelation.Status,
-				IsDel:                 v.CompanyTaskAccountRelation.IsDel,
-				IsCostBuy:             v.CompanyTaskAccountRelation.IsCostBuy,
-				ScreenshotAddress:     v.CompanyTaskAccountRelation.ScreenshotAddress,
-				IsScreenshotAvailable: v.CompanyTaskAccountRelation.IsScreenshotAvailable,
-				CreateTime:            v.CompanyTaskAccountRelation.CreateTime,
-				UpdateTime:            v.CompanyTaskAccountRelation.UpdateTime,
-			},
-		}
-
-		list = append(list, d)
-	}
-
-	return &v1.ListCompanyTaskDetailReply{
-		Code: 200,
-		Data: &v1.ListCompanyTaskDetailReply_Data{
-			PageNum:   task.Data.PageNum,
-			PageSize:  task.Data.PageSize,
-			Total:     task.Data.Total,
-			TotalPage: task.Data.TotalPage,
-			List:      list,
-		},
 	}, nil
 }

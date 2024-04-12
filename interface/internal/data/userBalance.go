@@ -31,12 +31,13 @@ func (ubr *userBalanceRepo) Get(ctx context.Context, userId uint64) (*v1.GetUser
 	return userBalance, err
 }
 
-func (ubr *userBalanceRepo) List(ctx context.Context, userId, pageNum, pageSize uint64, operationType uint32) (*v1.ListUserBalancesReply, error) {
+func (ubr *userBalanceRepo) List(ctx context.Context, userId, pageNum, pageSize uint64, operationType uint32, keyword string) (*v1.ListUserBalancesReply, error) {
 	list, err := ubr.data.weixinuc.ListUserBalances(ctx, &v1.ListUserBalancesRequest{
 		PageNum:       pageNum,
 		PageSize:      pageSize,
 		UserId:        userId,
 		OperationType: operationType,
+		Keyword:       keyword,
 	})
 
 	if err != nil {

@@ -7,7 +7,7 @@ import (
 
 // ProviderSet is biz providers.
 var (
-	ProviderSet = wire.NewSet(NewIndustryUsecase, NewAreaUsecase, NewSmsUsecase, NewTokenUsecase, NewKuaidiCompanyUsecase, NewLoginUsecase, NewCompanyUserUsecase, NewCompanySetUsecase, NewClueUsecase, NewMaterialUsecase, NewPerformanceRuleUsecase, NewPerformanceUsecase, NewPerformanceRebalanceUsecase, NewUpdateLogUsecase, NewUserUsecase, NewProductUsecase, NewCompanyUsecase, NewCompanyMaterialUsecase, NewCompanyOrganizationUsecase, NewUserAddressUsecase, NewUserStoreUsecase, NewUserOpenDouyinUsecase, NewUserScanRecordUsecase, NewUserOrganizationUsecase, NewJinritemailOrderUsecase, NewDoukeOrderUsecase, NewUserSampleOrderUsecase, NewUserCouponUsecase, NewUserBalanceUsecase, NewUserContractUsecase, NewUserBankUsecase, NewCompanyTaskUsecase)
+	ProviderSet = wire.NewSet(NewIndustryUsecase, NewAreaUsecase, NewSmsUsecase, NewTokenUsecase, NewKuaidiCompanyUsecase, NewLoginUsecase, NewCompanyUserUsecase, NewCompanySetUsecase, NewClueUsecase, NewMaterialUsecase, NewPerformanceRuleUsecase, NewPerformanceUsecase, NewPerformanceRebalanceUsecase, NewUpdateLogUsecase, NewUserUsecase, NewProductUsecase, NewCompanyUsecase, NewCompanyMaterialUsecase, NewCompanyOrganizationUsecase, NewUserAddressUsecase, NewUserStoreUsecase, NewUserOpenDouyinUsecase, NewUserScanRecordUsecase, NewUserOrganizationUsecase, NewJinritemailOrderUsecase, NewDoukeOrderUsecase, NewUserSampleOrderUsecase, NewUserCouponUsecase, NewUserBalanceUsecase, NewUserContractUsecase, NewUserBankUsecase, NewCompanyTaskUsecase, NewCourseUsecase)
 
 	InterfaceDataError       = errors.BadRequest("INTERFACE_DATA_ERROR", "操作数据异常")
 	InterfaceValidatorError  = errors.BadRequest("INTERFACE_VALIDATOR_ERROR", "参数异常")

@@ -97,7 +97,9 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	companyOrganizationUsecase := biz.NewCompanyOrganizationUsecase(companyOrganizationRepo, confData, logger)
 	companyTaskRepo := data.NewCompanyTaskRepo(dataData, logger)
 	companyTaskUsecase := biz.NewCompanyTaskUsecase(companyTaskRepo, confData, logger)
-	interfaceService := service.NewInterfaceService(industryUsecase, areaUsecase, smsUsecase, tokenUsecase, kuaidiCompanyUsecase, loginUsecase, companyUserUsecase, companyUsecase, companySetUsecase, clueUsecase, materialUsecase, performanceRuleUsecase, performanceUsecase, performanceRebalanceUsecase, updateLogUsecase, userUsecase, productUsecase, companyMaterialUsecase, userAddressUsecase, userStoreUsecase, userOpenDouyinUsecase, userScanRecordUsecase, jinritemailOrderUsecase, doukeOrderUsecase, userSampleOrderUsecase, userOrganizationUsecase, userCouponUsecase, userBalanceUsecase, userBankUsecase, userContractUsecase, companyOrganizationUsecase, companyTaskUsecase)
+	courseRepo := data.NewCourseRepo(dataData, logger)
+	courseUsecase := biz.NewCourseUsecase(courseRepo, confData, logger)
+	interfaceService := service.NewInterfaceService(industryUsecase, areaUsecase, smsUsecase, tokenUsecase, kuaidiCompanyUsecase, loginUsecase, companyUserUsecase, companyUsecase, companySetUsecase, clueUsecase, materialUsecase, performanceRuleUsecase, performanceUsecase, performanceRebalanceUsecase, updateLogUsecase, userUsecase, productUsecase, companyMaterialUsecase, userAddressUsecase, userStoreUsecase, userOpenDouyinUsecase, userScanRecordUsecase, jinritemailOrderUsecase, doukeOrderUsecase, userSampleOrderUsecase, userOrganizationUsecase, userCouponUsecase, userBalanceUsecase, userBankUsecase, userContractUsecase, companyOrganizationUsecase, companyTaskUsecase, courseUsecase)
 	httpServer := server.NewHTTPServer(confServer, interfaceService, logger)
 	app := newApp(logger, httpServer)
 	return app, func() {

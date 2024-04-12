@@ -11,8 +11,8 @@ import (
 
 type UserCouponRepo interface {
 	GetBind(context.Context, uint64, uint64) (*v1.GetUserCouponsReply, error)
-	List(context.Context, uint64, uint64, uint64, uint64) (*v1.ListUserCouponsReply, error)
-	Bind(context.Context, uint64, string) (*v1.BindUserCouponsReply, error)
+	List(context.Context, uint64, uint64, uint64, uint64, uint32) (*v1.ListUserCouponsReply, error)
+	Bind(context.Context, uint64, uint32, string) (*v1.BindUserCouponsReply, error)
 	Activate(context.Context, uint64, uint64, uint64) (*v1.ActivateUserCouponsReply, error)
 }
 
@@ -36,12 +36,12 @@ func (ucuc *UserCouponUsecase) GetBindMinUserCoupons(ctx context.Context, userId
 	return bindUserCoupon, nil
 }
 
-func (ucuc *UserCouponUsecase) ListMinUserCoupons(ctx context.Context, pageNum, pageSize, userId, organizationId uint64) (*v1.ListUserCouponsReply, error) {
+func (ucuc *UserCouponUsecase) ListMinUserCoupons(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, level uint32) (*v1.ListUserCouponsReply, error) {
 	if pageSize == 0 {
 		pageSize = uint64(ucuc.conf.Database.PageSize)
 	}
 
-	list, err := ucuc.repo.List(ctx, userId, organizationId, pageNum, pageSize)
+	list, err := ucuc.repo.List(ctx, userId, organizationId, pageNum, pageSize, level)
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_LIST_USER_COUPON_FAILED", tool.GetGRPCErrorInfo(err))
@@ -50,8 +50,8 @@ func (ucuc *UserCouponUsecase) ListMinUserCoupons(ctx context.Context, pageNum, 
 	return list, nil
 }
 
-func (ucuc *UserCouponUsecase) BindMiniUserCoupons(ctx context.Context, userId uint64, phone string) (*v1.BindUserCouponsReply, error) {
-	userCoupon, err := ucuc.repo.Bind(ctx, userId, phone)
+func (ucuc *UserCouponUsecase) BindMiniUserCoupons(ctx context.Context, userId uint64, level uint32, phone string) (*v1.BindUserCouponsReply, error) {
+	userCoupon, err := ucuc.repo.Bind(ctx, userId, level, phone)
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_BIND_USER_COUPON_FAILED", tool.GetGRPCErrorInfo(err))

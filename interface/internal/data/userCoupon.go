@@ -32,12 +32,13 @@ func (ucr *userCouponRepo) GetBind(ctx context.Context, userId, organizationId u
 	return userCoupon, err
 }
 
-func (ucr *userCouponRepo) List(ctx context.Context, userId, organizationId, pageNum, pageSize uint64) (*v1.ListUserCouponsReply, error) {
+func (ucr *userCouponRepo) List(ctx context.Context, userId, organizationId, pageNum, pageSize uint64, level uint32) (*v1.ListUserCouponsReply, error) {
 	list, err := ucr.data.weixinuc.ListUserCoupons(ctx, &v1.ListUserCouponsRequest{
 		PageNum:        pageNum,
 		PageSize:       pageSize,
 		UserId:         userId,
 		OrganizationId: organizationId,
+		Level:          level,
 	})
 
 	if err != nil {
@@ -47,10 +48,11 @@ func (ucr *userCouponRepo) List(ctx context.Context, userId, organizationId, pag
 	return list, err
 }
 
-func (ucr *userCouponRepo) Bind(ctx context.Context, userId uint64, phone string) (*v1.BindUserCouponsReply, error) {
+func (ucr *userCouponRepo) Bind(ctx context.Context, userId uint64, level uint32, phone string) (*v1.BindUserCouponsReply, error) {
 	userCoupon, err := ucr.data.weixinuc.BindUserCoupons(ctx, &v1.BindUserCouponsRequest{
 		UserId: userId,
 		Phone:  phone,
+		Level:  level,
 	})
 
 	if err != nil {

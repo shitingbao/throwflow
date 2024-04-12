@@ -71,15 +71,15 @@ func (uor *userOrganizationRepo) ListParent(ctx context.Context, userId, organiz
 	return list, err
 }
 
-func (uor *userOrganizationRepo) ListCommission(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, isDirect uint32, month, keyword string) (*v1.ListUserCommissionsReply, error) {
+func (uor *userOrganizationRepo) ListCommission(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, commissionType uint32, month, keyword string) (*v1.ListUserCommissionsReply, error) {
 	list, err := uor.data.weixinuc.ListUserCommissions(ctx, &v1.ListUserCommissionsRequest{
 		PageNum:        pageNum,
 		PageSize:       pageSize,
 		UserId:         userId,
 		OrganizationId: organizationId,
 		Month:          month,
+		CommissionType: commissionType,
 		Keyword:        keyword,
-		IsDirect:       isDirect,
 	})
 
 	if err != nil {
@@ -93,6 +93,22 @@ func (uor *userOrganizationRepo) Statistics(ctx context.Context, userId, organiz
 	statistics, err := uor.data.weixinuc.StatisticsUserCommissions(ctx, &v1.StatisticsUserCommissionsRequest{
 		UserId:         userId,
 		OrganizationId: organizationId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return statistics, err
+}
+
+func (uor *userOrganizationRepo) StatisticsDetail(ctx context.Context, userId, organizationId uint64, commissionType uint32, month, keyword string) (*v1.StatisticsDetailUserCommissionsReply, error) {
+	statistics, err := uor.data.weixinuc.StatisticsDetailUserCommissions(ctx, &v1.StatisticsDetailUserCommissionsRequest{
+		UserId:         userId,
+		OrganizationId: organizationId,
+		Month:          month,
+		CommissionType: commissionType,
+		Keyword:        keyword,
 	})
 
 	if err != nil {

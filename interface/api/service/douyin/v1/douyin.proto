@@ -81,7 +81,6 @@ service Douyin {
   // 精选联盟达人订单管理
   rpc GetStorePreferenceJinritemaiOrders (GetStorePreferenceJinritemaiOrdersRequest) returns (GetStorePreferenceJinritemaiOrdersReply) {}
   rpc GetIsTopJinritemaiOrders (GetIsTopJinritemaiOrdersRequest) returns (GetIsTopJinritemaiOrdersReply) {}
-  rpc GetCompanyTaskUserOrderStatus (GetCompanyTaskUserOrderStatusRequest) returns (GetCompanyTaskUserOrderStatusReply) {}
   rpc ListJinritemaiOrders (ListJinritemaiOrdersRequest) returns (ListJinritemaiOrdersReply) {}
   rpc ListProductIdAndVideoIdJinritemaiOrders (ListProductIdAndVideoIdJinritemaiOrdersRequest) returns (ListProductIdAndVideoIdJinritemaiOrdersReply) {}
   rpc ListJinritemaiOrderByPickExtras (google.protobuf.Empty) returns (ListJinritemaiOrderByPickExtrasReply) {}
@@ -89,15 +88,19 @@ service Douyin {
   rpc StatisticsJinritemaiOrders (StatisticsJinritemaiOrdersRequest) returns (StatisticsJinritemaiOrdersReply) {}
   rpc StatisticsJinritemaiOrderByClientKeyAndOpenIds (StatisticsJinritemaiOrderByClientKeyAndOpenIdsRequest) returns (StatisticsJinritemaiOrderByClientKeyAndOpenIdsReply) {}
   rpc StatisticsJinritemaiOrderByDays (StatisticsJinritemaiOrderByDaysRequest) returns (StatisticsJinritemaiOrderByDaysReply) {}
+  rpc StatisticsJinritemaiOrderByPayTimeAndDays (StatisticsJinritemaiOrderByPayTimeAndDaysRequest) returns (StatisticsJinritemaiOrderByPayTimeAndDaysReply) {}
   rpc AsyncNotificationJinritemaiOrders (AsyncNotificationJinritemaiOrdersRequest) returns (AsyncNotificationJinritemaiOrdersReply) {}
   rpc SyncJinritemaiOrders (SyncJinritemaiOrdersRequest) returns (SyncJinritemaiOrdersReply) {}
   rpc Sync90DayJinritemaiOrders (google.protobuf.Empty) returns (Sync90DayJinritemaiOrdersReply) {}
 
   // 精选联盟抖客订单管理
+  rpc GetDoukeOrders (GetDoukeOrdersRequest) returns (GetDoukeOrdersReply) {}
   rpc ListUserIdDoukeOrders (google.protobuf.Empty) returns (ListUserIdDoukeOrdersReply) {}
   rpc StatisticsDoukeOrders (StatisticsDoukeOrdersRequest) returns (StatisticsDoukeOrdersReply) {}
   rpc StatisticsDoukeOrderByDays (StatisticsDoukeOrderByDaysRequest) returns (StatisticsDoukeOrderByDaysReply) {}
+  rpc StatisticsDoukeOrderByPaySuccessTimes (StatisticsDoukeOrderByPaySuccessTimesRequest) returns (StatisticsDoukeOrderByPaySuccessTimesReply) {}
   rpc AsyncNotificationDoukeOrders (AsyncNotificationDoukeOrdersRequest) returns (AsyncNotificationDoukeOrdersReply) {}
+  rpc SyncDoukeOrders (SyncDoukeOrdersRequest) returns (SyncDoukeOrdersReply) {}
 
   // 精选联盟达人橱窗管理
   rpc ListJinritemaiStores (ListJinritemaiStoresRequest) returns (ListJinritemaiStoresReply) {}
@@ -113,6 +116,7 @@ service Douyin {
   rpc ListProductOpenDouyinVideos (ListProductOpenDouyinVideosRequest) returns (ListProductOpenDouyinVideosReply) {}
   rpc ListVideoIdOpenDouyinVideos (ListVideoIdOpenDouyinVideosRequest) returns (ListVideoIdOpenDouyinVideosReply) {}
   rpc ListVideoIdOpenDouyinVideoByClientKeyAndOpenIds (ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsRequest) returns (ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsReply) {}
+  rpc ListVideoIdOpenDouyinVideoByProductIds (ListVideoIdOpenDouyinVideoByProductIdsRequest) returns (ListVideoIdOpenDouyinVideoByProductIdsReply) {}
   rpc ListVideoTokensOpenDouyinVideos (ListVideoTokensOpenDouyinVideosRequest) returns (ListVideoTokensOpenDouyinVideosReply) {}
   rpc UpdateIsUpdateCoverAndProductIdOpenDouyinVideos (UpdateIsUpdateCoverAndProductIdOpenDouyinVideosRequest) returns (UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply) {}
   rpc SyncOpenDouyinVideos (google.protobuf.Empty) returns (SyncOpenDouyinVideosReply) {}
@@ -120,13 +124,17 @@ service Douyin {
   // 抖音开放平台达人管理
   rpc ListOpenDouyinUserInfos (ListOpenDouyinUserInfosRequest) returns (ListOpenDouyinUserInfosReply) {}
   rpc UpdateOpenDouyinUserInfos (UpdateOpenDouyinUserInfosRequest) returns (UpdateOpenDouyinUserInfosReply) {}
-
-  // 抖客平台账户授权token管理
-  rpc CreateDoukeTokens (CreateDoukeTokensRequest) returns (CreateDoukeTokensReply) {}
-  rpc RefreshDoukeTokens (google.protobuf.Empty) returns (RefreshDoukeTokensReply) {}
+  rpc UpdateFansOpenDouyinUserInfos (UpdateFansOpenDouyinUserInfosRequest) returns (UpdateFansOpenDouyinUserInfosReply) {}
 
   // 抖客平台商品分销转链管理
-  rpc CreateDoukeProductShares (CreateDoukeProductSharesRequest) returns (CreateDoukeProductSharesReply) {}
+  rpc GetDoukeProducts (GetDoukeProductsRequest) returns (GetDoukeProductsReply) {}
+  rpc CreateShareDoukeProducts (CreateShareDoukeProductsRequest) returns (CreateShareDoukeProductsReply) {}
+  rpc ParseDoukeProducts (ParseDoukeProductsRequest) returns (ParseDoukeProductsReply) {}
+
+  // 补充数据
+  rpc CompensateJinritemaiOrders (google.protobuf.Empty) returns (CompensateJinritemaiOrdersReply) {}
+  rpc OperationJinritemaiOrders (google.protobuf.Empty) returns (OperationJinritemaiOrdersReply) {}
+  rpc OperationDoukeOrders (google.protobuf.Empty) returns (OperationDoukeOrdersReply) {}
 }
 
 message ListOceanengineConfigsRequest {
@@ -1109,25 +1117,6 @@ message GetIsTopJinritemaiOrdersReply {
   Data data = 2;
 }
 
-message GetCompanyTaskUserOrderStatusRequest {
-  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
-  string flowPoint = 2 [(validate.rules).string = {min_len: 0}];
-  string productId = 3 [(validate.rules).string = {min_len: 1}];
-}
-
-message GetCompanyTaskUserOrderStatusReply {
-  message Data {
-    uint64 id = 1;
-    uint64 userId = 2;
-    string productId = 3;
-    string paySuccessTime = 4;
-    string flowPoint = 5;
-  }
-
-  uint32 code = 1;
-  Data data = 2;
-}
-
 message ListJinritemaiOrdersRequest {
   uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
   uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
@@ -1285,6 +1274,27 @@ message StatisticsJinritemaiOrderByDaysReply {
   Data data = 2;
 }
 
+message StatisticsJinritemaiOrderByPayTimeAndDaysRequest {
+  string day = 1 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string payTime = 2 [(validate.rules).string.pattern = "^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+  string content = 3 [(validate.rules).string = {min_len: 1}];
+  string pickExtra = 4 [(validate.rules).string = {min_len: 0}];
+}
+
+message StatisticsJinritemaiOrderByPayTimeAndDaysReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message AsyncNotificationJinritemaiOrdersRequest {
   string msgId = 1 [(validate.rules).string ={min_len: 1}];
   string sign = 2 [(validate.rules).string ={min_len: 1}];
@@ -1313,6 +1323,36 @@ message SyncJinritemaiOrdersReply {
 
 message Sync90DayJinritemaiOrdersReply {
   message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetDoukeOrdersRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  string flowPoint = 2 [(validate.rules).string = {min_len: 0}];
+  string productId = 3 [(validate.rules).string = {min_len: 1}];
+  string createTime = 4 [(validate.rules).string = {min_len: 1}];
+}
+
+message GetDoukeOrdersReply {
+  message Data {
+    uint64 userId = 1;
+    string orderId = 2;
+    string productId = 3;
+    string productName = 4;
+    string productImg = 5;
+    string paySuccessTime = 6;
+    string settleTime = 7;
+    double totalPayAmount = 8;
+    double PayGoodsAmount = 9;
+    string flowPoint = 10;
+    double estimatedCommission = 11;
+    double realCommission = 12;
+    uint64 ItemNum = 13;
+    string createTime = 14;
+    string updateTime = 15;
   }
 
   uint32 code = 1;
@@ -1369,6 +1409,28 @@ message StatisticsDoukeOrderByDaysReply {
   Data data = 2;
 }
 
+message StatisticsDoukeOrderByPaySuccessTimesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 productId = 2 [(validate.rules).uint64.gt = 0];
+  string flowPoint = 3 [(validate.rules).string = {min_len: 0}];
+  string startTime = 4 [(validate.rules).string = {min_len: 1}];
+  string endTime = 5 [(validate.rules).string = {min_len: 1}];
+}
+
+message StatisticsDoukeOrderByPaySuccessTimesReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message AsyncNotificationDoukeOrdersRequest {
   string eventSign = 1 [(validate.rules).string ={min_len: 1}];
   string appId = 2 [(validate.rules).string ={min_len: 1}];
@@ -1376,6 +1438,18 @@ message AsyncNotificationDoukeOrdersRequest {
 }
 
 message AsyncNotificationDoukeOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncDoukeOrdersRequest {
+  string day = 1 [(validate.rules).string.pattern = "^$|^((([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))-02-29))$"];
+}
+
+message SyncDoukeOrdersReply {
   message Data {
   }
 
@@ -1623,6 +1697,28 @@ message ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsReply {
   Data data = 2;
 }
 
+message ListVideoIdOpenDouyinVideoByProductIdsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListVideoIdOpenDouyinVideoByProductIdsReply {
+  message OpenDouyinVideo{
+    string videoId = 1;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message ListVideoTokensOpenDouyinVideosRequest{
   message token{
     string clientKey = 1;
@@ -1743,11 +1839,13 @@ message UpdateOpenDouyinUserInfosReply {
   Data data = 2;
 }
 
-message CreateDoukeTokensRequest {
-  string code = 1 [(validate.rules).string ={min_len: 1, max_len: 250}];
+message UpdateFansOpenDouyinUserInfosRequest {
+  string clientKey = 1 [(validate.rules).string = {min_len: 1}];
+  string openId = 2 [(validate.rules).string = {min_len: 1}];
+  uint64 fans = 3 [(validate.rules).uint64.gte = 0];
 }
 
-message CreateDoukeTokensReply {
+message UpdateFansOpenDouyinUserInfosReply {
   message Data {
   }
 
@@ -1755,22 +1853,75 @@ message CreateDoukeTokensReply {
   Data data = 2;
 }
 
-message RefreshDoukeTokensReply {
+message GetDoukeProductsRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 1];
+}
+
+message GetDoukeProductsReply {
   message Data {
+    uint64 productOutId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string productPrice = 4;
+    uint64 industryId = 5;
+    uint64 categoryId = 6;
+    uint64 subCategoryId = 7;
+    string shopName = 8;
+    double shopScore = 9;
+    uint64 totalSale = 10;
+    uint64 commissionRatio = 11;
   }
 
   uint32 code = 1;
   Data data = 2;
 }
 
-message CreateDoukeProductSharesRequest {
+message CreateShareDoukeProductsRequest {
   string productUrl = 1 [(validate.rules).string ={min_len: 1}];
   string externalInfo = 2 [(validate.rules).string ={min_len: 0}];
 }
 
-message CreateDoukeProductSharesReply {
+message CreateShareDoukeProductsReply {
   message Data {
     string dyPassword = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ParseDoukeProductsRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message ParseDoukeProductsReply {
+  message Data {
+    uint64 productId = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CompensateJinritemaiOrdersReply {
+  message Data {
+    string dyPassword = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message OperationJinritemaiOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message OperationDoukeOrdersReply {
+  message Data {
   }
 
   uint32 code = 1;

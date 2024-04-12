@@ -11,7 +11,7 @@ import (
 
 type UserBalanceRepo interface {
 	Get(context.Context, uint64) (*v1.GetUserBalancesReply, error)
-	List(context.Context, uint64, uint64, uint64, uint32) (*v1.ListUserBalancesReply, error)
+	List(context.Context, uint64, uint64, uint64, uint32, string) (*v1.ListUserBalancesReply, error)
 	Save(context.Context, uint64, uint32, float64, string) (*v1.CreateUserBalancesReply, error)
 }
 
@@ -35,12 +35,12 @@ func (ubuc *UserBalanceUsecase) GetMiniUserBalances(ctx context.Context, userId 
 	return userBalance, nil
 }
 
-func (ubuc *UserBalanceUsecase) ListMinUserBalances(ctx context.Context, pageNum, pageSize, userId uint64, balanceType uint32) (*v1.ListUserBalancesReply, error) {
+func (ubuc *UserBalanceUsecase) ListMinUserBalances(ctx context.Context, pageNum, pageSize, userId uint64, balanceType uint32, keyword string) (*v1.ListUserBalancesReply, error) {
 	if pageSize == 0 {
 		pageSize = uint64(ubuc.conf.Database.PageSize)
 	}
 
-	list, err := ubuc.repo.List(ctx, userId, pageNum, pageSize, balanceType)
+	list, err := ubuc.repo.List(ctx, userId, pageNum, pageSize, balanceType, keyword)
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_LIST_USER_BALANCE_FAILED", tool.GetGRPCErrorInfo(err))
