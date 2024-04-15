@@ -78,6 +78,17 @@ func (ctr *companyTaskRepo) GetById(ctx context.Context, id uint64) (*domain.Com
 	return task.ToDomain(ctx), nil
 }
 
+func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId uint64, isDel uint32) (*domain.CompanyTask, error) {
+	task := &CompanyTask{}
+
+	if err := ctr.data.db.WithContext(ctx).Model(&CompanyTask{}).
+		Where("product_out_id = ? and is_del = ?", productOutId, isDel).First(task).Error; err != nil {
+		return nil, err
+	}
+
+	return task.ToDomain(ctx), nil
+}
+
 // 排序根据置顶和操作时间
 // isDel >= -1
 func (ctr *companyTaskRepo) List(ctx context.Context, pageNum, pageSize, isTop, isDel int, productOutIds []uint64) ([]*domain.CompanyTask, error) {
@@ -147,6 +158,26 @@ func (ctr *companyTaskRepo) ListByIds(ctx context.Context, ids []uint64) ([]*dom
 	return list, nil
 }
 
+func (ctr *companyTaskRepo) Count(ctx context.Context, isDel int, productOutIds []uint64) (int64, error) {
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTask{})
+
+	if isDel >= 0 {
+		db = db.Where(" is_del = ?", 0)
+	}
+
+	if len(productOutIds) > 0 {
+		db = db.Where("product_out_id in (?)", productOutIds)
+	}
+
+	var count int64
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // Create a new task and add the number of available tasks to Redis
 // And no timeout,when close the task to delete it
 func (ctr *companyTaskRepo) Save(ctx context.Context, in *domain.CompanyTask) (*domain.CompanyTask, error) {
@@ -198,37 +229,6 @@ func (ctr *companyTaskRepo) UpdateCompanyTaskIsDel(ctx context.Context, id uint6
 	return ctr.data.DB(ctx).Model(&CompanyTask{}).Where("id = ?", id).Update("is_del", 1).Error
 }
 
-func (ctr *companyTaskRepo) Count(ctx context.Context, isDel int, productOutIds []uint64) (int64, error) {
-	db := ctr.data.db.WithContext(ctx).Model(&CompanyTask{})
-
-	if isDel >= 0 {
-		db = db.Where(" is_del = ?", 0)
-	}
-
-	if len(productOutIds) > 0 {
-		db = db.Where("product_out_id in (?)", productOutIds)
-	}
-
-	var count int64
-
-	if err := db.Count(&count).Error; err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId uint64, isDel uint32) (*domain.CompanyTask, error) {
-	task := &CompanyTask{}
-
-	if err := ctr.data.db.WithContext(ctx).Model(&CompanyTask{}).
-		Where("product_out_id = ? and is_del = ?", productOutId, isDel).First(task).Error; err != nil {
-		return nil, err
-	}
-
-	return task.ToDomain(ctx), nil
-}
-
 func (ctr *companyTaskRepo) GetCacheHash(ctx context.Context, taskId string) (string, error) {
 	return ctr.data.rdb.Get(ctx, RedisCompanyTaskPre+taskId).Result()
 }
@@ -237,7 +237,7 @@ func (ctr *companyTaskRepo) SaveCacheHash(ctx context.Context, taskId string, us
 	return ctr.data.rdb.Set(ctx, RedisCompanyTaskPre+taskId, useCount, 0).Err()
 }
 
-func (ctr *companyTaskRepo) DeleteCache(ctx context.Context, taskId string) error {
+func (ctr *companyTaskRepo) DeleteCacheHash(ctx context.Context, taskId string) error {
 	return ctr.data.rdb.Del(ctx, RedisCompanyTaskPre+taskId).Err()
 }
 

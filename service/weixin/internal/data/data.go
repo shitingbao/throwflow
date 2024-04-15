@@ -33,7 +33,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewDB, NewRedis, NewMongo, NewSonyflake, NewTos, NewDiscovery, NewTransaction, NewUserRepo, NewUserOpenIdRepo, NewCompanyRepo, NewCompanyProductRepo, NewUserOpenDouyinRepo, NewOpenDouyinUserInfoRepo, NewUserAddressRepo, NewUserSampleOrderRepo, NewUserCommissionRepo, NewJinritemaiOrderRepo, NewTaskLogRepo, NewQrCodeRepo, NewCompanyOrganizationRepo, NewUserOrderRepo, NewUserOrganizationRelationRepo, NewUserScanRecordRepo, NewUserCouponRepo, NewUserCouponCreateLogRepo, NewAreaRepo, NewPayRepo, NewShortUrlRepo, NewShortCodeRepo, NewDjAwemeRepo, NewTuUserRepo, NewCouponUserRepo, NewUserIntegralRelationRepo, NewUserContractRepo, NewUserBankRepo, NewUserBalanceLogRepo, NewKuaidiInfoRepo, NewDoukeOrderRepo, NewAwemesAdvertiserWeixinAuthRepo, NewCompanyServiceClient, NewDouyinServiceClient, NewCommonServiceClient)
+var ProviderSet = wire.NewSet(NewData, NewDB, NewRedis, NewMongo, NewSonyflake, NewTos, NewDiscovery, NewTransaction, NewUserRepo, NewUserOpenIdRepo, NewCompanyRepo, NewCompanyProductRepo, NewUserOpenDouyinRepo, NewOpenDouyinUserInfoRepo, NewUserAddressRepo, NewUserSampleOrderRepo, NewUserCommissionRepo, NewJinritemaiOrderRepo, NewTaskLogRepo, NewQrCodeRepo, NewCompanyOrganizationRepo, NewUserOrderRepo, NewUserOrganizationRelationRepo, NewUserScanRecordRepo, NewUserCouponRepo, NewUserCouponCreateLogRepo, NewAreaRepo, NewPayRepo, NewShortUrlRepo, NewShortCodeRepo, NewDjAwemeRepo, NewTuUserRepo, NewCouponUserRepo, NewUserIntegralRelationRepo, NewUserContractRepo, NewUserBankRepo, NewUserBalanceLogRepo, NewKuaidiInfoRepo, NewDoukeOrderRepo, NewAwemesAdvertiserWeixinAuthRepo, NewCourseRepo, NewCourseUserRepo, NewCompanyTaskRepo, NewCompanyServiceClient, NewDouyinServiceClient, NewCommonServiceClient)
 
 type tos struct {
 	name string
@@ -123,6 +123,8 @@ func NewDB(c *conf.Data, log log.Logger) *gorm.DB {
 	_ = db.AutoMigrate(&UserContract{})
 	_ = db.AutoMigrate(&UserBank{})
 	_ = db.AutoMigrate(&UserBalanceLog{})
+	_ = db.AutoMigrate(&Course{})
+	_ = db.AutoMigrate(&CourseUser{})
 
 	return db
 }
@@ -261,7 +263,7 @@ func NewCompanyServiceClient(sr *conf.Service, rr registry.Discovery) companyv1.
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(12*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
@@ -280,7 +282,7 @@ func NewDouyinServiceClient(sr *conf.Service, rr registry.Discovery) douyinv1.Do
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(12*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
@@ -299,7 +301,7 @@ func NewCommonServiceClient(sr *conf.Service, rr registry.Discovery) commonv1.Co
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(12*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {

@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	WeixinDjAwemeListError = errors.InternalServer("WEIXIN_DJ_AWEME_LIST_ERROR", "星达MCN达人列表获取失败")
+	WeixinDjAwemeNotFound  = errors.NotFound("WEIXIN_DJ_AWEME_NOT_FOUND", "MCN达人不存在")
+	WeixinDjAwemeListError = errors.InternalServer("WEIXIN_DJ_AWEME_LIST_ERROR", "MCN达人列表获取失败")
 )
 
 type DjAwemeRepo interface {

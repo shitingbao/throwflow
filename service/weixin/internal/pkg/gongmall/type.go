@@ -111,7 +111,6 @@ func RsaDecrypt(privateKey, data string) (string, error) {
 	bbdata, err := base64.StdEncoding.DecodeString(data)
 
 	if err != nil {
-		fmt.Println(err)
 		return "", errors.New("failed to base64 descode")
 	}
 

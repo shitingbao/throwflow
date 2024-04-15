@@ -21,6 +21,7 @@ type UserOpenDouyin struct {
 	Fans            uint64
 	FansShow        string
 	Area            string
+	Level           string
 	CreateTime      time.Time
 	UpdateTime      time.Time
 }
@@ -125,4 +126,8 @@ func (uod *UserOpenDouyin) SetFansShow(ctx context.Context) {
 	} else {
 		uod.FansShow = strconv.FormatUint(uod.Fans, 10)
 	}
+}
+
+func (uod *UserOpenDouyin) SetLevel(ctx context.Context, level uint64) {
+	uod.Level = strconv.FormatUint(level, 10)
 }

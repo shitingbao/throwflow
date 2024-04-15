@@ -248,6 +248,30 @@ func (ds *DouyinService) StatisticsJinritemaiOrderByDays(ctx context.Context, in
 	}, nil
 }
 
+func (ds *DouyinService) StatisticsJinritemaiOrderByPayTimeAndDays(ctx context.Context, in *v1.StatisticsJinritemaiOrderByPayTimeAndDaysRequest) (*v1.StatisticsJinritemaiOrderByPayTimeAndDaysReply, error) {
+	statistics, err := ds.jouc.StatisticsJinritemaiOrderByPayTimeAndDays(ctx, in.Day, in.PayTime, in.Content, in.PickExtra)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*v1.StatisticsJinritemaiOrderByPayTimeAndDaysReply_Statistics, 0)
+
+	for _, statistic := range statistics.Statistics {
+		list = append(list, &v1.StatisticsJinritemaiOrderByPayTimeAndDaysReply_Statistics{
+			Key:   statistic.Key,
+			Value: statistic.Value,
+		})
+	}
+
+	return &v1.StatisticsJinritemaiOrderByPayTimeAndDaysReply{
+		Code: 200,
+		Data: &v1.StatisticsJinritemaiOrderByPayTimeAndDaysReply_Data{
+			Statistics: list,
+		},
+	}, nil
+}
+
 func (ds *DouyinService) AsyncNotificationJinritemaiOrders(ctx context.Context, in *v1.AsyncNotificationJinritemaiOrdersRequest) (*v1.AsyncNotificationJinritemaiOrdersReply, error) {
 	ds.log.Infof("同步精选联盟达人详情数据, 开始时间 %s \n", time.Now())
 
@@ -296,5 +320,39 @@ func (ds *DouyinService) Sync90DayJinritemaiOrders(ctx context.Context, in *empt
 	return &v1.Sync90DayJinritemaiOrdersReply{
 		Code: 200,
 		Data: &v1.Sync90DayJinritemaiOrdersReply_Data{},
+	}, nil
+}
+
+func (ds *DouyinService) CompensateJinritemaiOrders(ctx context.Context, in *empty.Empty) (*v1.CompensateJinritemaiOrdersReply, error) {
+	ds.log.Infof("补偿精选联盟达人订单数据, 开始时间 %s \n", time.Now())
+
+	ctx = context.Background()
+
+	if err := ds.jouc.CompensateJinritemaiOrders(ctx); err != nil {
+		return nil, err
+	}
+
+	ds.log.Infof("补偿精选联盟达人订单数据, 结束时间 %s \n", time.Now())
+
+	return &v1.CompensateJinritemaiOrdersReply{
+		Code: 200,
+		Data: &v1.CompensateJinritemaiOrdersReply_Data{},
+	}, nil
+}
+
+func (ds *DouyinService) OperationJinritemaiOrders(ctx context.Context, in *empty.Empty) (*v1.OperationJinritemaiOrdersReply, error) {
+	ds.log.Infof("精选联盟达人订单佣金数据, 开始时间 %s \n", time.Now())
+
+	ctx = context.Background()
+
+	if err := ds.jouc.OperationJinritemaiOrders(ctx); err != nil {
+		return nil, err
+	}
+
+	ds.log.Infof("精选联盟达人订单佣金数据, 结束时间 %s \n", time.Now())
+
+	return &v1.OperationJinritemaiOrdersReply{
+		Code: 200,
+		Data: &v1.OperationJinritemaiOrdersReply_Data{},
 	}, nil
 }

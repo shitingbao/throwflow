@@ -2,13 +2,6 @@ package data
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
-	"github.com/go-kratos/kratos/v2/middleware/recovery"
-	"github.com/go-kratos/kratos/v2/middleware/tracing"
-	"github.com/go-kratos/kratos/v2/registry"
-	"github.com/go-kratos/kratos/v2/transport/grpc"
-	"github.com/go-redis/redis/v8"
-	consulAPI "github.com/hashicorp/consul/api"
 	"material/internal/conf"
 	"material/internal/pkg/event/event"
 	"material/internal/pkg/event/kafka"
@@ -17,18 +10,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-kratos/kratos/contrib/registry/consul/v2"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-redis/redis/v8"
+	consulAPI "github.com/hashicorp/consul/api"
+
+	slog "log"
+	companyv1 "material/api/service/company/v1"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
 	grpcx "google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	slog "log"
-	companyv1 "material/api/service/company/v1"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewDB, NewRedis, NewKafka, NewTos, NewDiscovery, NewMaterialCategoryRepo, NewMaterialRepo, NewMaterialProductRepo, NewCollectRepo, NewCompanyMaterialRepo, NewCompanyProductRepo, NewCompanyServiceClient)
+var ProviderSet = wire.NewSet(NewData, NewDB, NewRedis, NewKafka, NewTos, NewDiscovery, NewMaterialCategoryRepo, NewMaterialRepo, NewMaterialProductRepo, NewCollectRepo, NewCompanyMaterialRepo, NewCompanyProductRepo, NewMaterialContentRepo, NewCompanyServiceClient)
 
 // Data .
 type Data struct {

@@ -37,6 +37,26 @@ func (cs *CompanyService) GetByProductOutId(ctx context.Context, in *v1.GetByPro
 	}, nil
 }
 
+func (cs *CompanyService) GetCompanyTaskAccountRelations(ctx context.Context, in *v1.GetCompanyTaskAccountRelationsRequest) (*v1.GetCompanyTaskAccountRelationsReply, error) {
+	taskAccountRelation, err := cs.ctaruc.GetCompanyTaskAccountRelations(ctx, in.TaskAccountRelationId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.GetCompanyTaskAccountRelationsReply{
+		Code: 200,
+		Data: &v1.GetCompanyTaskAccountRelationsReply_Data{
+			TaskAccountRelationId: taskAccountRelation.Id,
+			TaskId:                taskAccountRelation.CompanyTaskId,
+			ProductOutId:          taskAccountRelation.ProductOutId,
+			UserId:                taskAccountRelation.UserId,
+			ClaimTime:             tool.TimeToString("2006-01-02 15:04:05", taskAccountRelation.ClaimTime),
+			ExpireTime:            tool.TimeToString("2006-01-02 15:04:05", taskAccountRelation.ExpireTime),
+		},
+	}, nil
+}
+
 func (cs *CompanyService) ListCompanyTask(ctx context.Context, in *v1.ListCompanyTaskRequest) (*v1.ListCompanyTaskReply, error) {
 	tasks, err := cs.ctuc.ListCompanyTask(ctx, int(in.IsDel), in.IsTop, in.PageNum, in.PageSize, in.Keyword)
 

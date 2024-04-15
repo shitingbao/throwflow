@@ -1,7 +1,6 @@
 package data
 
 import (
-	v1 "company/api/service/weixin/v1"
 	"company/internal/biz"
 	"company/internal/domain"
 	"context"
@@ -159,7 +158,7 @@ func (ctr *companyTaskDetailRepo) Count(ctx context.Context, taskId uint64, user
 	return count, nil
 }
 
-func (ctr *companyTaskDetailRepo) CountIsPlauSuccess(ctx context.Context, taskId, userId uint64) (int64, error) {
+func (ctr *companyTaskDetailRepo) CountByIsPlauSuccess(ctx context.Context, taskId, userId uint64) (int64, error) {
 	db := ctr.data.DB(ctx).Model(&CompanyTaskDetail{}).
 		Where("company_task_id = ? and user_id = ? and is_play_success = 1", taskId, userId)
 
@@ -275,25 +274,7 @@ func (ctr *companyTaskDetailRepo) UpdateOnDuplicateKey(ctx context.Context, ins 
 	return ctr.data.DB(ctx).Save(&tasks).Error
 }
 
-func (ctr *companyTaskDetailRepo) GetByIdUsers(ctx context.Context, userId uint64) (*v1.GetByIdUsersReply, error) {
-	return ctr.data.weixinuc.GetByIdUsers(ctx, &v1.GetByIdUsersRequest{
-		UserId: userId,
-	})
-}
-
-func (ctr *companyTaskDetailRepo) ListByClientKeyAndOpenIds(ctx context.Context, pageNum, pageSize uint64, clientKeyAndOpenIds, keyword string) (*v1.ListByClientKeyAndOpenIdsReply, error) {
-	return ctr.data.weixinuc.ListByClientKeyAndOpenIds(ctx, &v1.ListByClientKeyAndOpenIdsRequest{
-		PageNum:             pageNum,
-		PageSize:            pageSize,
-		ClientKeyAndOpenIds: clientKeyAndOpenIds,
-		Keyword:             keyword,
-	})
-}
-
-// DeleteOpenDouyinUsers
-// 同时更新视频信息，可能视频已经删除或者状态更新
-
-func (ctr *companyTaskDetailRepo) DeleteOpenDouyinUsers(ctx context.Context, userIds []uint64) error {
+func (ctr *companyTaskDetailRepo) DeleteByUserIds(ctx context.Context, userIds []uint64) error {
 	db := ctr.data.db.WithContext(ctx).
 		Where("id in (?)", userIds)
 

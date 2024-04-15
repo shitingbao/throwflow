@@ -43,6 +43,7 @@ service Common {
   rpc ListKuaidiCompanys (ListKuaidiCompanysRequest) returns (ListKuaidiCompanysReply) {}
 
   rpc Divide (DivideRequest) returns (DivideReply) {}
+  rpc Refund (RefundRequest) returns (RefundReply) {}
 }
 
 message SendSmsRequest {
@@ -332,6 +333,21 @@ message DivideRequest {
 }
 
 message DivideReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message RefundRequest {
+  uint64 totalFee = 1 [(validate.rules).uint64.gt = 0];
+  uint64 refundFee = 2 [(validate.rules).uint64.gt = 0];
+  string outRefundNo = 3 [(validate.rules).string ={min_len: 1}];
+  string transactionId = 4 [(validate.rules).string ={min_len: 1}];
+}
+
+message RefundReply {
   message Data {
   }
 

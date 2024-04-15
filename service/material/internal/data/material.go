@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 	"io"
 	"material/internal/biz"
 	"material/internal/domain"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -245,6 +246,23 @@ func (mr *materialRepo) ListByPromotionId(ctx context.Context, pageNum, pageSize
 	if result := db.
 		Limit(pageSize).Offset((pageNum - 1) * pageSize).
 		Find(&materials); result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, material := range materials {
+		list = append(list, material.ToDomain())
+	}
+
+	return list, nil
+}
+
+func (mr *materialRepo) ListByVideoIds(ctx context.Context, videoIds []uint64) ([]*domain.Material, error) {
+	var materials []Material
+	list := make([]*domain.Material, 0)
+
+	db := mr.data.db.WithContext(ctx).Where("video_id in (?)", videoIds)
+
+	if result := db.Find(&materials); result.Error != nil {
 		return nil, result.Error
 	}
 

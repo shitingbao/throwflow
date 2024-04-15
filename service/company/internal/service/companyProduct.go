@@ -908,6 +908,38 @@ func (cs *CompanyService) UpdateOutProductCompanyProducts(ctx context.Context, i
 	}, nil
 }
 
+func (cs *CompanyService) ParseCompanyProducts(ctx context.Context, in *v1.ParseCompanyProductsRequest) (*v1.ParseCompanyProductsReply, error) {
+	companyProduct, err := cs.cprouc.ParseCompanyProducts(ctx, in.Content)
+
+	if err != nil {
+		return nil, err
+	}
+
+	productImg := ""
+
+	if len(companyProduct.ProductImgs) > 0 {
+		productImg = companyProduct.ProductImgs[0]
+	}
+
+	return &v1.ParseCompanyProductsReply{
+		Code: 200,
+		Data: &v1.ParseCompanyProductsReply_Data{
+			ProductId:             companyProduct.ProductOutId,
+			ProductName:           companyProduct.ProductName,
+			ProductImg:            productImg,
+			ProductPrice:          companyProduct.ProductPrice,
+			IsTop:                 uint32(companyProduct.IsTop),
+			PureCommission:        companyProduct.PureCommission,
+			PureServiceCommission: companyProduct.PureServiceCommission,
+			CommonCommission:      fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.CommissionRatio), 2)),
+			InvestmentRatio:       fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.InvestmentRatio), 2)),
+			IsHot:                 uint32(companyProduct.IsHot),
+			TotalSale:             companyProduct.TotalSale,
+			IsTask:                uint32(companyProduct.IsTask),
+		},
+	}, nil
+}
+
 func (cs *CompanyService) UploadPartCompanyProducts(ctx context.Context, in *v1.UploadPartCompanyProductsRequest) (*v1.UploadPartCompanyProductsReply, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

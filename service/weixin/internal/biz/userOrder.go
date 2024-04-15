@@ -23,6 +23,7 @@ var (
 	WeixinUserOrderListError      = errors.InternalServer("WEIXIN_USER_ORDER_LIST_ERROR", "微信用户订单列表获取失败")
 	WeixinUserOrderCreateError    = errors.InternalServer("WEIXIN_USER_ORDER_CREATE_ERROR", "微信用户订单创建失败")
 	WeixinUserOrderCourseNotExist = errors.InternalServer("WEIXIN_USER_ORDER_COURSE_NOT_EXIST", "微信用户订单套餐不存在")
+	WeixinUserOrderParentNotExist = errors.InternalServer("WEIXIN_USER_ORDER_PARENT_NOT_EXIST", "暂无推荐人，无法激活会员请点击老会员的邀请二维码")
 )
 
 type UserOrderRepo interface {
@@ -30,6 +31,7 @@ type UserOrderRepo interface {
 	GetByOutTradeNo(context.Context, string) (*domain.UserOrder, error)
 	GetByUserId(context.Context, uint64, uint64, string) (*domain.UserOrder, error)
 	List(context.Context, int, int) ([]*domain.UserOrder, error)
+	ListOperation(context.Context) ([]*domain.UserOrder, error)
 	Count(context.Context) (int64, error)
 	StatisticsPayAmount(context.Context, uint64, uint64, string) (*domain.UserOrder, error)
 	Update(context.Context, *domain.UserOrder) (*domain.UserOrder, error)
@@ -177,11 +179,17 @@ func (uouc *UserOrderUsecase) CreateUserOrders(ctx context.Context, userId, pare
 		}
 	}
 
+	if organizationUserId == 0 {
+		return nil, WeixinUserOrderParentNotExist
+	}
+
 	appid := ""
 
 	if uouc.oconf.DjOrganizationId == organizationId {
 		appid = uouc.wconf.DjMini.Appid
 	} else if uouc.oconf.DefaultOrganizationId == organizationId {
+		appid = uouc.wconf.Mini.Appid
+	} else if uouc.oconf.LbOrganizationId == organizationId {
 		appid = uouc.wconf.Mini.Appid
 	} else {
 		return nil, WeixinUserOpenidNotFound
@@ -319,6 +327,8 @@ func (uouc *UserOrderUsecase) UpgradeUserOrders(ctx context.Context, userId, org
 	if uouc.oconf.DjOrganizationId == userOrganizationRelation.OrganizationId {
 		appid = uouc.wconf.DjMini.Appid
 	} else if uouc.oconf.DefaultOrganizationId == userOrganizationRelation.OrganizationId {
+		appid = uouc.wconf.Mini.Appid
+	} else if uouc.oconf.LbOrganizationId == userOrganizationRelation.OrganizationId {
 		appid = uouc.wconf.Mini.Appid
 	} else {
 		return nil, WeixinUserOpenidNotFound
@@ -559,14 +569,12 @@ func (uouc *UserOrderUsecase) AsyncNotificationUserOrders(ctx context.Context, c
 			}
 		}
 
-		if inUserOrder.Level == 1 || inUserOrder.Level == 2 {
-			uiday, _ := strconv.ParseUint(time.Now().Format("20060102"), 10, 64)
+		uiday, _ := strconv.ParseUint(time.Now().Format("20060102"), 10, 64)
 
-			err = uouc.getUserComission(ctx, uiday, inUserOrder, inUserOrganizationRelation)
+		err = uouc.getUserComission(ctx, uiday, inUserOrder, inUserOrganizationRelation)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 
 		return nil
@@ -586,12 +594,56 @@ func (uouc *UserOrderUsecase) getUserComission(ctx context.Context, uiday uint64
 		return err
 	}
 
+	organizationCourses := make([]domain.OrganizationCourse, 0)
+
+	for _, organizationCourse := range companyOrganization.Data.OrganizationCourses {
+		courseModules := make([]domain.OrganizationCourseModule, 0)
+
+		for _, courseModule := range organizationCourse.CourseModules {
+			courseModules = append(courseModules, domain.OrganizationCourseModule{
+				CourseModuleName:    courseModule.CourseModuleName,
+				CourseModuleContent: courseModule.CourseModuleContent,
+			})
+		}
+
+		organizationCourses = append(organizationCourses, domain.OrganizationCourse{
+			CourseName:     organizationCourse.CourseName,
+			CourseSubName:  organizationCourse.CourseSubName,
+			CoursePrice:    organizationCourse.CoursePrice,
+			CourseDuration: organizationCourse.CourseDuration,
+			CourseLevel:    uint8(organizationCourse.CourseLevel),
+			CourseModules:  courseModules,
+		})
+	}
+
+	sort.Sort(domain.OrganizationCourses(organizationCourses))
+
+	var coursePrice float64
+	isNotExist := true
+
+	for _, organizationCourse := range organizationCourses {
+		if organizationCourse.CourseLevel == userOrder.Level {
+			coursePrice = organizationCourse.CoursePrice
+			isNotExist = false
+
+			break
+		}
+	}
+
+	if isNotExist {
+		return WeixinUserOrderCourseNotExist
+	}
+
 	var courseCommissionPool float64
 
 	if userOrder.Level == 1 {
 		courseCommissionPool = float64(userOrder.PayAmount) * companyOrganization.Data.OrganizationColonelCommission.ZeroCourseRatio / 100
-	} else {
-		courseCommissionPool = float64(userOrder.PayAmount) * companyOrganization.Data.OrganizationColonelCommission.CourseRatio / 100
+	} else if userOrder.Level == 2 {
+		courseCommissionPool = float64(userOrder.PayAmount) * companyOrganization.Data.OrganizationColonelCommission.PrimaryCourseRatio / 100
+	} else if userOrder.Level == 3 {
+		courseCommissionPool = float64(userOrder.PayAmount) * companyOrganization.Data.OrganizationColonelCommission.IntermediateCourseRatio / 100
+	} else if userOrder.Level == 4 {
+		courseCommissionPool = float64(userOrder.PayAmount) * companyOrganization.Data.OrganizationColonelCommission.AdvancedCourseRatio / 100
 	}
 
 	var organizationParentUser *domain.UserOrganizationRelation
@@ -612,136 +664,147 @@ func (uouc *UserOrderUsecase) getUserComission(ctx context.Context, uiday uint64
 			}
 		}
 
-		var realUserCommission float64
+		var realCommission float64
 
-		if organizationParentUser.Level == 2 {
-			if userOrder.Level == 1 {
-				realUserCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterZeroCourseCommissionRule
-			} else {
-				realUserCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterCourseCommissionRule
+		if userOrder.Level == 1 {
+			if organizationParentUser.Level == 1 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.ZeroAdvancedPresenterZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 2 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 3 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedPresenterZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 4 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.AdvancedPresenterZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
 			}
 
-			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, 0, 0, uint32(uiday), userOrganizationRelation.Level, organizationParentUser.Level, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), 0.00, 0.00, float32(realUserCommission), float32(realUserCommission))
-			inUserCommission.SetCreateTime(ctx)
+			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationParentUser.Level, 1, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+			inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
 			inUserCommission.SetUpdateTime(ctx)
 
-			userCommission, err := uouc.ucrepo.Save(ctx, inUserCommission)
-
-			if err != nil {
+			if _, err := uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
 				return err
 			}
 
-			inUserBalanceLog := domain.NewUserBalanceLog(ctx, organizationParentUser.UserId, userCommission.Id, 1, 1, 1, float32(realUserCommission), "课程佣金")
-			inUserBalanceLog.SetDay(ctx, uint32(uiday))
-			inUserBalanceLog.SetCreateTime(ctx)
-			inUserBalanceLog.SetUpdateTime(ctx)
+			if organizationTutorUser != nil && organizationParentUser.Level != 4 {
+				if organizationTutorUser.Level == 4 {
+					if organizationParentUser.Level == 1 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.ZeroAdvancedTutorZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					} else if organizationParentUser.Level == 2 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedTutorZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					} else if organizationParentUser.Level == 3 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedTutorZeroCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					}
 
-			if _, err = uouc.ublrepo.Save(ctx, inUserBalanceLog); err != nil {
-				return err
-			}
+					inUserCommission = domain.NewUserCommission(ctx, organizationTutorUser.UserId, organizationTutorUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationTutorUser.Level, 2, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+					inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
+					inUserCommission.SetUpdateTime(ctx)
 
-			if organizationTutorUser.Level == 4 {
-				if userOrder.Level == 1 {
-					realUserCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedTutorZeroCourseCommissionRule
-				} else {
-					realUserCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedTutorCourseCommissionRule
-				}
-
-				inUserCommission = domain.NewUserCommission(ctx, organizationTutorUser.UserId, organizationTutorUser.OrganizationId, userOrganizationRelation.UserId, 0, 0, uint32(uiday), userOrganizationRelation.Level, organizationTutorUser.Level, 2, 1, userOrder.PayAmount, float32(courseCommissionPool), 0.00, 0.00, float32(realUserCommission), float32(realUserCommission))
-				inUserCommission.SetCreateTime(ctx)
-				inUserCommission.SetUpdateTime(ctx)
-
-				userCommission, err = uouc.ucrepo.Save(ctx, inUserCommission)
-
-				if err != nil {
-					return err
-				}
-
-				inUserBalanceLog = domain.NewUserBalanceLog(ctx, organizationTutorUser.UserId, userCommission.Id, 1, 1, 1, float32(realUserCommission), "课程佣金")
-				inUserBalanceLog.SetDay(ctx, uint32(uiday))
-				inUserBalanceLog.SetCreateTime(ctx)
-				inUserBalanceLog.SetUpdateTime(ctx)
-
-				if _, err = uouc.ublrepo.Save(ctx, inUserBalanceLog); err != nil {
-					return err
+					if _, err = uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
+						return err
+					}
 				}
 			}
-		} else if organizationParentUser.Level == 3 {
-			if userOrder.Level == 1 {
-				realUserCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedPresenterZeroCourseCommissionRule
-			} else {
-				realUserCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedPresenterCourseCommissionRule
+		} else if userOrder.Level == 2 {
+			if organizationParentUser.Level == 2 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterPrimaryCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 3 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedPresenterPrimaryCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 4 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.AdvancedPresenterPrimaryCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
 			}
 
-			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, 0, 0, uint32(uiday), userOrganizationRelation.Level, organizationParentUser.Level, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), 0.00, 0.00, float32(realUserCommission), float32(realUserCommission))
-			inUserCommission.SetCreateTime(ctx)
+			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationParentUser.Level, 1, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+			inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
 			inUserCommission.SetUpdateTime(ctx)
 
-			userCommission, err := uouc.ucrepo.Save(ctx, inUserCommission)
-
-			if err != nil {
+			if _, err := uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
 				return err
 			}
 
-			inUserBalanceLog := domain.NewUserBalanceLog(ctx, organizationParentUser.UserId, userCommission.Id, 1, 1, 1, float32(realUserCommission), "课程佣金")
-			inUserBalanceLog.SetDay(ctx, uint32(uiday))
-			inUserBalanceLog.SetCreateTime(ctx)
-			inUserBalanceLog.SetUpdateTime(ctx)
+			if organizationTutorUser != nil && organizationParentUser.Level != 4 {
+				if organizationTutorUser.Level == 4 {
+					if organizationParentUser.Level == 2 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedTutorPrimaryCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					} else if organizationParentUser.Level == 3 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedTutorPrimaryCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					}
 
-			if _, err = uouc.ublrepo.Save(ctx, inUserBalanceLog); err != nil {
-				return err
-			}
+					inUserCommission = domain.NewUserCommission(ctx, organizationTutorUser.UserId, organizationTutorUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationTutorUser.Level, 2, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+					inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
+					inUserCommission.SetUpdateTime(ctx)
 
-			if organizationTutorUser.Level == 4 {
-				if userOrder.Level == 1 {
-					realUserCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedTutorZeroCourseCommissionRule
-				} else {
-					realUserCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedTutorCourseCommissionRule
-				}
-
-				inUserCommission = domain.NewUserCommission(ctx, organizationTutorUser.UserId, organizationTutorUser.OrganizationId, userOrganizationRelation.UserId, 0, 0, uint32(uiday), userOrganizationRelation.Level, organizationTutorUser.Level, 2, 1, userOrder.PayAmount, float32(courseCommissionPool), 0.00, 0.00, float32(realUserCommission), float32(realUserCommission))
-				inUserCommission.SetCreateTime(ctx)
-				inUserCommission.SetUpdateTime(ctx)
-
-				userCommission, err = uouc.ucrepo.Save(ctx, inUserCommission)
-
-				if err != nil {
-					return err
-				}
-
-				inUserBalanceLog = domain.NewUserBalanceLog(ctx, organizationTutorUser.UserId, userCommission.Id, 1, 1, 1, float32(realUserCommission), "课程佣金")
-				inUserBalanceLog.SetDay(ctx, uint32(uiday))
-				inUserBalanceLog.SetCreateTime(ctx)
-				inUserBalanceLog.SetUpdateTime(ctx)
-
-				if _, err = uouc.ublrepo.Save(ctx, inUserBalanceLog); err != nil {
-					return err
+					if _, err = uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
+						return err
+					}
 				}
 			}
-		} else if organizationParentUser.Level == 4 {
-			if userOrder.Level == 1 {
-				realUserCommission = companyOrganization.Data.OrganizationColonelCommission.AdvancedPresenterZeroCourseCommissionRule
-			} else {
-				realUserCommission = companyOrganization.Data.OrganizationColonelCommission.AdvancedPresenterCourseCommissionRule
+		} else if userOrder.Level == 3 {
+			if organizationParentUser.Level == 2 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterIntermediateCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 3 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedPresenterIntermediateCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 4 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.AdvancedPresenterIntermediateCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
 			}
 
-			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, 0, 0, uint32(uiday), userOrganizationRelation.Level, organizationParentUser.Level, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), 0.00, 0.00, float32(realUserCommission), float32(realUserCommission))
-			inUserCommission.SetCreateTime(ctx)
+			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationParentUser.Level, 1, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+			inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
 			inUserCommission.SetUpdateTime(ctx)
 
-			userCommission, err := uouc.ucrepo.Save(ctx, inUserCommission)
-
-			if err != nil {
+			if _, err := uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
 				return err
 			}
 
-			inUserBalanceLog := domain.NewUserBalanceLog(ctx, organizationParentUser.UserId, userCommission.Id, 1, 1, 1, float32(realUserCommission), "课程佣金")
-			inUserBalanceLog.SetDay(ctx, uint32(uiday))
-			inUserBalanceLog.SetCreateTime(ctx)
-			inUserBalanceLog.SetUpdateTime(ctx)
+			if organizationTutorUser != nil && organizationParentUser.Level != 4 {
+				if organizationTutorUser.Level == 4 {
+					if organizationParentUser.Level == 2 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedTutorIntermediateCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					} else if organizationParentUser.Level == 3 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedTutorIntermediateCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					}
 
-			if _, err = uouc.ublrepo.Save(ctx, inUserBalanceLog); err != nil {
+					inUserCommission = domain.NewUserCommission(ctx, organizationTutorUser.UserId, organizationTutorUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationTutorUser.Level, 2, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+					inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
+					inUserCommission.SetUpdateTime(ctx)
+
+					if _, err = uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
+						return err
+					}
+				}
+			}
+		} else if userOrder.Level == 4 {
+			if organizationParentUser.Level == 2 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterAdvancedCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 3 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedPresenterAdvancedCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			} else if organizationParentUser.Level == 4 {
+				realCommission = companyOrganization.Data.OrganizationColonelCommission.AdvancedPresenterAdvancedCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+			}
+
+			inUserCommission := domain.NewUserCommission(ctx, organizationParentUser.UserId, organizationParentUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationParentUser.Level, 1, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+			inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
+			inUserCommission.SetUpdateTime(ctx)
+
+			if _, err := uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
 				return err
+			}
+
+			if organizationTutorUser != nil && organizationParentUser.Level != 4 {
+				if organizationTutorUser.Level == 4 {
+					if organizationParentUser.Level == 2 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedTutorAdvancedCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					} else if organizationParentUser.Level == 3 {
+						realCommission = companyOrganization.Data.OrganizationColonelCommission.IntermediateAdvancedTutorAdvancedCourseCommissionRule * float64(userOrder.PayAmount) / coursePrice
+					}
+
+					inUserCommission = domain.NewUserCommission(ctx, organizationTutorUser.UserId, organizationTutorUser.OrganizationId, userOrganizationRelation.UserId, userOrder.Id, userOrganizationRelation.Level, organizationTutorUser.Level, 2, 2, 1, 1, 1, userOrder.PayAmount, float32(courseCommissionPool), float32(tool.Decimal(realCommission, 0)))
+					inUserCommission.SetCreateTime(ctx, *userOrder.PayTime)
+					inUserCommission.SetUpdateTime(ctx)
+
+					if _, err = uouc.ucrepo.Save(ctx, inUserCommission); err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
@@ -757,22 +820,14 @@ func (uouc *UserOrderUsecase) SyncQrCodeUserOrganizationRelations(ctx context.Co
 			for _, inUserOrganizationRelation := range userOrganizationRelations {
 				if inUserOrganizationRelation.IsOrderRelation == 0 {
 					if wcontent, err = wxa.GetUnlimitedQRCode(accessToken.AccessToken, "oId="+strconv.FormatUint(inUserOrganizationRelation.OrganizationId, 10)+"&uId="+strconv.FormatUint(inUserOrganizationRelation.UserId, 10), uouc.wconf.DjMini.QrCodeEnvVersion); err == nil {
-						fmt.Println(2)
 						objectKey := tool.GetRandCode(time.Now().String())
 
 						if _, err := uouc.repo.PutContent(ctx, uouc.vconf.Tos.Company.SubFolder+"/"+objectKey+".png", strings.NewReader(wcontent.Buffer)); err == nil {
-							fmt.Println(3)
-							fmt.Println(uouc.vconf.Tos.Company.Url + "/" + uouc.vconf.Tos.Company.SubFolder + "/" + objectKey + ".png")
 							inUserOrganizationRelation.SetOrganizationUserQrCodeUrl(ctx, uouc.vconf.Tos.Company.Url+"/"+uouc.vconf.Tos.Company.SubFolder+"/"+objectKey+".png")
 							inUserOrganizationRelation.SetUpdateTime(ctx)
 
 							uouc.uorrepo.Update(ctx, inUserOrganizationRelation)
-						} else {
-							fmt.Println(1)
-							fmt.Println(err)
 						}
-					} else {
-						fmt.Println(err)
 					}
 				}
 			}
@@ -797,6 +852,22 @@ func (uouc *UserOrderUsecase) SyncQrCodeUserOrganizationRelations(ctx context.Co
 
 					}
 				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (uouc *UserOrderUsecase) OperationUserOrders(ctx context.Context) error {
+	userOrders, _ := uouc.repo.ListOperation(ctx)
+
+	uiday, _ := strconv.ParseUint(time.Now().Format("20060102"), 10, 64)
+
+	for _, userOrder := range userOrders {
+		if userOrganizationRelation, err := uouc.uorrepo.GetByUserId(ctx, userOrder.UserId, userOrder.OrganizationId, 0, "0"); err == nil {
+			if _, err := uouc.ucrepo.GetByRelevanceId(ctx, userOrder.Id, 1); err != nil {
+				uouc.getUserComission(ctx, uiday, userOrder, userOrganizationRelation)
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"weixin/internal/conf"
 	"weixin/internal/domain"
@@ -40,101 +41,108 @@ func NewUserBalanceUsecase(urepo UserRepo, ubrepo UserBankRepo, ublrepo UserBala
 }
 
 func (ubuc *UserBalanceUsecase) GetUserBalances(ctx context.Context, userId uint64) (*domain.UserBalance, error) {
-	user, err := ubuc.urepo.Get(ctx, userId)
-
-	if err != nil {
+	if _, err := ubuc.urepo.Get(ctx, userId); err != nil {
 		return nil, WeixinLoginError
 	}
 
-	// 成本购-收入
-	userCostIncomeBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 1, []string{"3", "4"}, []string{"1"})
+	var wg sync.WaitGroup
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+	var userEstimatedCommissionIncomeBalance, userSettleCommissionIncomeBalance, userCashableCommissionIncomeBalance, userCommissionExpenseBalance, userEstimatedCommissionCostIncomeBalance, userSettleCommissionCostIncomeBalance, userCashableCommissionCostIncomeBalance, userCommissionCostExpenseBalance *domain.UserCommission
 
-	// 成本购-提现
-	userCostExpenseBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 2, []string{"6"}, []string{"0", "1", "2"})
+	wg.Add(8)
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+	// 会员/带货-待结算收入
+	go func() {
+		defer wg.Done()
 
-	// 分佣-收入
-	userCommissionIncomeBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 1, []string{"1", "2"}, []string{"1"})
+		userEstimatedCommissionIncomeBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 1, 1, []uint8{1, 2}, []uint8{1})
+	}()
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+	// 会员/带货-已结算收入
+	go func() {
+		defer wg.Done()
 
-	// 分佣-提现
-	userCommissionExpenseBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 2, []string{"5"}, []string{"0", "1", "2"})
+		userSettleCommissionIncomeBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 2, 1, []uint8{1, 2}, []uint8{1})
+	}()
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+	// 会员/带货-可提现收入
+	go func() {
+		defer wg.Done()
 
-	uiday, _ := strconv.ParseUint(time.Now().Format("20060102"), 10, 64)
+		userCashableCommissionIncomeBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 3, 1, []uint8{1, 2}, []uint8{1})
+	}()
 
-	// 电商-预估佣金
-	statisticEstimatedOrder, err := ubuc.ucorepo.Statistics(ctx, user.Id, uint32(uiday), 2)
+	// 会员/带货-提现
+	go func() {
+		defer wg.Done()
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+		userCommissionExpenseBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 0, 2, []uint8{7}, []uint8{0, 1, 2})
+	}()
 
-	// 电商-结算佣金
-	/*statisticRealOrder, err := ubuc.ucorepo.StatisticsReal(ctx, user.Id, uint32(uiday), 2)
+	// 成本购/任务-待结算收入
+	go func() {
+		defer wg.Done()
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}*/
+		userEstimatedCommissionCostIncomeBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 1, 1, []uint8{3, 4, 5, 6}, []uint8{1})
+	}()
 
-	// 成本购-预估佣金
-	statisticEstimatedCostOrder, err := ubuc.ucorepo.Statistics(ctx, user.Id, uint32(uiday), 3)
+	// 成本购/任务-已结算收入
+	go func() {
+		defer wg.Done()
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+		userSettleCommissionCostIncomeBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 2, 1, []uint8{3, 4, 5, 6}, []uint8{1})
+	}()
 
-	// 成本购-结算佣金
-	statisticRealCostOrder, err := ubuc.ucorepo.StatisticsReal(ctx, user.Id, uint32(uiday), 3)
+	// 成本购/任务-可提现收入
+	go func() {
+		defer wg.Done()
 
-	if err != nil {
-		return nil, WeixinUserBalanceGetError
-	}
+		userCashableCommissionCostIncomeBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 3, 1, []uint8{3, 4, 5, 6}, []uint8{1})
+	}()
+
+	// 成本购/任务-提现
+	go func() {
+		defer wg.Done()
+
+		userCommissionCostExpenseBalance, _ = ubuc.ucorepo.Statistics(ctx, userId, 0, 2, []uint8{8}, []uint8{0, 1, 2})
+	}()
+
+	wg.Wait()
 
 	return &domain.UserBalance{
-		EstimatedCommissionBalance: statisticEstimatedOrder.EstimatedUserCommission,
-		RealCommissionBalance:      userCommissionIncomeBalance.Amount - userCommissionExpenseBalance.Amount,
-		EstimatedCostBalance:       statisticEstimatedCostOrder.EstimatedUserCommission - statisticRealCostOrder.RealUserCommission,
-		RealCostBalance:            userCostIncomeBalance.Amount - userCostExpenseBalance.Amount,
+		EstimatedCommissionBalance:     userEstimatedCommissionIncomeBalance.CommissionAmount,
+		SettleCommissionBalance:        userSettleCommissionIncomeBalance.CommissionAmount,
+		CashableCommissionBalance:      userCashableCommissionIncomeBalance.CommissionAmount - userCommissionExpenseBalance.CommissionAmount,
+		EstimatedCommissionCostBalance: userEstimatedCommissionCostIncomeBalance.CommissionAmount,
+		SettleCommissionCostBalance:    userSettleCommissionCostIncomeBalance.CommissionAmount,
+		CashableCommissionCostBalance:  userCashableCommissionCostIncomeBalance.CommissionAmount - userCommissionCostExpenseBalance.CommissionAmount,
 	}, nil
 }
 
-func (ubuc *UserBalanceUsecase) ListUserBalances(ctx context.Context, pageNum, pageSize, userId uint64, operationType uint8) (*domain.UserBalanceLogList, error) {
+func (ubuc *UserBalanceUsecase) ListUserBalances(ctx context.Context, pageNum, pageSize, userId uint64, operationType uint8, keyword string) (*domain.UserCommissionList, error) {
 	user, err := ubuc.urepo.Get(ctx, userId)
 
 	if err != nil {
 		return nil, WeixinLoginError
 	}
 
-	balanceTypes := make([]string, 0)
-	balanceStatuses := make([]string, 0)
-
-	list, err := ubuc.ublrepo.List(ctx, int(pageNum), int(pageSize), user.Id, operationType, "DESC", balanceTypes, balanceStatuses)
+	list, err := ubuc.ucorepo.ListBalance(ctx, int(pageNum), int(pageSize), user.Id, operationType, keyword)
 
 	if err != nil {
 		return nil, WeixinUserBalanceLogListError
 	}
 
-	total, err := ubuc.ublrepo.Count(ctx, user.Id, operationType, balanceTypes, balanceStatuses)
+	for _, l := range list {
+		l.SetBalanceCommissionTypeName(ctx)
+	}
+
+	total, err := ubuc.ucorepo.CountBalance(ctx, user.Id, operationType, keyword)
 
 	if err != nil {
 		return nil, WeixinUserBalanceLogListError
 	}
 
-	return &domain.UserBalanceLogList{
+	return &domain.UserCommissionList{
 		PageNum:  pageNum,
 		PageSize: pageSize,
 		Total:    uint64(total),
@@ -153,9 +161,9 @@ func (ubuc *UserBalanceUsecase) CreateUserBalances(ctx context.Context, userId u
 		return WeixinUserBankNotExist
 	}
 
-	incomeBalanceTypes := make([]string, 0)
-	expenseBalanceTypes := make([]string, 0)
-	var sbalanceType uint8
+	incomeCommissionTypes := make([]uint8, 0)
+	expenseCommissionTypes := make([]uint8, 0)
+	var scommissionType uint8
 	var userContract *domain.UserContract
 
 	if balanceType == 1 {
@@ -165,11 +173,13 @@ func (ubuc *UserBalanceUsecase) CreateUserBalances(ctx context.Context, userId u
 			return WeixinUserContractNotExist
 		}
 
-		sbalanceType = 6
+		scommissionType = 8
 
-		incomeBalanceTypes = append(incomeBalanceTypes, "3")
-		incomeBalanceTypes = append(incomeBalanceTypes, "4")
-		expenseBalanceTypes = append(incomeBalanceTypes, "6")
+		incomeCommissionTypes = append(incomeCommissionTypes, 3)
+		incomeCommissionTypes = append(incomeCommissionTypes, 4)
+		incomeCommissionTypes = append(incomeCommissionTypes, 5)
+		incomeCommissionTypes = append(incomeCommissionTypes, 6)
+		expenseCommissionTypes = append(expenseCommissionTypes, 8)
 	} else if balanceType == 2 {
 		userContract, err = ubuc.ucrepo.GetByIdentityCardMark(ctx, 2, user.IdentityCardMark)
 
@@ -177,11 +187,11 @@ func (ubuc *UserBalanceUsecase) CreateUserBalances(ctx context.Context, userId u
 			return WeixinUserContractNotExist
 		}
 
-		sbalanceType = 5
+		scommissionType = 7
 
-		incomeBalanceTypes = append(incomeBalanceTypes, "1")
-		incomeBalanceTypes = append(incomeBalanceTypes, "2")
-		expenseBalanceTypes = append(incomeBalanceTypes, "5")
+		incomeCommissionTypes = append(incomeCommissionTypes, 1)
+		incomeCommissionTypes = append(incomeCommissionTypes, 2)
+		expenseCommissionTypes = append(expenseCommissionTypes, 7)
 	} else {
 		return WeixinValidatorError
 	}
@@ -196,33 +206,32 @@ func (ubuc *UserBalanceUsecase) CreateUserBalances(ctx context.Context, userId u
 		}
 
 		if result {
-			userIncomeBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 1, incomeBalanceTypes, []string{"1"})
+			userIncomeBalance, err := ubuc.ucorepo.Statistics(ctx, user.Id, 3, 1, incomeCommissionTypes, []uint8{1})
 
 			if err != nil {
 				return WeixinUserBalanceGetError
 			}
 
-			userExpenseBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 2, expenseBalanceTypes, []string{"0", "1", "2"})
+			userExpenseBalance, err := ubuc.ucorepo.Statistics(ctx, user.Id, 0, 2, expenseCommissionTypes, []uint8{0, 1, 2})
 
 			if err != nil {
 				return WeixinUserBalanceGetError
 			}
 
-			userBalance := userIncomeBalance.Amount - userExpenseBalance.Amount
+			userBalance := userIncomeBalance.CommissionAmount - userExpenseBalance.CommissionAmount
 
-			if userBalance < float32(amount) {
+			if float32(tool.Decimal(float64(userBalance), 2)) < float32(amount) {
 				return WeixinUserBalanceInsufficientError
 			}
 
-			inUserBalanceLog := domain.NewUserBalanceLog(ctx, user.Id, 0, sbalanceType, 2, 0, float32(tool.Decimal(amount, 2)), "提现")
-			inUserBalanceLog.SetOrganizationId(ctx, userContract.OrganizationId)
-			inUserBalanceLog.SetName(ctx, userContract.Name)
-			inUserBalanceLog.SetIdentityCard(ctx, userContract.IdentityCard)
-			inUserBalanceLog.SetBankCode(ctx, bankCode)
-			inUserBalanceLog.SetCreateTime(ctx)
-			inUserBalanceLog.SetUpdateTime(ctx)
+			inUserCommission := domain.NewUserCommission(ctx, user.Id, userContract.OrganizationId, 0, 0, 0, 0, 0, 0, scommissionType, 2, 0, 0.00, 0.00, float32(tool.Decimal(amount, 2)))
+			inUserCommission.SetName(ctx, userContract.Name)
+			inUserCommission.SetIdentityCard(ctx, userContract.IdentityCard)
+			inUserCommission.SetBankCode(ctx, bankCode)
+			inUserCommission.SetCreateTime(ctx, time.Now())
+			inUserCommission.SetUpdateTime(ctx)
 
-			_, err = ubuc.ublrepo.Save(ctx, inUserBalanceLog)
+			_, err = ubuc.ucorepo.Save(ctx, inUserCommission)
 
 			ubuc.ublrepo.DeleteCache(ctx, "weixin:balance:log:"+user.IdentityCardMark+strconv.FormatUint(uint64(balanceType), 10))
 
@@ -254,7 +263,7 @@ func (ubuc *UserBalanceUsecase) AsyncNotificationUserBalances(ctx context.Contex
 		return err
 	}
 
-	inUserBalanceLog, err := ubuc.ublrepo.GetByOutTradeNo(ctx, balanceAsyncNotificationData.RequestId)
+	inUserCommission, err := ubuc.ucorepo.GetByOutTradeNo(ctx, balanceAsyncNotificationData.RequestId)
 
 	if err != nil {
 		return WeixinUserBalanceLogNotFound
@@ -262,13 +271,15 @@ func (ubuc *UserBalanceUsecase) AsyncNotificationUserBalances(ctx context.Contex
 
 	var gongmallConf *conf.Gongmall_Gongmall
 
-	if inUserBalanceLog.OrganizationId == 0 {
+	if inUserCommission.OrganizationId == 0 {
 		gongmallConf = ubuc.gconf.Default
-	} else if inUserBalanceLog.OrganizationId > 0 {
-		if ubuc.oconf.DjOrganizationId == inUserBalanceLog.OrganizationId {
+	} else if inUserCommission.OrganizationId > 0 {
+		if ubuc.oconf.DjOrganizationId == inUserCommission.OrganizationId {
 			gongmallConf = ubuc.gconf.Dj
-		} else if ubuc.oconf.DefaultOrganizationId == inUserBalanceLog.OrganizationId {
+		} else if ubuc.oconf.DefaultOrganizationId == inUserCommission.OrganizationId {
 			gongmallConf = ubuc.gconf.Default
+		} else if ubuc.oconf.LbOrganizationId == inUserCommission.OrganizationId {
+			gongmallConf = ubuc.gconf.Lb
 		} else {
 			return WeixinCompanyNotFound
 		}
@@ -308,9 +319,9 @@ func (ubuc *UserBalanceUsecase) AsyncNotificationUserBalances(ctx context.Contex
 			return WeixinUserContractRsaDecryptError
 		}
 
-		inUserBalanceLog.SetBalanceStatus(ctx, 3)
-		inUserBalanceLog.SetOperationContent(ctx, balanceAsyncNotificationFailData.FailReason)
-		inUserBalanceLog.SetUpdateTime(ctx)
+		inUserCommission.SetBalanceStatus(ctx, 3)
+		inUserCommission.SetOperationContent(ctx, balanceAsyncNotificationFailData.FailReason)
+		inUserCommission.SetUpdateTime(ctx)
 	} else if balanceAsyncNotificationData.Status == 20 {
 		balanceAsyncNotificationDataMap := tool.StructToMap(balanceAsyncNotificationData)
 		balanceAsyncNotificationDataKeys := tool.SortMapKeys(balanceAsyncNotificationDataMap)
@@ -357,18 +368,18 @@ func (ubuc *UserBalanceUsecase) AsyncNotificationUserBalances(ctx context.Contex
 			return WeixinUserBalanceLogAsyncNotificationError
 		}
 
-		inUserBalanceLog.SetBalanceStatus(ctx, 1)
-		inUserBalanceLog.SetInnerTradeNo(ctx, balanceAsyncNotificationData.InnerTradeNo)
-		inUserBalanceLog.SetRealAmount(ctx, balanceAsyncNotificationData.Amount)
-		inUserBalanceLog.SetApplyTime(ctx, &dateTime)
-		inUserBalanceLog.SetGongmallCreateTime(ctx, &createTime)
-		inUserBalanceLog.SetPayTime(ctx, &payTime)
-		inUserBalanceLog.SetUpdateTime(ctx)
+		inUserCommission.SetBalanceStatus(ctx, 1)
+		inUserCommission.SetInnerTradeNo(ctx, balanceAsyncNotificationData.InnerTradeNo)
+		inUserCommission.SetRealAmount(ctx, balanceAsyncNotificationData.Amount)
+		inUserCommission.SetApplyTime(ctx, &dateTime)
+		inUserCommission.SetGongmallCreateTime(ctx, &createTime)
+		inUserCommission.SetPayTime(ctx, &payTime)
+		inUserCommission.SetUpdateTime(ctx)
 	} else {
 		return WeixinUserBalanceLogAsyncNotificationError
 	}
 
-	if _, err := ubuc.ublrepo.Update(ctx, inUserBalanceLog); err != nil {
+	if _, err := ubuc.ucorepo.Update(ctx, inUserCommission); err != nil {
 		return WeixinUserBalanceLogAsyncNotificationError
 	}
 
@@ -376,7 +387,7 @@ func (ubuc *UserBalanceUsecase) AsyncNotificationUserBalances(ctx context.Contex
 }
 
 func (ubuc *UserBalanceUsecase) SyncUserBalances(ctx context.Context) error {
-	userBalances, err := ubuc.ublrepo.List(ctx, 0, 40, 0, 2, "ASC", []string{"5", "6"}, []string{"0"})
+	userCommissions, err := ubuc.ucorepo.ListCashable(ctx)
 
 	if err != nil {
 		inTaskLog := domain.NewTaskLog(ctx, "SyncUserBalances", fmt.Sprintf("[SyncUserBalancesError] Description=%s", "获取微信用户提现列表失败"))
@@ -387,57 +398,61 @@ func (ubuc *UserBalanceUsecase) SyncUserBalances(ctx context.Context) error {
 		return err
 	}
 
-	for _, inUserBalance := range userBalances {
-		user, err := ubuc.urepo.Get(ctx, inUserBalance.UserId)
+	for _, inUserCommission := range userCommissions {
+		user, err := ubuc.urepo.Get(ctx, inUserCommission.UserId)
 
 		if err != nil {
 			continue
 		}
 
 		var gongmallConf *conf.Gongmall_Gongmall
-		incomeBalanceTypes := make([]string, 0)
-		expenseBalanceTypes := make([]string, 0)
+		incomeCommissionTypes := make([]uint8, 0)
+		expenseCommissionTypes := make([]uint8, 0)
 
-		if inUserBalance.OrganizationId == 0 {
+		if inUserCommission.OrganizationId == 0 {
 			gongmallConf = ubuc.gconf.Default
 
-			incomeBalanceTypes = append(incomeBalanceTypes, "3")
-			incomeBalanceTypes = append(incomeBalanceTypes, "4")
-			expenseBalanceTypes = append(expenseBalanceTypes, "6")
-		} else if inUserBalance.OrganizationId > 0 {
-			if ubuc.oconf.DjOrganizationId == inUserBalance.OrganizationId {
+			incomeCommissionTypes = append(incomeCommissionTypes, 3)
+			incomeCommissionTypes = append(incomeCommissionTypes, 4)
+			incomeCommissionTypes = append(incomeCommissionTypes, 5)
+			incomeCommissionTypes = append(incomeCommissionTypes, 6)
+			expenseCommissionTypes = append(expenseCommissionTypes, 8)
+		} else if inUserCommission.OrganizationId > 0 {
+			if ubuc.oconf.DjOrganizationId == inUserCommission.OrganizationId {
 				gongmallConf = ubuc.gconf.Dj
-			} else if ubuc.oconf.DefaultOrganizationId == inUserBalance.OrganizationId {
+			} else if ubuc.oconf.DefaultOrganizationId == inUserCommission.OrganizationId {
 				gongmallConf = ubuc.gconf.Default
+			} else if ubuc.oconf.LbOrganizationId == inUserCommission.OrganizationId {
+				gongmallConf = ubuc.gconf.Lb
 			} else {
 				continue
 			}
 
-			incomeBalanceTypes = append(incomeBalanceTypes, "1")
-			incomeBalanceTypes = append(incomeBalanceTypes, "2")
-			expenseBalanceTypes = append(expenseBalanceTypes, "5")
+			incomeCommissionTypes = append(incomeCommissionTypes, 1)
+			incomeCommissionTypes = append(incomeCommissionTypes, 2)
+			expenseCommissionTypes = append(expenseCommissionTypes, 7)
 		}
 
-		userIncomeBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 1, incomeBalanceTypes, []string{"1"})
+		userIncomeBalance, err := ubuc.ucorepo.Statistics(ctx, user.Id, 3, 1, incomeCommissionTypes, []uint8{1})
 
 		if err != nil {
 			continue
 		}
 
-		userExpenseBalance, err := ubuc.ublrepo.Statistics(ctx, user.Id, 2, expenseBalanceTypes, []string{"1", "2"})
+		userExpenseBalance, err := ubuc.ucorepo.Statistics(ctx, user.Id, 0, 2, expenseCommissionTypes, []uint8{1, 2})
 
 		if err != nil {
 			continue
 		}
 
-		payAmount := userIncomeBalance.Amount - userExpenseBalance.Amount
+		payAmount := userIncomeBalance.CommissionAmount - userExpenseBalance.CommissionAmount
 
-		if payAmount < float32(inUserBalance.Amount) {
-			inUserBalance.SetBalanceStatus(ctx, 3)
-			inUserBalance.SetOperationContent(ctx, "账户余额不足")
-			inUserBalance.SetUpdateTime(ctx)
+		if float32(tool.Decimal(float64(payAmount), 2)) < float32(inUserCommission.CommissionAmount) {
+			inUserCommission.SetBalanceStatus(ctx, 3)
+			inUserCommission.SetOperationContent(ctx, "账户余额不足")
+			inUserCommission.SetUpdateTime(ctx)
 
-			ubuc.ublrepo.Update(ctx, inUserBalance)
+			ubuc.ucorepo.Update(ctx, inUserCommission)
 		} else {
 			enPhone, err := gongmall.RsaEncrypt(gongmallConf.GongmallPublicKey, user.Phone)
 
@@ -445,13 +460,13 @@ func (ubuc *UserBalanceUsecase) SyncUserBalances(ctx context.Context) error {
 				continue
 			}
 
-			enBankCode, err := gongmall.RsaEncrypt(gongmallConf.GongmallPublicKey, inUserBalance.BankCode)
+			enBankCode, err := gongmall.RsaEncrypt(gongmallConf.GongmallPublicKey, inUserCommission.BankCode)
 
 			if err != nil {
 				continue
 			}
 
-			name, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, inUserBalance.Name)
+			name, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, inUserCommission.Name)
 
 			if err != nil {
 				continue
@@ -463,7 +478,7 @@ func (ubuc *UserBalanceUsecase) SyncUserBalances(ctx context.Context) error {
 				continue
 			}
 
-			identityCard, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, inUserBalance.IdentityCard)
+			identityCard, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, inUserCommission.IdentityCard)
 
 			if err != nil {
 				continue
@@ -481,18 +496,18 @@ func (ubuc *UserBalanceUsecase) SyncUserBalances(ctx context.Context) error {
 				continue
 			}
 
-			if _, err := merchant.DoSinglePayment(gongmallConf.ServiceId, gongmallConf.AppKey, gongmallConf.AppSecret, enName, enPhone, enIdentityCard, enBankCode, fmt.Sprintf("%.2f", tool.Decimal(float64(inUserBalance.Amount*0.935-3), 2)), time.Now().Format("20060102150405"), strconv.FormatUint(requestId, 10)); err != nil {
-				inUserBalance.SetBalanceStatus(ctx, 3)
-				inUserBalance.SetOperationContent(ctx, err.Error())
-				inUserBalance.SetUpdateTime(ctx)
+			if _, err := merchant.DoSinglePayment(gongmallConf.ServiceId, gongmallConf.AppKey, gongmallConf.AppSecret, enName, enPhone, enIdentityCard, enBankCode, fmt.Sprintf("%.2f", tool.Decimal(float64(inUserCommission.CommissionAmount*0.935-3), 2)), time.Now().Format("20060102150405"), strconv.FormatUint(requestId, 10)); err != nil {
+				inUserCommission.SetBalanceStatus(ctx, 3)
+				inUserCommission.SetOperationContent(ctx, err.Error())
+				inUserCommission.SetUpdateTime(ctx)
 
-				ubuc.ublrepo.Update(ctx, inUserBalance)
+				ubuc.ucorepo.Update(ctx, inUserCommission)
 			} else {
-				inUserBalance.SetOutTradeNo(ctx, strconv.FormatUint(requestId, 10))
-				inUserBalance.SetBalanceStatus(ctx, 2)
-				inUserBalance.SetUpdateTime(ctx)
+				inUserCommission.SetOutTradeNo(ctx, strconv.FormatUint(requestId, 10))
+				inUserCommission.SetBalanceStatus(ctx, 2)
+				inUserCommission.SetUpdateTime(ctx)
 
-				ubuc.ublrepo.Update(ctx, inUserBalance)
+				ubuc.ucorepo.Update(ctx, inUserCommission)
 			}
 		}
 	}

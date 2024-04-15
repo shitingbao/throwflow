@@ -19,7 +19,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, oceanengine *conf.Oceanengine, event *conf.Event, registry *conf.Registry, confService *conf.Service, developer *conf.Developer, douke *conf.Douke, company *conf.Company, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, oceanengine *conf.Oceanengine, event *conf.Event, registry *conf.Registry, confService *conf.Service, developer *conf.Developer, csj *conf.Csj, company *conf.Company, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewDB(confData, logger)
 	v := data.NewRdsDB(confData, logger)
 	client := data.NewMongo(confData)
@@ -76,22 +76,22 @@ func wireApp(confServer *conf.Server, confData *conf.Data, oceanengine *conf.Oce
 	jinritemaiOrderInfoRepo := data.NewJinritemaiOrderInfoRepo(dataData, logger)
 	openDouyinTokenUsecase := biz.NewOpenDouyinTokenUsecase(openDouyinTokenRepo, openDouyinUserInfoRepo, openDouyinUserInfoCreateLogRepo, openDouyinApiLogRepo, jinritemaiApiLogRepo, weixinUserRepo, weixinUserOpenDouyinRepo, jinritemaiOrderInfoRepo, taskLogRepo, transaction, confData, developer, event, logger)
 	jinritemaiOrderRepo := data.NewJinritemaiOrderRepo(dataData, logger)
+	doukeOrderInfoRepo := data.NewDoukeOrderInfoRepo(dataData, logger)
+	weixinUserCommissionRepo := data.NewWeixinUserCommissionRepo(dataData, logger)
 	openDouyinVideoRepo := data.NewOpenDouyinVideoRepo(dataData, logger)
 	companyProductRepo := data.NewCompanyProductRepo(dataData, logger)
 	qianchuanAwemeOrderInfoRepo := data.NewQianchuanAwemeOrderInfoRepo(dataData, logger)
-	jinritemaiOrderUsecase := biz.NewJinritemaiOrderUsecase(jinritemaiOrderRepo, jinritemaiOrderInfoRepo, weixinUserRepo, weixinUserOpenDouyinRepo, openDouyinTokenRepo, openDouyinUserInfoRepo, openDouyinUserInfoCreateLogRepo, openDouyinVideoRepo, taskLogRepo, jinritemaiApiLogRepo, companyProductRepo, qianchuanAdvertiserStatusRepo, qianchuanAwemeOrderInfoRepo, confData, event, developer, logger)
+	jinritemaiOrderUsecase := biz.NewJinritemaiOrderUsecase(jinritemaiOrderRepo, jinritemaiOrderInfoRepo, doukeOrderInfoRepo, weixinUserRepo, weixinUserOpenDouyinRepo, weixinUserCommissionRepo, openDouyinTokenRepo, openDouyinUserInfoRepo, openDouyinUserInfoCreateLogRepo, openDouyinVideoRepo, taskLogRepo, jinritemaiApiLogRepo, companyProductRepo, qianchuanAdvertiserStatusRepo, qianchuanAwemeOrderInfoRepo, confData, event, developer, logger)
 	jinritemaiStoreRepo := data.NewJinritemaiStoreRepo(dataData, logger)
 	jinritemaiStoreInfoRepo := data.NewJinritemaiStoreInfoRepo(dataData, logger)
 	jinritemaiStoreUsecase := biz.NewJinritemaiStoreUsecase(jinritemaiStoreRepo, jinritemaiStoreInfoRepo, weixinUserRepo, weixinUserOpenDouyinRepo, openDouyinTokenRepo, companyProductRepo, taskLogRepo, jinritemaiApiLogRepo, confData, company, developer, logger)
 	openDouyinVideoUsecase := biz.NewOpenDouyinVideoUsecase(openDouyinVideoRepo, openDouyinTokenRepo, openDouyinUserInfoRepo, taskLogRepo, openDouyinApiLogRepo, jinritemaiOrderInfoRepo, weixinUserOpenDouyinRepo, confData, logger)
 	openDouyinUserInfoUsecase := biz.NewOpenDouyinUserInfoUsecase(openDouyinUserInfoRepo, openDouyinVideoRepo, jinritemaiStoreInfoRepo, jinritemaiOrderInfoRepo, weixinUserOpenDouyinRepo, transaction, confData, logger)
-	doukeTokenRepo := data.NewDoukeTokenRepo(dataData, logger)
-	doukeTokenUsecase := biz.NewDoukeTokenUsecase(doukeTokenRepo, taskLogRepo, transaction, confData, douke, logger)
-	doukeProductShareUsecase := biz.NewDoukeProductShareUsecase(doukeTokenRepo, transaction, confData, douke, logger)
+	doukeProductUsecase := biz.NewDoukeProductUsecase(transaction, confData, csj, logger)
 	doukeOrderRepo := data.NewDoukeOrderRepo(dataData, logger)
-	doukeOrderInfoRepo := data.NewDoukeOrderInfoRepo(dataData, logger)
-	doukeOrderUsecase := biz.NewDoukeOrderUsecase(doukeOrderRepo, doukeOrderInfoRepo, companyProductRepo, taskLogRepo, confData, douke, logger)
-	douyinService := service.NewDouyinService(oceanengineConfigUsecase, oceanengineAccountUsecase, qianchuanAdvertiserUsecase, qianchuanCampaignUsecase, oceanengineAccountTokenUsecase, qianchuanReportProductUsecase, qianchuanReportAwemeUsecase, qianchuanAdUsecase, qianchuanAdvertiserHistoryUsecase, openDouyinTokenUsecase, jinritemaiOrderUsecase, jinritemaiStoreUsecase, openDouyinVideoUsecase, openDouyinUserInfoUsecase, doukeTokenUsecase, doukeProductShareUsecase, doukeOrderUsecase, logger)
+	csjApiLogRepo := data.NewCsjApiLogRepo(dataData, logger)
+	doukeOrderUsecase := biz.NewDoukeOrderUsecase(doukeOrderRepo, doukeOrderInfoRepo, companyProductRepo, csjApiLogRepo, taskLogRepo, weixinUserCommissionRepo, confData, csj, logger)
+	douyinService := service.NewDouyinService(oceanengineConfigUsecase, oceanengineAccountUsecase, qianchuanAdvertiserUsecase, qianchuanCampaignUsecase, oceanengineAccountTokenUsecase, qianchuanReportProductUsecase, qianchuanReportAwemeUsecase, qianchuanAdUsecase, qianchuanAdvertiserHistoryUsecase, openDouyinTokenUsecase, jinritemaiOrderUsecase, jinritemaiStoreUsecase, openDouyinVideoUsecase, openDouyinUserInfoUsecase, doukeProductUsecase, doukeOrderUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, douyinService, logger)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, grpcServer, registrar)

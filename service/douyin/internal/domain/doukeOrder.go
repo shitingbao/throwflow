@@ -4,11 +4,6 @@ import (
 	"context"
 )
 
-type ProductTags struct {
-	HasSubsidyTag     bool `json:"has_subsidy_tag" bson:"has_subsidy_tag"`
-	HasSupermarketTag bool `json:"has_supermarket_tag" bson:"has_supermarket_tag"`
-}
-
 type StatisticsDoukeOrder struct {
 	Key   string
 	Value string
@@ -19,201 +14,141 @@ type StatisticsDoukeOrders struct {
 }
 
 type DoukeOrder struct {
-	AuthorAccount          string
-	MediaType              string
-	AdsActivityId          int64
-	ProductImg             string
-	UpdateTime             string
-	PaySuccessTime         string
-	AdsRealCommission      int64
-	AdsEstimatedCommission int64
-	ProductId              string
-	TotalPayAmount         int64
-	FlowPoint              string
-	SettleTime             string
-	SettledGoodsAmount     int64
-	PidInfo                PidInfo
-	ItemNum                int64
-	AuthorBuyinId          string
-	ShopId                 int64
-	PayGoodsAmount         int64
-	AdsDistributorId       int64
-	AdsPromotionTate       int64
-	OrderId                string
-	ProductName            string
-	DistributionType       string
-	AuthorUid              int64
-	ShopName               string
-	ProductActivityId      string
-	MaterialId             string
-	RefundTime             string
-	ConfirmTime            string
-	ProductTags            ProductTags
-	BuyerAppId             string
-	DistributorRightType   string
+	OrderId                 string  `json:"order_id"`
+	AppId                   string  `json:"app_id"`
+	ProductId               string  `json:"product_id"`
+	ProductName             string  `json:"product_name"`
+	AuthorAccount           string  `json:"author_account"`
+	AdsAttribution          string  `json:"ads_attribution"`
+	ProductImg              string  `json:"product_img"`
+	TotalPayAmount          int     `json:"total_pay_amount"`
+	PaySuccessTime          string  `json:"pay_success_time"`
+	RefundTime              string  `json:"refund_time"`
+	PayGoodsAmount          int     `json:"pay_goods_amount"`
+	EstimatedCommission     float32 `json:"estimated_commission"`
+	AdsRealCommission       float32 `json:"ads_real_commission"`
+	SplitRate               float32 `json:"split_rate"`
+	AfterSalesStatus        int     `json:"after_sales_status"`
+	FlowPoint               string  `json:"flow_point"`
+	ExternalInfo            string  `json:"external_info"`
+	SettleTime              string  `json:"settle_time"`
+	ConfirmTime             string  `json:"confirm_time"`
+	MediaTypeName           string  `json:"media_type_name"`
+	UpdateTime              string  `json:"update_time"`
+	EstimatedTechServiceFee int     `json:"estimated_tech_service_fee"`
 }
 
-func NewDoukeOrder(ctx context.Context, adsActivityId, adsRealCommission, adsEstimatedCommission, totalPayAmount, settledGoodsAmount, itemNum, shopId, payGoodsAmount, adsDistributorId, adsPromotionTate, authorUid int64, authorAccount, mediaType, productImg, updateTime, paySuccessTime, productId, flowPoint, settleTime, authorBuyinId, orderId, productName, distributionType, shopName, productActivityId, materialId, refundTime, confirmTime, buyerAppId, distributorRightType string, pidInfo PidInfo, productTags ProductTags) *DoukeOrder {
+func NewDoukeOrder(ctx context.Context, totalPayAmount, payGoodsAmount, afterSalesStatus, estimatedTechServiceFee int, estimatedCommission, adsRealCommission, splitRate float32, orderId, appId, productId, productName, authorAccount, adsAttribution, productImg, paySuccessTime, refundTime, flowPoint, externalInfo, settleTime, confirmTime, mediaTypeName, updateTime string) *DoukeOrder {
 	return &DoukeOrder{
-		AuthorAccount:          authorAccount,
-		MediaType:              mediaType,
-		AdsActivityId:          adsActivityId,
-		ProductImg:             productImg,
-		UpdateTime:             updateTime,
-		PaySuccessTime:         paySuccessTime,
-		AdsRealCommission:      adsRealCommission,
-		AdsEstimatedCommission: adsEstimatedCommission,
-		ProductId:              productId,
-		TotalPayAmount:         totalPayAmount,
-		FlowPoint:              flowPoint,
-		SettleTime:             settleTime,
-		SettledGoodsAmount:     settledGoodsAmount,
-		PidInfo:                pidInfo,
-		ItemNum:                itemNum,
-		AuthorBuyinId:          authorBuyinId,
-		ShopId:                 shopId,
-		PayGoodsAmount:         payGoodsAmount,
-		AdsDistributorId:       adsDistributorId,
-		AdsPromotionTate:       adsPromotionTate,
-		OrderId:                orderId,
-		ProductName:            productName,
-		DistributionType:       distributionType,
-		AuthorUid:              authorUid,
-		ShopName:               shopName,
-		ProductActivityId:      productActivityId,
-		MaterialId:             materialId,
-		RefundTime:             refundTime,
-		ConfirmTime:            confirmTime,
-		ProductTags:            productTags,
-		BuyerAppId:             buyerAppId,
-		DistributorRightType:   distributorRightType,
+		OrderId:                 orderId,
+		AppId:                   appId,
+		ProductId:               productId,
+		ProductName:             productName,
+		AuthorAccount:           authorAccount,
+		AdsAttribution:          adsAttribution,
+		ProductImg:              productImg,
+		TotalPayAmount:          totalPayAmount,
+		PaySuccessTime:          paySuccessTime,
+		RefundTime:              refundTime,
+		PayGoodsAmount:          payGoodsAmount,
+		EstimatedCommission:     estimatedCommission,
+		AdsRealCommission:       adsRealCommission,
+		SplitRate:               splitRate,
+		AfterSalesStatus:        afterSalesStatus,
+		FlowPoint:               flowPoint,
+		ExternalInfo:            externalInfo,
+		SettleTime:              settleTime,
+		ConfirmTime:             confirmTime,
+		MediaTypeName:           mediaTypeName,
+		UpdateTime:              updateTime,
+		EstimatedTechServiceFee: estimatedTechServiceFee,
 	}
-}
-
-func (do *DoukeOrder) SetAuthorAccount(ctx context.Context, authorAccount string) {
-	do.AuthorAccount = authorAccount
-}
-
-func (do *DoukeOrder) SetMediaType(ctx context.Context, mediaType string) {
-	do.MediaType = mediaType
-}
-
-func (do *DoukeOrder) SetAdsActivityId(ctx context.Context, adsActivityId int64) {
-	do.AdsActivityId = adsActivityId
-}
-
-func (do *DoukeOrder) SetProductImg(ctx context.Context, productImg string) {
-	do.ProductImg = productImg
-}
-
-func (do *DoukeOrder) SetUpdateTime(ctx context.Context, updateTime string) {
-	do.UpdateTime = updateTime
-}
-
-func (do *DoukeOrder) SetPaySuccessTime(ctx context.Context, paySuccessTime string) {
-	do.PaySuccessTime = paySuccessTime
-}
-
-func (do *DoukeOrder) SetAdsRealCommission(ctx context.Context, adsRealCommission int64) {
-	do.AdsRealCommission = adsRealCommission
-}
-
-func (do *DoukeOrder) SetAdsEstimatedCommission(ctx context.Context, adsEstimatedCommission int64) {
-	do.AdsEstimatedCommission = adsEstimatedCommission
-}
-
-func (do *DoukeOrder) SetProductId(ctx context.Context, productId string) {
-	do.ProductId = productId
-}
-
-func (do *DoukeOrder) SetTotalPayAmount(ctx context.Context, totalPayAmount int64) {
-	do.TotalPayAmount = totalPayAmount
-}
-
-func (do *DoukeOrder) SetFlowPoint(ctx context.Context, flowPoint string) {
-	do.FlowPoint = flowPoint
-}
-
-func (do *DoukeOrder) SetSettleTime(ctx context.Context, settleTime string) {
-	do.SettleTime = settleTime
-}
-
-func (do *DoukeOrder) SetSettledGoodsAmount(ctx context.Context, settledGoodsAmount int64) {
-	do.SettledGoodsAmount = settledGoodsAmount
-}
-
-func (do *DoukeOrder) SetPidInfo(ctx context.Context, pidInfo PidInfo) {
-	do.PidInfo = pidInfo
-}
-
-func (do *DoukeOrder) SetItemNum(ctx context.Context, itemNum int64) {
-	do.ItemNum = itemNum
-}
-
-func (do *DoukeOrder) SetAuthorBuyinId(ctx context.Context, authorBuyinId string) {
-	do.AuthorBuyinId = authorBuyinId
-}
-
-func (do *DoukeOrder) SetShopId(ctx context.Context, shopId int64) {
-	do.ShopId = shopId
-}
-
-func (do *DoukeOrder) SetPayGoodsAmount(ctx context.Context, payGoodsAmount int64) {
-	do.PayGoodsAmount = payGoodsAmount
-}
-
-func (do *DoukeOrder) SetAdsDistributorId(ctx context.Context, adsDistributorId int64) {
-	do.AdsDistributorId = adsDistributorId
-}
-
-func (do *DoukeOrder) SetAdsPromotionTate(ctx context.Context, adsPromotionTate int64) {
-	do.AdsPromotionTate = adsPromotionTate
 }
 
 func (do *DoukeOrder) SetOrderId(ctx context.Context, orderId string) {
 	do.OrderId = orderId
 }
 
+func (do *DoukeOrder) SetAppId(ctx context.Context, appId string) {
+	do.AppId = appId
+}
+
+func (do *DoukeOrder) SetProductId(ctx context.Context, productId string) {
+	do.ProductId = productId
+}
+
 func (do *DoukeOrder) SetProductName(ctx context.Context, productName string) {
 	do.ProductName = productName
 }
 
-func (do *DoukeOrder) SetDistributionType(ctx context.Context, distributionType string) {
-	do.DistributionType = distributionType
+func (do *DoukeOrder) SetAuthorAccount(ctx context.Context, authorAccount string) {
+	do.AuthorAccount = authorAccount
 }
 
-func (do *DoukeOrder) SetAuthorUid(ctx context.Context, authorUid int64) {
-	do.AuthorUid = authorUid
+func (do *DoukeOrder) SetAdsAttribution(ctx context.Context, adsAttribution string) {
+	do.AdsAttribution = adsAttribution
 }
 
-func (do *DoukeOrder) SetShopName(ctx context.Context, shopName string) {
-	do.ShopName = shopName
+func (do *DoukeOrder) SetProductImg(ctx context.Context, productImg string) {
+	do.ProductImg = productImg
 }
 
-func (do *DoukeOrder) SetProductActivityId(ctx context.Context, productActivityId string) {
-	do.ProductActivityId = productActivityId
+func (do *DoukeOrder) SetTotalPayAmount(ctx context.Context, totalPayAmount int) {
+	do.TotalPayAmount = totalPayAmount
 }
 
-func (do *DoukeOrder) SetMaterialId(ctx context.Context, materialId string) {
-	do.MaterialId = materialId
+func (do *DoukeOrder) SetPaySuccessTime(ctx context.Context, paySuccessTime string) {
+	do.PaySuccessTime = paySuccessTime
 }
 
 func (do *DoukeOrder) SetRefundTime(ctx context.Context, refundTime string) {
 	do.RefundTime = refundTime
 }
 
+func (do *DoukeOrder) SetPayGoodsAmount(ctx context.Context, payGoodsAmount int) {
+	do.PayGoodsAmount = payGoodsAmount
+}
+
+func (do *DoukeOrder) SetEstimatedCommission(ctx context.Context, estimatedCommission float32) {
+	do.EstimatedCommission = estimatedCommission
+}
+
+func (do *DoukeOrder) SetAdsRealCommission(ctx context.Context, adsRealCommission float32) {
+	do.AdsRealCommission = adsRealCommission
+}
+
+func (do *DoukeOrder) SetSplitRate(ctx context.Context, splitRate float32) {
+	do.SplitRate = splitRate
+}
+
+func (do *DoukeOrder) SetAfterSalesStatus(ctx context.Context, afterSalesStatus int) {
+	do.AfterSalesStatus = afterSalesStatus
+}
+
+func (do *DoukeOrder) SetFlowPoint(ctx context.Context, flowPoint string) {
+	do.FlowPoint = flowPoint
+}
+
+func (do *DoukeOrder) SetExternalInfo(ctx context.Context, externalInfo string) {
+	do.ExternalInfo = externalInfo
+}
+
+func (do *DoukeOrder) SetSettleTime(ctx context.Context, settleTime string) {
+	do.SettleTime = settleTime
+}
+
 func (do *DoukeOrder) SetConfirmTime(ctx context.Context, confirmTime string) {
 	do.ConfirmTime = confirmTime
 }
 
-func (do *DoukeOrder) SetProductTags(ctx context.Context, productTags ProductTags) {
-	do.ProductTags = productTags
+func (do *DoukeOrder) SetMediaTypeName(ctx context.Context, mediaTypeName string) {
+	do.MediaTypeName = mediaTypeName
 }
 
-func (do *DoukeOrder) SetBuyerAppId(ctx context.Context, buyerAppId string) {
-	do.BuyerAppId = buyerAppId
+func (do *DoukeOrder) SetUpdateTime(ctx context.Context, updateTime string) {
+	do.UpdateTime = updateTime
 }
 
-func (do *DoukeOrder) SetDistributorRightType(ctx context.Context, distributorRightType string) {
-	do.DistributorRightType = distributorRightType
+func (do *DoukeOrder) SetEstimatedTechServiceFee(ctx context.Context, estimatedTechServiceFee int) {
+	do.EstimatedTechServiceFee = estimatedTechServiceFee
 }

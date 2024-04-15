@@ -2,6 +2,7 @@ package kolProduct
 
 import (
 	"douyin/internal/pkg/douke"
+	"fmt"
 	"github.com/go-resty/resty/v2"
 	"strconv"
 	"time"
@@ -50,7 +51,7 @@ func ShareKolProduct(appKey, appSecret, accessToken, productUrl, pid, externalIn
 	if resp.StatusCode() != 200 {
 		return nil, douke.NewDoukeError(90101, douke.BaseDomain+"/buyin/kolProductShare", "请求失败，状态码："+strconv.Itoa(resp.StatusCode()), resp.String())
 	}
-
+	fmt.Println(resp.String())
 	var shareKolProductResponse ShareKolProductResponse
 
 	if err := shareKolProductResponse.Struct(resp.String()); err != nil {

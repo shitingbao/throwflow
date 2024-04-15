@@ -19,18 +19,19 @@ import (
 )
 
 var (
-	WeixinUserCouponNotFound      = errors.NotFound("WEIXIN_USER_COUPON_NOT_FOUND", "微信用户券码不存在")
-	WeixinUserCouponListError     = errors.InternalServer("WEIXIN_USER_COUPON_LIST_ERROR", "微信用户券码列表获取失败")
-	WeixinUserCouponBindError     = errors.InternalServer("WEIXIN_USER_COUPON_BIND_ERROR", "微信用户券码绑定失败")
-	WeixinUserCouponActivateError = errors.InternalServer("WEIXIN_USER_COUPON_ACTIVATE_ERROR", "微信用户券码激活失败")
-	WeixinUserCouponCreateError   = errors.InternalServer("WEIXIN_USER_COUPON_CREATE_ERROR", "微信用户券码创建失败")
+	WeixinUserCouponNotFound           = errors.NotFound("WEIXIN_USER_COUPON_NOT_FOUND", "微信用户券码不存在")
+	WeixinUserCouponListError          = errors.InternalServer("WEIXIN_USER_COUPON_LIST_ERROR", "微信用户券码列表获取失败")
+	WeixinUserCouponBindError          = errors.InternalServer("WEIXIN_USER_COUPON_BIND_ERROR", "微信用户券码绑定失败")
+	WeixinUserCouponActivateError      = errors.InternalServer("WEIXIN_USER_COUPON_ACTIVATE_ERROR", "微信用户券码激活失败")
+	WeixinUserCouponActivateLevelError = errors.InternalServer("WEIXIN_USER_COUPON_ACTIVATE_LEVEL_ERROR", "微信用户已经是该等级，无须再升级")
+	WeixinUserCouponCreateError        = errors.InternalServer("WEIXIN_USER_COUPON_CREATE_ERROR", "微信用户券码创建失败")
 )
 
 type UserCouponRepo interface {
-	Get(context.Context, uint64, string, string) (*domain.UserCoupon, error)
-	GetByPhone(context.Context, uint64, string, string, string) (*domain.UserCoupon, error)
-	List(context.Context, int, int, uint64, uint64, string) ([]*domain.UserCoupon, error)
-	Count(context.Context, uint64, uint64, string) (int64, error)
+	Get(context.Context, uint64, uint8, string) (*domain.UserCoupon, error)
+	GetByPhone(context.Context, uint64, uint8, string, string) (*domain.UserCoupon, error)
+	List(context.Context, int, int, uint64, uint64, uint8, string) ([]*domain.UserCoupon, error)
+	Count(context.Context, uint64, uint64, uint8, string) (int64, error)
 	Save(context.Context, *domain.UserCoupon) (*domain.UserCoupon, error)
 	Update(context.Context, *domain.UserCoupon) (*domain.UserCoupon, error)
 
@@ -69,17 +70,11 @@ func (ucuc *UserCouponUsecase) GetUserCoupons(ctx context.Context, userId, organ
 		return nil, WeixinLoginError
 	}
 
-	companyOrganization, err := ucuc.corepo.Get(ctx, organizationId)
-
-	if err != nil {
+	if _, err := ucuc.corepo.Get(ctx, organizationId); err != nil {
 		return nil, WeixinCompanyOrganizationNotFound
 	}
 
-	if _, err := ucuc.uorrepo.GetByUserId(ctx, user.Id, companyOrganization.Data.OrganizationId, 0, "0"); err == nil {
-		return nil, WeixinUserOrganizationRelationExist
-	}
-
-	userCoupon, err := ucuc.repo.GetByPhone(ctx, organizationId, user.Phone, "2", "2")
+	userCoupon, err := ucuc.repo.GetByPhone(ctx, organizationId, 0, user.Phone, "2")
 
 	if err != nil {
 		return nil, WeixinUserCouponNotFound
@@ -88,7 +83,7 @@ func (ucuc *UserCouponUsecase) GetUserCoupons(ctx context.Context, userId, organ
 	return userCoupon, nil
 }
 
-func (ucuc *UserCouponUsecase) ListUserCoupons(ctx context.Context, pageNum, pageSize, userId, organizationId uint64) (*domain.UserCouponList, error) {
+func (ucuc *UserCouponUsecase) ListUserCoupons(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, level uint8) (*domain.UserCouponList, error) {
 	if _, err := ucuc.urepo.Get(ctx, userId); err != nil {
 		return nil, WeixinLoginError
 	}
@@ -99,7 +94,7 @@ func (ucuc *UserCouponUsecase) ListUserCoupons(ctx context.Context, pageNum, pag
 
 	list := make([]*domain.UserCoupon, 0)
 
-	userCoupons, err := ucuc.repo.List(ctx, int(pageNum), int(pageSize), userId, organizationId, "")
+	userCoupons, err := ucuc.repo.List(ctx, int(pageNum), int(pageSize), userId, organizationId, level, "")
 
 	if err != nil {
 		return nil, WeixinUserCouponListError
@@ -122,13 +117,13 @@ func (ucuc *UserCouponUsecase) ListUserCoupons(ctx context.Context, pageNum, pag
 		})
 	}
 
-	total, err := ucuc.repo.Count(ctx, userId, organizationId, "")
+	total, err := ucuc.repo.Count(ctx, userId, organizationId, level, "")
 
 	if err != nil {
 		return nil, WeixinUserCouponListError
 	}
 
-	notUsedTotal, err := ucuc.repo.Count(ctx, userId, organizationId, "1")
+	notUsedTotal, err := ucuc.repo.Count(ctx, userId, organizationId, level, "1")
 
 	if err != nil {
 		return nil, WeixinUserCouponListError
@@ -143,7 +138,7 @@ func (ucuc *UserCouponUsecase) ListUserCoupons(ctx context.Context, pageNum, pag
 	}, nil
 }
 
-func (ucuc *UserCouponUsecase) BindUserCoupons(ctx context.Context, userId uint64, phone string) error {
+func (ucuc *UserCouponUsecase) BindUserCoupons(ctx context.Context, userId uint64, level uint8, phone string) error {
 	user, err := ucuc.urepo.Get(ctx, userId)
 
 	if err != nil {
@@ -161,11 +156,11 @@ func (ucuc *UserCouponUsecase) BindUserCoupons(ctx context.Context, userId uint6
 
 		if result {
 			err := ucuc.tm.InTx(ctx, func(ctx context.Context) error {
-				if _, err := ucuc.repo.GetByPhone(ctx, 0, phone, "2", ""); err == nil {
-					return WeixinUserCouponBindError
+				if _, err := ucuc.repo.GetByPhone(ctx, 0, level, phone, "2"); err == nil {
+					return nil
 				}
 
-				inUserCoupon, err := ucuc.repo.Get(ctx, user.Id, "2", "1")
+				inUserCoupon, err := ucuc.repo.Get(ctx, user.Id, level, "1")
 
 				if err != nil {
 					return err
@@ -218,7 +213,7 @@ func (ucuc *UserCouponUsecase) ActivateUserCoupons(ctx context.Context, userId, 
 		return WeixinCompanyOrganizationNotFound
 	}
 
-	inUserCoupon, err := ucuc.repo.GetByPhone(ctx, organizationId, user.Phone, "2", "2")
+	inUserCoupon, err := ucuc.repo.GetByPhone(ctx, organizationId, 0, user.Phone, "2")
 
 	if err != nil {
 		return WeixinUserCouponNotFound
@@ -248,8 +243,16 @@ func (ucuc *UserCouponUsecase) ActivateUserCoupons(ctx context.Context, userId, 
 
 	sort.Sort(domain.OrganizationCourses(organizationCourses))
 
-	if _, err := ucuc.uorrepo.GetByUserId(ctx, user.Id, organizationId, 0, "0"); err == nil {
-		return WeixinUserOrganizationRelationExist
+	isCreate := true
+
+	inUserOrganizationRelation, err := ucuc.uorrepo.GetByUserId(ctx, user.Id, organizationId, 0, "0")
+
+	if err == nil {
+		isCreate = false
+
+		if inUserOrganizationRelation.Level >= inUserCoupon.Level {
+			return errors.InternalServer("WEIXIN_USER_COUPON_ACTIVATE_LEVEL_ERROR", "微信用户已经是"+WeixinUserOrganizationRelationLevel[inUserOrganizationRelation.Level-1]+"，无须再升级")
+		}
 	}
 
 	var organizationUserId uint64 = 0
@@ -257,41 +260,43 @@ func (ucuc *UserCouponUsecase) ActivateUserCoupons(ctx context.Context, userId, 
 	var parentUserOrganizationRelation *domain.UserOrganizationRelation
 	var tutorUserIntegralRelation *domain.UserIntegralRelation
 
-	if parentUserId > 0 {
-		parentUser, err := ucuc.urepo.Get(ctx, parentUserId)
-
-		if err != nil {
-			return WeixinUserNotFound
-		}
-
-		parentUserOrganizationRelation, err = ucuc.uorrepo.GetByUserId(ctx, parentUser.Id, organizationId, 0, "0")
-
-		if err != nil {
-			return WeixinUserOrganizationRelationNotFound
-		}
-
-		organizationUserId = parentUserOrganizationRelation.UserId
-
-		if parentUserOrganizationRelation.Level == 4 {
-			organizationTutorId = parentUserOrganizationRelation.UserId
-
-			tutorUserIntegralRelation = &domain.UserIntegralRelation{
-				UserId:             parentUserOrganizationRelation.UserId,
-				OrganizationId:     parentUserOrganizationRelation.OrganizationId,
-				OrganizationUserId: parentUserOrganizationRelation.OrganizationUserId,
-				Level:              parentUserOrganizationRelation.Level,
-			}
-		} else {
-			userIntegralRelations, err := ucuc.uirrepo.List(ctx, organizationId)
+	if isCreate {
+		if parentUserId > 0 {
+			parentUser, err := ucuc.urepo.Get(ctx, parentUserId)
 
 			if err != nil {
-				return WeixinUserOrganizationRelationListError
+				return WeixinUserNotFound
 			}
 
-			tutorUserIntegralRelation = ucuc.uirrepo.GetSuperior(ctx, parentUserOrganizationRelation.UserId, 4, userIntegralRelations)
+			parentUserOrganizationRelation, err = ucuc.uorrepo.GetByUserId(ctx, parentUser.Id, organizationId, 0, "0")
 
-			if tutorUserIntegralRelation != nil {
-				organizationTutorId = tutorUserIntegralRelation.UserId
+			if err != nil {
+				return WeixinUserOrganizationRelationNotFound
+			}
+
+			organizationUserId = parentUserOrganizationRelation.UserId
+
+			if parentUserOrganizationRelation.Level == 4 {
+				organizationTutorId = parentUserOrganizationRelation.UserId
+
+				tutorUserIntegralRelation = &domain.UserIntegralRelation{
+					UserId:             parentUserOrganizationRelation.UserId,
+					OrganizationId:     parentUserOrganizationRelation.OrganizationId,
+					OrganizationUserId: parentUserOrganizationRelation.OrganizationUserId,
+					Level:              parentUserOrganizationRelation.Level,
+				}
+			} else {
+				userIntegralRelations, err := ucuc.uirrepo.List(ctx, organizationId)
+
+				if err != nil {
+					return WeixinUserOrganizationRelationListError
+				}
+
+				tutorUserIntegralRelation = ucuc.uirrepo.GetSuperior(ctx, parentUserOrganizationRelation.UserId, 4, userIntegralRelations)
+
+				if tutorUserIntegralRelation != nil {
+					organizationTutorId = tutorUserIntegralRelation.UserId
+				}
 			}
 		}
 	}
@@ -304,54 +309,139 @@ func (ucuc *UserCouponUsecase) ActivateUserCoupons(ctx context.Context, userId, 
 			return err
 		}
 
-		var wcontent *wxa.GetUnlimitedQRCodeResponse
-
-		if inUserCoupon.OrganizationId == ucuc.oconf.DjOrganizationId {
-			accessToken, err := oauth2.GetAccessToken(ucuc.wconf.DjMini.Appid, ucuc.wconf.DjMini.Secret)
-
-			if err != nil {
+		if isCreate {
+			if err = ucuc.uorrepo.DeleteByUserId(ctx, user.Id, "1"); err != nil {
 				return err
 			}
 
-			wcontent, err = wxa.GetUnlimitedQRCode(accessToken.AccessToken, "oId="+strconv.FormatUint(inUserCoupon.OrganizationId, 10)+"&uId="+strconv.FormatUint(user.Id, 10), ucuc.wconf.DjMini.QrCodeEnvVersion)
+			var wcontent *wxa.GetUnlimitedQRCodeResponse
 
-			if err != nil {
+			if inUserCoupon.OrganizationId == ucuc.oconf.DjOrganizationId {
+				accessToken, err := oauth2.GetAccessToken(ucuc.wconf.DjMini.Appid, ucuc.wconf.DjMini.Secret)
+
+				if err != nil {
+					return err
+				}
+
+				wcontent, err = wxa.GetUnlimitedQRCode(accessToken.AccessToken, "oId="+strconv.FormatUint(inUserCoupon.OrganizationId, 10)+"&uId="+strconv.FormatUint(user.Id, 10), ucuc.wconf.DjMini.QrCodeEnvVersion)
+
+				if err != nil {
+					return err
+				}
+			} else {
+				accessToken, err := oauth2.GetAccessToken(ucuc.wconf.Mini.Appid, ucuc.wconf.Mini.Secret)
+
+				if err != nil {
+					return err
+				}
+
+				wcontent, err = wxa.GetUnlimitedQRCode(accessToken.AccessToken, "oId="+strconv.FormatUint(inUserCoupon.OrganizationId, 10)+"&uId="+strconv.FormatUint(user.Id, 10), ucuc.wconf.Mini.QrCodeEnvVersion)
+
+				if err != nil {
+					return err
+				}
+			}
+
+			objectKey := tool.GetRandCode(time.Now().String())
+
+			if _, err := ucuc.repo.PutContent(ctx, ucuc.vconf.Tos.Company.SubFolder+"/"+objectKey+".png", strings.NewReader(wcontent.Buffer)); err != nil {
+				return err
+			}
+
+			inUserOrganizationRelation = domain.NewUserOrganizationRelation(ctx, user.Id, inUserCoupon.OrganizationId, organizationUserId, organizationTutorId, inUserCoupon.Level, 0, ucuc.vconf.Tos.Company.Url+"/"+ucuc.vconf.Tos.Company.SubFolder+"/"+objectKey+".png")
+			inUserOrganizationRelation.SetCreateTime(ctx)
+			inUserOrganizationRelation.SetUpdateTime(ctx)
+
+			if _, err := ucuc.uorrepo.Save(ctx, inUserOrganizationRelation); err != nil {
+				return err
+			}
+
+			inUserIntegralRelation := domain.NewUserIntegralRelation(ctx, user.Id, inUserCoupon.OrganizationId, organizationUserId, inUserCoupon.Level)
+			inUserIntegralRelation.SetCreateTime(ctx)
+			inUserIntegralRelation.SetUpdateTime(ctx)
+
+			if _, err := ucuc.uirrepo.Save(ctx, inUserIntegralRelation); err != nil {
 				return err
 			}
 		} else {
-			accessToken, err := oauth2.GetAccessToken(ucuc.wconf.Mini.Appid, ucuc.wconf.Mini.Secret)
+			if inUserCoupon.Level == 4 {
+				inUserOrganizationRelation.SetOrganizationTutorId(ctx, 0)
+			}
 
-			if err != nil {
+			inUserOrganizationRelation.SetLevel(ctx, inUserCoupon.Level)
+			inUserOrganizationRelation.SetUpdateTime(ctx)
+
+			if _, err := ucuc.uorrepo.Update(ctx, inUserOrganizationRelation); err != nil {
 				return err
 			}
 
-			wcontent, err = wxa.GetUnlimitedQRCode(accessToken.AccessToken, "oId="+strconv.FormatUint(inUserCoupon.OrganizationId, 10)+"&uId="+strconv.FormatUint(user.Id, 10), ucuc.wconf.Mini.QrCodeEnvVersion)
+			if inUserIntegralRelation, err := ucuc.uirrepo.GetByUserId(ctx, inUserOrganizationRelation.UserId, inUserOrganizationRelation.OrganizationId, 0); err == nil {
+				inUserIntegralRelation.SetLevel(ctx, inUserCoupon.Level)
+				inUserIntegralRelation.SetUpdateTime(ctx)
 
-			if err != nil {
-				return err
+				if _, err := ucuc.uirrepo.Update(ctx, inUserIntegralRelation); err != nil {
+					return err
+				}
+			} else {
+				inUserIntegralRelation = domain.NewUserIntegralRelation(ctx, inUserOrganizationRelation.UserId, inUserOrganizationRelation.OrganizationId, inUserOrganizationRelation.OrganizationUserId, inUserCoupon.Level)
+				inUserIntegralRelation.SetCreateTime(ctx)
+				inUserIntegralRelation.SetUpdateTime(ctx)
+
+				if _, err := ucuc.uirrepo.Save(ctx, inUserIntegralRelation); err != nil {
+					return err
+				}
 			}
-		}
 
-		objectKey := tool.GetRandCode(time.Now().String())
+			if inUserCoupon.Level == 4 {
+				tmpChildIds := make([]uint64, 0)
+				childIds := make([]uint64, 0)
 
-		if _, err := ucuc.repo.PutContent(ctx, ucuc.vconf.Tos.Company.SubFolder+"/"+objectKey+".png", strings.NewReader(wcontent.Buffer)); err != nil {
-			return err
-		}
+				userIntegralRelations, err := ucuc.uirrepo.List(ctx, inUserOrganizationRelation.OrganizationId)
 
-		inUserOrganizationRelation := domain.NewUserOrganizationRelation(ctx, user.Id, inUserCoupon.OrganizationId, organizationUserId, organizationTutorId, inUserCoupon.Level, 0, ucuc.vconf.Tos.Company.Url+"/"+ucuc.vconf.Tos.Company.SubFolder+"/"+objectKey+".png")
-		inUserOrganizationRelation.SetCreateTime(ctx)
-		inUserOrganizationRelation.SetUpdateTime(ctx)
+				if err != nil {
+					return WeixinUserOrganizationRelationListError
+				}
 
-		if _, err := ucuc.uorrepo.Save(ctx, inUserOrganizationRelation); err != nil {
-			return err
-		}
+				ucuc.uirrepo.ListChildId(ctx, inUserOrganizationRelation.UserId, &tmpChildIds, userIntegralRelations)
 
-		inUserIntegralRelation := domain.NewUserIntegralRelation(ctx, user.Id, inUserCoupon.OrganizationId, organizationUserId, inUserCoupon.Level)
-		inUserIntegralRelation.SetCreateTime(ctx)
-		inUserIntegralRelation.SetUpdateTime(ctx)
+				if len(tmpChildIds) > 0 {
+					userOrganizationRelations, err := ucuc.uorrepo.List(ctx, inUserOrganizationRelation.OrganizationId)
 
-		if _, err := ucuc.uirrepo.Save(ctx, inUserIntegralRelation); err != nil {
-			return err
+					if err != nil {
+						return WeixinUserOrganizationRelationListError
+					}
+
+					for _, tmpChildId := range tmpChildIds {
+						for _, userOrganizationRelation := range userOrganizationRelations {
+							if userOrganizationRelation.UserId == tmpChildId {
+								if (userOrganizationRelation.OrganizationTutorId == 0 && userOrganizationRelation.Level != 4) || userOrganizationRelation.OrganizationTutorId != 0 {
+									isNotExist := true
+
+									for _, ltmpChildId := range tmpChildIds {
+										if ltmpChildId == userOrganizationRelation.OrganizationTutorId {
+											isNotExist = false
+
+											break
+										}
+									}
+
+									if isNotExist {
+										childIds = append(childIds, tmpChildId)
+									}
+								}
+
+								break
+							}
+						}
+					}
+
+					if len(childIds) > 0 {
+						if err := ucuc.uorrepo.UpdateSuperior(ctx, inUserOrganizationRelation.UserId, childIds); err != nil {
+							return err
+						}
+					}
+				}
+			}
 		}
 
 		return nil
@@ -410,7 +500,7 @@ func (ucuc *UserCouponUsecase) SyncUserCoupons(ctx context.Context) error {
 
 	wg.Wait()
 
-	userCoupons, err := ucuc.repo.List(ctx, 0, 0, 0, 0, "2")
+	userCoupons, err := ucuc.repo.List(ctx, 0, 0, 0, 0, 0, "2")
 
 	if err != nil {
 		return WeixinUserCouponListError

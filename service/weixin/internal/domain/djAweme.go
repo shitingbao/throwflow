@@ -14,9 +14,10 @@ type DjAweme struct {
 	Account       string
 	BindStartTime string
 	BindEndTime   string
+	Level         uint64
 }
 
-func NewDjAweme(ctx context.Context, fansCount uint64, userName, avatar, awemeId, hotsoonId, ratio, account, bindStartTime, bindEndTime string) *DjAweme {
+func NewDjAweme(ctx context.Context, fansCount, level uint64, userName, avatar, awemeId, hotsoonId, ratio, account, bindStartTime, bindEndTime string) *DjAweme {
 	return &DjAweme{
 		UserName:      userName,
 		Avatar:        avatar,
@@ -27,6 +28,7 @@ func NewDjAweme(ctx context.Context, fansCount uint64, userName, avatar, awemeId
 		Account:       account,
 		BindStartTime: bindStartTime,
 		BindEndTime:   bindEndTime,
+		Level:         level,
 	}
 }
 
@@ -64,4 +66,8 @@ func (da *DjAweme) SetBindStartTime(ctx context.Context, bindStartTime string) {
 
 func (da *DjAweme) SetBindEndTime(ctx context.Context, bindEndTime string) {
 	da.BindEndTime = bindEndTime
+}
+
+func (da *DjAweme) SetLevel(ctx context.Context, level uint64) {
+	da.Level = level
 }

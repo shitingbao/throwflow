@@ -64,3 +64,18 @@ func (ws *WeixinService) DeleteUserBanks(ctx context.Context, in *v1.DeleteUserB
 		Data: &v1.DeleteUserBanksReply_Data{},
 	}, nil
 }
+
+func (ws *WeixinService) DecryptDatas(ctx context.Context, in *v1.DecryptDatasRequest) (*v1.DecryptDatasReply, error) {
+	content, err := ws.ubauc.DecryptDatas(ctx, in.OrganizationId, in.Content)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.DecryptDatasReply{
+		Code: 200,
+		Data: &v1.DecryptDatasReply_Data{
+			Content: content,
+		},
+	}, nil
+}

@@ -73,3 +73,14 @@ func (ds *DouyinService) UpdateOpenDouyinUserInfos(ctx context.Context, in *v1.U
 		Data: &v1.UpdateOpenDouyinUserInfosReply_Data{},
 	}, nil
 }
+
+func (ds *DouyinService) UpdateFansOpenDouyinUserInfos(ctx context.Context, in *v1.UpdateFansOpenDouyinUserInfosRequest) (*v1.UpdateFansOpenDouyinUserInfosReply, error) {
+	if err := ds.oduiuc.UpdateFansOpenDouyinUserInfos(ctx, in.Fans, in.ClientKey, in.OpenId); err != nil {
+		return nil, err
+	}
+
+	return &v1.UpdateFansOpenDouyinUserInfosReply{
+		Code: 200,
+		Data: &v1.UpdateFansOpenDouyinUserInfosReply_Data{},
+	}, nil
+}

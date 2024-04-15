@@ -107,3 +107,19 @@ func (puc *PayUsecase) Divide(ctx context.Context, outTradeNo, transactionNo str
 	fmt.Println("#########################")
 	return nil, nil
 }
+
+func (puc *PayUsecase) Refund(ctx context.Context, totalFee, refundFee uint64, outRefundNo, transactionId string) (*bby.RefundReplyData, error) {
+	conf := puc.pconf.Bby.DjAccount
+
+	nonceStr := strconv.FormatUint(uint64(time.Now().UnixMilli()), 10)
+
+	data, err := bby.Refund(outRefundNo, transactionId, nonceStr, totalFee, refundFee, conf)
+
+	fmt.Println("#########################")
+	fmt.Println(err)
+	fmt.Println(data)
+	fmt.Println(data.ErrCode)
+	fmt.Println(data.ResultCode)
+	fmt.Println("#########################")
+	return nil, nil
+}

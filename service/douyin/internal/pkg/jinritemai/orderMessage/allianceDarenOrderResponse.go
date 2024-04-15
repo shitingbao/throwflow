@@ -17,6 +17,7 @@ type AllianceDarenOrderDataResponse struct {
 	ShopName                       string        `json:"shop_name"`                  // 商家名称
 	TotalPayAmount                 float64       `json:"total_pay_amount"`           // 订单支付金额，单位分
 	CommissionRate                 float64       `json:"commission_rate"`            // 达人佣金率，此处保存为真实数据x1万之后，如真实是0.35，这里是3500
+	CommissionAte                  float64       `json:"commission_ate"`             // 达人佣金率，此处保存为真实数据x1万之后，如真实是0.35，这里是3500
 	FlowPoint                      string        `json:"flow_point"`                 // 订单状态(PAY_SUCC:支付完成 REFUND:退款 SETTLE:结算 CONFIRM: 确认收货)
 	App                            string        `json:"app"`                        // App名称（抖音，火山）
 	UpdateTime                     string        `json:"update_time"`                // 更新时间 [联盟侧订单更新时间]

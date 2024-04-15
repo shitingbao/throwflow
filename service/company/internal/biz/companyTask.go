@@ -24,17 +24,18 @@ var (
 
 type CompanyTaskRepo interface {
 	GetById(context.Context, uint64) (*domain.CompanyTask, error)
+	GetByProductOutId(context.Context, uint64, uint32) (*domain.CompanyTask, error)
 	List(context.Context, int, int, int, int, []uint64) ([]*domain.CompanyTask, error)
 	ListByProductOutId(context.Context, []string) ([]*domain.CompanyTask, error)
 	ListByIds(context.Context, []uint64) ([]*domain.CompanyTask, error)
+	Count(context.Context, int, []uint64) (int64, error)
 	Save(context.Context, *domain.CompanyTask) (*domain.CompanyTask, error)
 	Update(context.Context, *domain.CompanyTask) (*domain.CompanyTask, error)
 	UpdateCompanyTaskIsDel(context.Context, uint64) error
-	Count(context.Context, int, []uint64) (int64, error)
-	GetByProductOutId(context.Context, uint64, uint32) (*domain.CompanyTask, error)
+
 	GetCacheHash(context.Context, string) (string, error)
 	SaveCacheHash(context.Context, string, uint64) error
-	DeleteCache(context.Context, string) error
+	DeleteCacheHash(context.Context, string) error
 	UpdateCacheHash(context.Context, string, int64) error
 }
 
@@ -237,7 +238,7 @@ func (c *CompanyTaskUsecase) UpdateCompanyTaskIsTop(ctx context.Context, taskId 
 func (c *CompanyTaskUsecase) UpdateCompanyTaskIsDel(ctx context.Context, taskId uint64) error {
 	err := c.tm.InTx(ctx, func(ctx context.Context) error {
 
-		if err := c.repo.DeleteCache(ctx, strconv.FormatUint(taskId, 10)); err != nil {
+		if err := c.repo.DeleteCacheHash(ctx, strconv.FormatUint(taskId, 10)); err != nil {
 			return CompanyTaskProductDelete
 		}
 

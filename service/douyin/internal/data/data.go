@@ -35,7 +35,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewDB, NewRdsDB, NewMongo, NewClickhouse, NewRedis, NewKafka, NewDiscovery, NewOceanengineConfigRepo, NewOceanengineAccountRepo, NewQianchuanAdvertiserRepo, NewQianchuanAdvertiserStatusRepo, NewOceanengineAccountTokenRepo, NewCompanyUserRepo, NewCompanyRepo, NewCompanyProductRepo, NewOceanengineApiLogRepo, NewQianchuanCampaignRepo, NewQianchuanProductRepo, NewQianchuanAwemeRepo, NewQianchuanWalletRepo, NewLianshanRealtimeRepo, NewQianchuanAdRepo, NewQianchuanReportAdRepo, NewQianchuanReportProductRepo, NewQianchuanReportAwemeRepo, NewCompanySetRepo, NewQianchuanAdInfoRepo, NewQianchuanAdvertiserInfoRepo, NewQianchuanReportAdRealtimeRepo, NewQianchuanAdvertiserHistoryRepo, NewOpenDouyinTokenRepo, NewOpenDouyinUserInfoRepo, NewOpenDouyinUserInfoCreateLogRepo, NewWeixinUserOpenDouyinRepo, NewOpenDouyinApiLogRepo, NewJinritemaiApiLogRepo, NewTaskLogRepo, NewWeixinUserRepo, NewJinritemaiOrderRepo, NewJinritemaiOrderInfoRepo, NewJinritemaiStoreInfoRepo, NewJinritemaiStoreRepo, NewQianchuanAwemeOrderInfoRepo, NewOpenDouyinVideoRepo, NewDoukeTokenRepo, NewDoukeOrderRepo, NewDoukeOrderInfoRepo, NewTransaction, NewCompanyServiceClient, NewWeixinServiceClient)
+var ProviderSet = wire.NewSet(NewData, NewDB, NewRdsDB, NewMongo, NewClickhouse, NewRedis, NewKafka, NewDiscovery, NewOceanengineConfigRepo, NewOceanengineAccountRepo, NewQianchuanAdvertiserRepo, NewQianchuanAdvertiserStatusRepo, NewOceanengineAccountTokenRepo, NewCompanyUserRepo, NewCompanyRepo, NewCompanyProductRepo, NewOceanengineApiLogRepo, NewQianchuanCampaignRepo, NewQianchuanProductRepo, NewQianchuanAwemeRepo, NewQianchuanWalletRepo, NewLianshanRealtimeRepo, NewQianchuanAdRepo, NewQianchuanReportAdRepo, NewQianchuanReportProductRepo, NewQianchuanReportAwemeRepo, NewCompanySetRepo, NewQianchuanAdInfoRepo, NewQianchuanAdvertiserInfoRepo, NewQianchuanReportAdRealtimeRepo, NewQianchuanAdvertiserHistoryRepo, NewOpenDouyinTokenRepo, NewOpenDouyinUserInfoRepo, NewOpenDouyinUserInfoCreateLogRepo, NewWeixinUserOpenDouyinRepo, NewOpenDouyinApiLogRepo, NewJinritemaiApiLogRepo, NewTaskLogRepo, NewWeixinUserRepo, NewJinritemaiOrderRepo, NewJinritemaiOrderInfoRepo, NewJinritemaiStoreInfoRepo, NewJinritemaiStoreRepo, NewQianchuanAwemeOrderInfoRepo, NewOpenDouyinVideoRepo, NewDoukeOrderRepo, NewDoukeOrderInfoRepo, NewCsjApiLogRepo, NewWeixinUserCommissionRepo, NewTransaction, NewCompanyServiceClient, NewWeixinServiceClient)
 
 type lianshandb struct {
 	appId string
@@ -129,7 +129,6 @@ func NewDB(c *conf.Data, log log.Logger) *gorm.DB {
 	_ = db.AutoMigrate(&OpenDouyinUserInfo{})
 	_ = db.AutoMigrate(&OpenDouyinUserInfoCreateLog{})
 	_ = db.AutoMigrate(&JinritemaiOrderInfo{})
-	_ = db.AutoMigrate(&DoukeToken{})
 	_ = db.AutoMigrate(&DoukeOrderInfo{})
 
 	return db

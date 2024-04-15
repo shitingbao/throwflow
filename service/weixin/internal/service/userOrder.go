@@ -117,3 +117,20 @@ func (ws *WeixinService) SyncQrCodeUserOrganizationRelations(ctx context.Context
 		Data: &v1.SyncQrCodeUserOrganizationRelationsReply_Data{},
 	}, nil
 }
+
+func (ws *WeixinService) OperationUserOrders(ctx context.Context, in *emptypb.Empty) (*v1.OperationUserOrdersReply, error) {
+	ws.log.Infof("同步用户账单分佣数据, 开始时间 %s \n", time.Now())
+
+	ctx = context.Background()
+
+	if err := ws.uouc.OperationUserOrders(ctx); err != nil {
+		return nil, err
+	}
+
+	ws.log.Infof("同步用户账单分佣数据, 结束时间 %s \n", time.Now())
+
+	return &v1.OperationUserOrdersReply{
+		Code: 200,
+		Data: &v1.OperationUserOrdersReply_Data{},
+	}, nil
+}

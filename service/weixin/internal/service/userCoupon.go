@@ -19,12 +19,13 @@ func (ws *WeixinService) GetUserCoupons(ctx context.Context, in *v1.GetUserCoupo
 		Code: 200,
 		Data: &v1.GetUserCouponsReply_Data{
 			CouponCode: userCoupon.CouponCode,
+			Level:      uint32(userCoupon.Level),
 		},
 	}, nil
 }
 
 func (ws *WeixinService) ListUserCoupons(ctx context.Context, in *v1.ListUserCouponsRequest) (*v1.ListUserCouponsReply, error) {
-	userCoupons, err := ws.ucouc.ListUserCoupons(ctx, in.PageNum, in.PageSize, in.UserId, in.OrganizationId)
+	userCoupons, err := ws.ucouc.ListUserCoupons(ctx, in.PageNum, in.PageSize, in.UserId, in.OrganizationId, uint8(in.Level))
 
 	if err != nil {
 		return nil, err
@@ -55,7 +56,7 @@ func (ws *WeixinService) ListUserCoupons(ctx context.Context, in *v1.ListUserCou
 }
 
 func (ws *WeixinService) BindUserCoupons(ctx context.Context, in *v1.BindUserCouponsRequest) (*v1.BindUserCouponsReply, error) {
-	if err := ws.ucouc.BindUserCoupons(ctx, in.UserId, in.Phone); err != nil {
+	if err := ws.ucouc.BindUserCoupons(ctx, in.UserId, uint8(in.Level), in.Phone); err != nil {
 		return nil, err
 	}
 

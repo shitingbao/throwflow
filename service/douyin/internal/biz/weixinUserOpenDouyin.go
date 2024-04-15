@@ -15,7 +15,7 @@ var (
 type WeixinUserOpenDouyinRepo interface {
 	Get(context.Context, string, string) (*v1.GetOpenDouyinUsersReply, error)
 	List(context.Context, uint64) (*v1.ListOpenDouyinUsersReply, error)
-	Update(context.Context, uint64, string, string, string, string, string) (*v1.UpdateOpenDouyinUsersReply, error)
+	Update(context.Context, uint64, uint64, string, string, string, string, string, string, string) (*v1.UpdateOpenDouyinUsersReply, error)
 	UpdateUserInfos(context.Context, uint64, string, string, string, string, string, string, string) (*v1.UpdateUserInfoOpenDouyinUsersReply, error)
 	UpdateUserFans(context.Context, string, string, uint64) (*v1.UpdateUserFansOpenDouyinUsersReply, error)
 }

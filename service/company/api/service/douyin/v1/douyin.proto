@@ -98,6 +98,7 @@ service Douyin {
   rpc ListUserIdDoukeOrders (google.protobuf.Empty) returns (ListUserIdDoukeOrdersReply) {}
   rpc StatisticsDoukeOrders (StatisticsDoukeOrdersRequest) returns (StatisticsDoukeOrdersReply) {}
   rpc StatisticsDoukeOrderByDays (StatisticsDoukeOrderByDaysRequest) returns (StatisticsDoukeOrderByDaysReply) {}
+  rpc StatisticsDoukeOrderByPaySuccessTimes (StatisticsDoukeOrderByPaySuccessTimesRequest) returns (StatisticsDoukeOrderByPaySuccessTimesReply) {}
   rpc AsyncNotificationDoukeOrders (AsyncNotificationDoukeOrdersRequest) returns (AsyncNotificationDoukeOrdersReply) {}
   rpc SyncDoukeOrders (SyncDoukeOrdersRequest) returns (SyncDoukeOrdersReply) {}
 
@@ -115,6 +116,7 @@ service Douyin {
   rpc ListProductOpenDouyinVideos (ListProductOpenDouyinVideosRequest) returns (ListProductOpenDouyinVideosReply) {}
   rpc ListVideoIdOpenDouyinVideos (ListVideoIdOpenDouyinVideosRequest) returns (ListVideoIdOpenDouyinVideosReply) {}
   rpc ListVideoIdOpenDouyinVideoByClientKeyAndOpenIds (ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsRequest) returns (ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsReply) {}
+  rpc ListVideoIdOpenDouyinVideoByProductIds (ListVideoIdOpenDouyinVideoByProductIdsRequest) returns (ListVideoIdOpenDouyinVideoByProductIdsReply) {}
   rpc ListVideoTokensOpenDouyinVideos (ListVideoTokensOpenDouyinVideosRequest) returns (ListVideoTokensOpenDouyinVideosReply) {}
   rpc UpdateIsUpdateCoverAndProductIdOpenDouyinVideos (UpdateIsUpdateCoverAndProductIdOpenDouyinVideosRequest) returns (UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply) {}
   rpc SyncOpenDouyinVideos (google.protobuf.Empty) returns (SyncOpenDouyinVideosReply) {}
@@ -125,10 +127,14 @@ service Douyin {
   rpc UpdateFansOpenDouyinUserInfos (UpdateFansOpenDouyinUserInfosRequest) returns (UpdateFansOpenDouyinUserInfosReply) {}
 
   // 抖客平台商品分销转链管理
-  rpc CreateDoukeProductShares (CreateDoukeProductSharesRequest) returns (CreateDoukeProductSharesReply) {}
+  rpc GetDoukeProducts (GetDoukeProductsRequest) returns (GetDoukeProductsReply) {}
+  rpc CreateShareDoukeProducts (CreateShareDoukeProductsRequest) returns (CreateShareDoukeProductsReply) {}
+  rpc ParseDoukeProducts (ParseDoukeProductsRequest) returns (ParseDoukeProductsReply) {}
 
   // 补充数据
   rpc CompensateJinritemaiOrders (google.protobuf.Empty) returns (CompensateJinritemaiOrdersReply) {}
+  rpc OperationJinritemaiOrders (google.protobuf.Empty) returns (OperationJinritemaiOrdersReply) {}
+  rpc OperationDoukeOrders (google.protobuf.Empty) returns (OperationDoukeOrdersReply) {}
 }
 
 message ListOceanengineConfigsRequest {
@@ -1403,6 +1409,28 @@ message StatisticsDoukeOrderByDaysReply {
   Data data = 2;
 }
 
+message StatisticsDoukeOrderByPaySuccessTimesRequest {
+  uint64 userId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 productId = 2 [(validate.rules).uint64.gt = 0];
+  string flowPoint = 3 [(validate.rules).string = {min_len: 0}];
+  string startTime = 4 [(validate.rules).string = {min_len: 1}];
+  string endTime = 5 [(validate.rules).string = {min_len: 1}];
+}
+
+message StatisticsDoukeOrderByPaySuccessTimesReply {
+  message Statistics {
+    string key = 1;
+    string value =2;
+  }
+
+  message Data{
+    repeated Statistics statistics = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message AsyncNotificationDoukeOrdersRequest {
   string eventSign = 1 [(validate.rules).string ={min_len: 1}];
   string appId = 2 [(validate.rules).string ={min_len: 1}];
@@ -1669,6 +1697,28 @@ message ListVideoIdOpenDouyinVideoByClientKeyAndOpenIdsReply {
   Data data = 2;
 }
 
+message ListVideoIdOpenDouyinVideoByProductIdsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message ListVideoIdOpenDouyinVideoByProductIdsReply {
+  message OpenDouyinVideo{
+    string videoId = 1;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated OpenDouyinVideo list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message ListVideoTokensOpenDouyinVideosRequest{
   message token{
     string clientKey = 1;
@@ -1803,14 +1853,50 @@ message UpdateFansOpenDouyinUserInfosReply {
   Data data = 2;
 }
 
-message CreateDoukeProductSharesRequest {
+message GetDoukeProductsRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 1];
+}
+
+message GetDoukeProductsReply {
+  message Data {
+    uint64 productOutId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string productPrice = 4;
+    uint64 industryId = 5;
+    uint64 categoryId = 6;
+    uint64 subCategoryId = 7;
+    string shopName = 8;
+    double shopScore = 9;
+    uint64 totalSale = 10;
+    uint64 commissionRatio = 11;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateShareDoukeProductsRequest {
   string productUrl = 1 [(validate.rules).string ={min_len: 1}];
   string externalInfo = 2 [(validate.rules).string ={min_len: 0}];
 }
 
-message CreateDoukeProductSharesReply {
+message CreateShareDoukeProductsReply {
   message Data {
     string dyPassword = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ParseDoukeProductsRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message ParseDoukeProductsReply {
+  message Data {
+    uint64 productId = 1;
   }
 
   uint32 code = 1;
@@ -1820,6 +1906,22 @@ message CreateDoukeProductSharesReply {
 message CompensateJinritemaiOrdersReply {
   message Data {
     string dyPassword = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message OperationJinritemaiOrdersReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message OperationDoukeOrdersReply {
+  message Data {
   }
 
   uint32 code = 1;

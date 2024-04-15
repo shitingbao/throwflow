@@ -58,6 +58,7 @@ func (ws *WeixinService) ListOpenDouyinUsers(ctx context.Context, in *v1.ListOpe
 			FansShow:         openDouyinUser.FansShow,
 			Area:             openDouyinUser.Area,
 			CreateDate:       tool.TimeToString("2006-01-02", openDouyinUser.CreateTime),
+			Level:            openDouyinUser.Level,
 		})
 	}
 

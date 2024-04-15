@@ -42,3 +42,19 @@ func (dor *doukeOrderRepo) StatisticsByDay(ctx context.Context, userId uint64, d
 
 	return statistics, err
 }
+
+func (dor *doukeOrderRepo) StatisticsByPaySuccessTime(ctx context.Context, userId, productId uint64, flowPoint, startTime, endTime string) (*v1.StatisticsDoukeOrderByPaySuccessTimesReply, error) {
+	statistics, err := dor.data.douyinuc.StatisticsDoukeOrderByPaySuccessTimes(ctx, &v1.StatisticsDoukeOrderByPaySuccessTimesRequest{
+		UserId:    userId,
+		ProductId: productId,
+		FlowPoint: flowPoint,
+		StartTime: startTime,
+		EndTime:   endTime,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return statistics, err
+}

@@ -53,3 +53,14 @@ func (cs *CommonService) Divide(ctx context.Context, in *v1.DivideRequest) (*v1.
 		Data: &v1.DivideReply_Data{},
 	}, nil
 }
+
+func (cs *CommonService) Refund(ctx context.Context, in *v1.RefundRequest) (*v1.RefundReply, error) {
+	if _, err := cs.puc.Refund(ctx, in.TotalFee, in.RefundFee, in.OutRefundNo, in.TransactionId); err != nil {
+		return nil, err
+	}
+
+	return &v1.RefundReply{
+		Code: 200,
+		Data: &v1.RefundReply_Data{},
+	}, nil
+}

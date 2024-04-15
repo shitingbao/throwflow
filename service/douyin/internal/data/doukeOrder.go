@@ -12,38 +12,28 @@ import (
 
 // 抖客订单表
 type DoukeOrder struct {
-	AuthorAccount          string             `json:"author_account" bson:"author_account"`
-	MediaType              string             `json:"media_type" bson:"media_type"`
-	AdsActivityId          int64              `json:"ads_activity_id" bson:"ads_activity_id"`
-	ProductImg             string             `json:"product_img" bson:"product_img"`
-	UpdateTime             string             `json:"update_time" bson:"update_time"`
-	PaySuccessTime         string             `json:"pay_success_time" bson:"pay_success_time"`
-	AdsRealCommission      int64              `json:"ads_real_commission" bson:"ads_real_commission"`
-	AdsEstimatedCommission int64              `json:"ads_estimated_commission" bson:"ads_estimated_commission"`
-	ProductId              string             `json:"product_id" bson:"product_id"`
-	TotalPayAmount         int64              `json:"total_pay_amount" bson:"total_pay_amount"`
-	FlowPoint              string             `json:"flow_point" bson:"flow_point"`
-	SettleTime             string             `json:"settle_time" bson:"settle_time"`
-	SettledGoodsAmount     int64              `json:"settled_goods_amount" bson:"settled_goods_amount"`
-	PidInfo                domain.PidInfo     `json:"pid_info" bson:"pid_info"`
-	ItemNum                int64              `json:"item_num" bson:"item_num"`
-	AuthorBuyinId          string             `json:"author_buyin_id" bson:"author_buyin_id"`
-	ShopId                 int64              `json:"shop_id" bson:"shop_id"`
-	PayGoodsAmount         int64              `json:"pay_goods_amount" bson:"pay_goods_amount"`
-	AdsDistributorId       int64              `json:"ads_distributor_id" bson:"ads_distributor_id"`
-	AdsPromotionTate       int64              `json:"ads_promotion_rate" bson:"ads_promotion_rate"`
-	OrderId                string             `json:"order_id" bson:"order_id"`
-	ProductName            string             `json:"product_name" bson:"product_name"`
-	DistributionType       string             `json:"distribution_type" bson:"distribution_type"`
-	AuthorUid              int64              `json:"author_uid" bson:"author_uid"`
-	ShopName               string             `json:"shop_name" bson:"shop_name"`
-	ProductActivityId      string             `json:"product_activity_id" bson:"product_activity_id"`
-	MaterialId             string             `json:"material_id" bson:"material_id"`
-	RefundTime             string             `json:"refund_time" bson:"refund_time"`
-	ConfirmTime            string             `json:"confirm_time" bson:"confirm_time"`
-	ProductTags            domain.ProductTags `json:"product_tags" bson:"product_tags"`
-	BuyerAppId             string             `json:"buyer_app_id" bson:"buyer_app_id"`
-	DistributorRightType   string             `json:"distributor_right_type" bson:"distributor_right_type"`
+	OrderId                 string  `json:"order_id" bson:"order_id"`
+	AppId                   string  `json:"app_id" bson:"app_id"`
+	ProductId               string  `json:"product_id" bson:"product_id"`
+	ProductName             string  `json:"product_name" bson:"product_name"`
+	AuthorAccount           string  `json:"author_account" bson:"author_account"`
+	AdsAttribution          string  `json:"ads_attribution" bson:"ads_attribution"`
+	ProductImg              string  `json:"product_img" bson:"product_img"`
+	TotalPayAmount          int     `json:"total_pay_amount" bson:"total_pay_amount"`
+	PaySuccessTime          string  `json:"pay_success_time" bson:"pay_success_time"`
+	RefundTime              string  `json:"refund_time" bson:"refund_time"`
+	PayGoodsAmount          int     `json:"pay_goods_amount" bson:"pay_goods_amount"`
+	EstimatedCommission     float32 `json:"estimated_commission" bson:"estimated_commission"`
+	AdsRealCommission       float32 `json:"ads_real_commission" bson:"ads_real_commission"`
+	SplitRate               float32 `json:"split_rate" bson:"split_rate"`
+	AfterSalesStatus        int     `json:"after_sales_status" bson:"after_sales_status"`
+	FlowPoint               string  `json:"flow_point" bson:"flow_point"`
+	ExternalInfo            string  `json:"external_info" bson:"external_info"`
+	SettleTime              string  `json:"settle_time" bson:"settle_time"`
+	ConfirmTime             string  `json:"confirm_time" bson:"confirm_time"`
+	MediaTypeName           string  `json:"media_type_name" bson:"media_type_name"`
+	UpdateTime              string  `json:"update_time" bson:"update_time"`
+	EstimatedTechServiceFee int     `json:"estimated_tech_service_fee" bson:"estimated_tech_service_fee"`
 }
 
 type doukeOrderRepo struct {
@@ -53,38 +43,28 @@ type doukeOrderRepo struct {
 
 func (do *DoukeOrder) ToDomain() *domain.DoukeOrder {
 	return &domain.DoukeOrder{
-		AuthorAccount:          do.AuthorAccount,
-		MediaType:              do.MediaType,
-		AdsActivityId:          do.AdsActivityId,
-		ProductImg:             do.ProductImg,
-		UpdateTime:             do.UpdateTime,
-		PaySuccessTime:         do.PaySuccessTime,
-		AdsRealCommission:      do.AdsRealCommission,
-		AdsEstimatedCommission: do.AdsEstimatedCommission,
-		ProductId:              do.ProductId,
-		TotalPayAmount:         do.TotalPayAmount,
-		FlowPoint:              do.FlowPoint,
-		SettleTime:             do.SettleTime,
-		SettledGoodsAmount:     do.SettledGoodsAmount,
-		PidInfo:                do.PidInfo,
-		ItemNum:                do.ItemNum,
-		AuthorBuyinId:          do.AuthorBuyinId,
-		ShopId:                 do.ShopId,
-		PayGoodsAmount:         do.PayGoodsAmount,
-		AdsDistributorId:       do.AdsDistributorId,
-		AdsPromotionTate:       do.AdsPromotionTate,
-		OrderId:                do.OrderId,
-		ProductName:            do.ProductName,
-		DistributionType:       do.DistributionType,
-		AuthorUid:              do.AuthorUid,
-		ShopName:               do.ShopName,
-		ProductActivityId:      do.ProductActivityId,
-		MaterialId:             do.MaterialId,
-		RefundTime:             do.RefundTime,
-		ConfirmTime:            do.ConfirmTime,
-		ProductTags:            do.ProductTags,
-		BuyerAppId:             do.BuyerAppId,
-		DistributorRightType:   do.DistributorRightType,
+		OrderId:                 do.OrderId,
+		AppId:                   do.AppId,
+		ProductId:               do.ProductId,
+		ProductName:             do.ProductName,
+		AuthorAccount:           do.AuthorAccount,
+		AdsAttribution:          do.AdsAttribution,
+		ProductImg:              do.ProductImg,
+		TotalPayAmount:          do.TotalPayAmount,
+		PaySuccessTime:          do.PaySuccessTime,
+		RefundTime:              do.RefundTime,
+		PayGoodsAmount:          do.PayGoodsAmount,
+		EstimatedCommission:     do.EstimatedCommission,
+		AdsRealCommission:       do.AdsRealCommission,
+		SplitRate:               do.SplitRate,
+		AfterSalesStatus:        do.AfterSalesStatus,
+		FlowPoint:               do.FlowPoint,
+		ExternalInfo:            do.ExternalInfo,
+		SettleTime:              do.SettleTime,
+		ConfirmTime:             do.ConfirmTime,
+		MediaTypeName:           do.MediaTypeName,
+		UpdateTime:              do.UpdateTime,
+		EstimatedTechServiceFee: do.EstimatedTechServiceFee,
 	}
 }
 
@@ -124,36 +104,27 @@ func (dor *doukeOrderRepo) Upsert(ctx context.Context, in *domain.DoukeOrder) er
 		{"order_id", in.OrderId},
 	}, bson.D{
 		{"$set", bson.D{
-			{"author_account", in.AuthorAccount},
-			{"media_type", in.MediaType},
-			{"ads_activity_id", in.AdsActivityId},
-			{"product_img", in.ProductImg},
-			{"update_time", in.UpdateTime},
-			{"pay_success_time", in.PaySuccessTime},
-			{"ads_real_commission", in.AdsRealCommission},
-			{"ads_estimated_commission", in.AdsEstimatedCommission},
+			{"app_id", in.AppId},
 			{"product_id", in.ProductId},
-			{"total_pay_amount", in.TotalPayAmount},
-			{"flow_point", in.FlowPoint},
-			{"settle_time", in.SettleTime},
-			{"settled_goods_amount", in.SettledGoodsAmount},
-			{"pid_info", in.PidInfo},
-			{"item_num", in.ItemNum},
-			{"shop_id", in.ShopId},
-			{"pay_goods_amount", in.PayGoodsAmount},
-			{"ads_distributor_id", in.AdsDistributorId},
-			{"ads_promotion_rate", in.AdsPromotionTate},
 			{"product_name", in.ProductName},
-			{"distribution_type", in.DistributionType},
-			{"author_uid", in.AuthorUid},
-			{"shop_name", in.ShopName},
-			{"product_activity_id", in.ProductActivityId},
-			{"material_id", in.MaterialId},
+			{"author_account", in.AuthorAccount},
+			{"ads_attribution", in.AdsAttribution},
+			{"product_img", in.ProductImg},
+			{"total_pay_amount", in.TotalPayAmount},
+			{"pay_success_time", in.PaySuccessTime},
 			{"refund_time", in.RefundTime},
+			{"pay_goods_amount", in.PayGoodsAmount},
+			{"estimated_commission", in.EstimatedCommission},
+			{"ads_real_commission", in.AdsRealCommission},
+			{"split_rate", in.SplitRate},
+			{"after_sales_status", in.AfterSalesStatus},
+			{"flow_point", in.FlowPoint},
+			{"external_info", in.ExternalInfo},
+			{"settle_time", in.SettleTime},
 			{"confirm_time", in.ConfirmTime},
-			{"product_tags", in.ProductTags},
-			{"buyer_app_id", in.BuyerAppId},
-			{"distributor_right_type", in.DistributorRightType},
+			{"media_type_name", in.MediaTypeName},
+			{"update_time", in.UpdateTime},
+			{"estimated_tech_service_fee", in.EstimatedTechServiceFee},
 		}},
 	}, options.Update().SetUpsert(true)); err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 
 // ProviderSet is biz providers.
 var (
-	ProviderSet = wire.NewSet(NewOceanengineConfigUsecase, NewOceanengineAccountUsecase, NewQianchuanAdvertiserUsecase, NewQianchuanCampaignUsecase, NewQianchuanAdUsecase, NewQianchuanReportAwemeUsecase, NewQianchuanReportProductUsecase, NewOceanengineAccountTokenUsecase, NewQianchuanAdvertiserHistoryUsecase, NewOpenDouyinTokenUsecase, NewJinritemaiOrderUsecase, NewJinritemaiStoreUsecase, NewOpenDouyinVideoUsecase, NewOpenDouyinUserInfoUsecase, NewDoukeTokenUsecase, NewDoukeProductShareUsecase, NewDoukeOrderUsecase)
+	ProviderSet = wire.NewSet(NewOceanengineConfigUsecase, NewOceanengineAccountUsecase, NewQianchuanAdvertiserUsecase, NewQianchuanCampaignUsecase, NewQianchuanAdUsecase, NewQianchuanReportAwemeUsecase, NewQianchuanReportProductUsecase, NewOceanengineAccountTokenUsecase, NewQianchuanAdvertiserHistoryUsecase, NewOpenDouyinTokenUsecase, NewJinritemaiOrderUsecase, NewJinritemaiStoreUsecase, NewOpenDouyinVideoUsecase, NewOpenDouyinUserInfoUsecase, NewDoukeProductUsecase, NewDoukeOrderUsecase)
 
 	DouyinValidatorError = errors.BadRequest("DOUYIN_VALIDATOR_ERROR", "参数异常")
 	DouyinDataError      = errors.BadRequest("DOUYIN_DATA_ERROR", "操作数据异常")

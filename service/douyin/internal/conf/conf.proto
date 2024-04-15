@@ -10,7 +10,7 @@ message Bootstrap {
   Data data = 2;
   Oceanengine oceanengine = 3;
   Developer developer = 4;
-  Douke douke = 5;
+  Csj csj = 5;
   Company company = 6;
   Registry registry = 7;
   Service service = 8;
@@ -96,12 +96,9 @@ message Company {
   uint64 default_company_id = 1;
 }
 
-message Douke {
-  string app_key = 1;
+message Csj {
+  string app_id = 1;
   string app_secret = 2;
-  string authority_id = 3;
-  string auth_subject_type = 4;
-  string pid = 5;
 }
 
 message Registry {

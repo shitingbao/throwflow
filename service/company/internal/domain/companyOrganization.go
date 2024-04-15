@@ -17,28 +17,46 @@ type OrganizationCommission struct {
 }
 
 type OrganizationColonelCommission struct {
-	ZeroCourseRatio                                       float32 `json:"zeroCourseRatio"`
-	PrimaryAdvancedPresenterZeroCourseCommissionRule      float32 `json:"primaryAdvancedPresenterZeroCourseCommissionRule"`
-	PrimaryAdvancedTutorZeroCourseCommissionRule          float32 `json:"primaryAdvancedTutorZeroCourseCommissionRule"`
-	IntermediateAdvancedPresenterZeroCourseCommissionRule float32 `json:"intermediateAdvancedPresenterZeroCourseCommissionRule"`
-	IntermediateAdvancedTutorZeroCourseCommissionRule     float32 `json:"intermediateAdvancedTutorZeroCourseCommissionRule"`
-	AdvancedPresenterZeroCourseCommissionRule             float32 `json:"advancedPresenterZeroCourseCommissionRule"`
-	CourseRatio                                           float32 `json:"courseRatio"`
-	PrimaryAdvancedPresenterCourseCommissionRule          float32 `json:"primaryAdvancedPresenterCourseCommissionRule"`
-	PrimaryAdvancedTutorCourseCommissionRule              float32 `json:"primaryAdvancedTutorCourseCommissionRule"`
-	IntermediateAdvancedPresenterCourseCommissionRule     float32 `json:"intermediateAdvancedPresenterCourseCommissionRule"`
-	IntermediateAdvancedTutorCourseCommissionRule         float32 `json:"intermediateAdvancedTutorCourseCommissionRule"`
-	AdvancedPresenterCourseCommissionRule                 float32 `json:"advancedPresenterCourseCommissionRule"`
-	OrderRatio                                            float32 `json:"orderRatio"`
-	IntermediateAdvancedPresenterOrderCommissionRule      float32 `json:"intermediateAdvancedPresenterOrderCommissionRule"`
-	IntermediateAdvancedTutorOrderCommissionRule          float32 `json:"intermediateAdvancedTutorOrderCommissionRule"`
-	AdvancedPresenterOrderCommissionRule                  float32 `json:"advancedPresenterOrderCommissionRule"`
-	CostOrderRatio                                        float32 `json:"costOrderRatio"`
-	PrimaryAdvancedPresenterCostOrderCommissionRule       float32 `json:"primaryAdvancedPresenterCostOrderCommissionRule"`
-	PrimaryAdvancedTutorCostOrderCommissionRule           float32 `json:"primaryAdvancedTutorCostOrderCommissionRule"`
-	IntermediateAdvancedPresenterCostOrderCommissionRule  float32 `json:"intermediateAdvancedPresenterCostOrderCommissionRule"`
-	IntermediateAdvancedTutorCostOrderCommissionRule      float32 `json:"intermediateAdvancedTutorCostOrderCommissionRule"`
-	AdvancedPresenterCostOrderCommissionRule              float32 `json:"advancedPresenterCostOrderCommissionRule"`
+	ZeroCourseRatio                                               float32 `json:"zeroCourseRatio"`
+	ZeroAdvancedPresenterZeroCourseCommissionRule                 float32 `json:"zeroAdvancedPresenterZeroCourseCommissionRule"`
+	ZeroAdvancedTutorZeroCourseCommissionRule                     float32 `json:"zeroAdvancedTutorZeroCourseCommissionRule"`
+	PrimaryAdvancedPresenterZeroCourseCommissionRule              float32 `json:"primaryAdvancedPresenterZeroCourseCommissionRule"`
+	PrimaryAdvancedTutorZeroCourseCommissionRule                  float32 `json:"primaryAdvancedTutorZeroCourseCommissionRule"`
+	IntermediateAdvancedPresenterZeroCourseCommissionRule         float32 `json:"intermediateAdvancedPresenterZeroCourseCommissionRule"`
+	IntermediateAdvancedTutorZeroCourseCommissionRule             float32 `json:"intermediateAdvancedTutorZeroCourseCommissionRule"`
+	AdvancedPresenterZeroCourseCommissionRule                     float32 `json:"advancedPresenterZeroCourseCommissionRule"`
+	PrimaryCourseRatio                                            float32 `json:"primaryCourseRatio"`
+	PrimaryAdvancedPresenterPrimaryCourseCommissionRule           float32 `json:"primaryAdvancedPresenterPrimaryCourseCommissionRule"`
+	PrimaryAdvancedTutorPrimaryCourseCommissionRule               float32 `json:"primaryAdvancedTutorPrimaryCourseCommissionRule"`
+	IntermediateAdvancedPresenterPrimaryCourseCommissionRule      float32 `json:"intermediateAdvancedPresenterPrimaryCourseCommissionRule"`
+	IntermediateAdvancedTutorPrimaryCourseCommissionRule          float32 `json:"intermediateAdvancedTutorPrimaryCourseCommissionRule"`
+	AdvancedPresenterPrimaryCourseCommissionRule                  float32 `json:"advancedPresenterPrimaryCourseCommissionRule"`
+	IntermediateCourseRatio                                       float32 `json:"intermediateCourseRatio"`
+	PrimaryAdvancedPresenterIntermediateCourseCommissionRule      float32 `json:"primaryAdvancedPresenterIntermediateCourseCommissionRule"`
+	PrimaryAdvancedTutorIntermediateCourseCommissionRule          float32 `json:"primaryAdvancedTutorIntermediateCourseCommissionRule"`
+	IntermediateAdvancedPresenterIntermediateCourseCommissionRule float32 `json:"intermediateAdvancedPresenterIntermediateCourseCommissionRule"`
+	IntermediateAdvancedTutorIntermediateCourseCommissionRule     float32 `json:"intermediateAdvancedTutorIntermediateCourseCommissionRule"`
+	AdvancedPresenterIntermediateCourseCommissionRule             float32 `json:"advancedPresenterIntermediateCourseCommissionRule"`
+	AdvancedCourseRatio                                           float32 `json:"advancedCourseRatio"`
+	PrimaryAdvancedPresenterAdvancedCourseCommissionRule          float32 `json:"primaryAdvancedPresenterAdvancedCourseCommissionRule"`
+	PrimaryAdvancedTutorAdvancedCourseCommissionRule              float32 `json:"primaryAdvancedTutorAdvancedCourseCommissionRule"`
+	IntermediateAdvancedPresenterAdvancedCourseCommissionRule     float32 `json:"intermediateAdvancedPresenterAdvancedCourseCommissionRule"`
+	IntermediateAdvancedTutorAdvancedCourseCommissionRule         float32 `json:"intermediateAdvancedTutorAdvancedCourseCommissionRule"`
+	AdvancedPresenterAdvancedCourseCommissionRule                 float32 `json:"advancedPresenterAdvancedCourseCommissionRule"`
+	OrderRatio                                                    float32 `json:"orderRatio"`
+	PrimaryAdvancedPresenterOrderCommissionRule                   float32 `json:"primaryAdvancedPresenterOrderCommissionRule"`
+	PrimaryAdvancedTutorOrderCommissionRule                       float32 `json:"primaryAdvancedTutorOrderCommissionRule"`
+	IntermediateAdvancedPresenterOrderCommissionRule              float32 `json:"intermediateAdvancedPresenterOrderCommissionRule"`
+	IntermediateAdvancedTutorOrderCommissionRule                  float32 `json:"intermediateAdvancedTutorOrderCommissionRule"`
+	AdvancedPresenterOrderCommissionRule                          float32 `json:"advancedPresenterOrderCommissionRule"`
+	CostOrderRatio                                                float32 `json:"costOrderRatio"`
+	ZeroAdvancedPresenterCostOrderCommissionRule                  float32 `json:"zeroAdvancedPresenterCostOrderCommissionRule"`
+	ZeroAdvancedTutorCostOrderCommissionRule                      float32 `json:"zeroAdvancedTutorCostOrderCommissionRule"`
+	PrimaryAdvancedPresenterCostOrderCommissionRule               float32 `json:"primaryAdvancedPresenterCostOrderCommissionRule"`
+	PrimaryAdvancedTutorCostOrderCommissionRule                   float32 `json:"primaryAdvancedTutorCostOrderCommissionRule"`
+	IntermediateAdvancedPresenterCostOrderCommissionRule          float32 `json:"intermediateAdvancedPresenterCostOrderCommissionRule"`
+	IntermediateAdvancedTutorCostOrderCommissionRule              float32 `json:"intermediateAdvancedTutorCostOrderCommissionRule"`
+	AdvancedPresenterCostOrderCommissionRule                      float32 `json:"advancedPresenterCostOrderCommissionRule"`
 }
 
 type OrganizationCourses []OrganizationCourse
@@ -341,6 +359,14 @@ func (co *CompanyOrganization) VerifyOrganizationColonelCommission(ctx context.C
 		return false
 	}
 
+	if organizationColonelCommission.ZeroAdvancedPresenterZeroCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.ZeroAdvancedTutorZeroCourseCommissionRule < 0 {
+		return false
+	}
+
 	if organizationColonelCommission.PrimaryAdvancedPresenterZeroCourseCommissionRule < 0 {
 		return false
 	}
@@ -361,31 +387,87 @@ func (co *CompanyOrganization) VerifyOrganizationColonelCommission(ctx context.C
 		return false
 	}
 
-	if organizationColonelCommission.CourseRatio < 0 {
+	if organizationColonelCommission.PrimaryCourseRatio < 0 {
 		return false
 	}
 
-	if organizationColonelCommission.PrimaryAdvancedPresenterCourseCommissionRule < 0 {
+	if organizationColonelCommission.PrimaryAdvancedPresenterPrimaryCourseCommissionRule < 0 {
 		return false
 	}
 
-	if organizationColonelCommission.PrimaryAdvancedTutorCourseCommissionRule < 0 {
+	if organizationColonelCommission.PrimaryAdvancedTutorPrimaryCourseCommissionRule < 0 {
 		return false
 	}
 
-	if organizationColonelCommission.IntermediateAdvancedPresenterCourseCommissionRule < 0 {
+	if organizationColonelCommission.IntermediateAdvancedPresenterPrimaryCourseCommissionRule < 0 {
 		return false
 	}
 
-	if organizationColonelCommission.IntermediateAdvancedTutorCourseCommissionRule < 0 {
+	if organizationColonelCommission.IntermediateAdvancedTutorPrimaryCourseCommissionRule < 0 {
 		return false
 	}
 
-	if organizationColonelCommission.AdvancedPresenterCourseCommissionRule < 0 {
+	if organizationColonelCommission.AdvancedPresenterPrimaryCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.IntermediateCourseRatio < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.PrimaryAdvancedPresenterIntermediateCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.PrimaryAdvancedTutorIntermediateCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.IntermediateAdvancedPresenterIntermediateCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.IntermediateAdvancedTutorIntermediateCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.AdvancedPresenterIntermediateCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.AdvancedCourseRatio < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.PrimaryAdvancedPresenterAdvancedCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.PrimaryAdvancedTutorAdvancedCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.IntermediateAdvancedPresenterAdvancedCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.IntermediateAdvancedTutorAdvancedCourseCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.AdvancedPresenterAdvancedCourseCommissionRule < 0 {
 		return false
 	}
 
 	if organizationColonelCommission.OrderRatio < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.PrimaryAdvancedPresenterOrderCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.PrimaryAdvancedTutorOrderCommissionRule < 0 {
 		return false
 	}
 
@@ -402,6 +484,14 @@ func (co *CompanyOrganization) VerifyOrganizationColonelCommission(ctx context.C
 	}
 
 	if organizationColonelCommission.CostOrderRatio < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.ZeroAdvancedPresenterCostOrderCommissionRule < 0 {
+		return false
+	}
+
+	if organizationColonelCommission.ZeroAdvancedTutorCostOrderCommissionRule < 0 {
 		return false
 	}
 

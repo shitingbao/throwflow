@@ -5,14 +5,14 @@ import (
 	"douyin/internal/conf"
 	"douyin/internal/domain"
 	"douyin/internal/pkg/openDouyin/video"
+	"douyin/internal/pkg/tool"
 	"encoding/json"
 	"fmt"
-	"strconv"
-	"sync"
-
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/time/rate"
+	"strconv"
+	"sync"
 )
 
 var (
@@ -24,14 +24,19 @@ type OpenDouyinVideoRepo interface {
 	List(context.Context, uint8, string, string, string, string, []*domain.OpenDouyinToken, int64, int64) ([]*domain.OpenDouyinVideo, error)
 	ListProduct(context.Context, string, []*domain.OpenDouyinToken, int64, int64) ([]*domain.OpenDouyinVideo, error)
 	ListVideoId(context.Context, int64, int64) ([]*domain.OpenDouyinVideo, error)
-	ListProductsByTokens(context.Context, uint64, string, []*domain.OpenDouyinToken) ([]*domain.OpenDouyinVideo, error)
+	ListVideoIdByProductId(context.Context, int64, int64) ([]*domain.OpenDouyinVideo, error)
+	ListProductsByTokens(context.Context, uint64, int64, []*domain.OpenDouyinToken) ([]*domain.OpenDouyinVideo, error)
+	ListLastCreateTimeOpenId(context.Context, string, int) ([]*domain.OpenDouyinVideo, error)
+	ListByVideoIds(context.Context, []string) ([]*domain.OpenDouyinVideo, error)
 	Count(context.Context, uint8, string, string, string, string, []*domain.OpenDouyinToken) (int64, error)
 	CountProduct(context.Context, string, []*domain.OpenDouyinToken) (int64, error)
 	CountVideoId(context.Context) (int64, error)
+	CountVideoIdByProductId(context.Context) (int64, error)
 	SaveIndex(context.Context)
 	Upsert(context.Context, *domain.OpenDouyinVideo) error
 	UpdateIsUpdateCoverAndProductId(context.Context, string, string, string) error
 	UpdateVideoStatus(context.Context, int32, []string) error
+	UpdateVideoProductIdByVideoId(context.Context, string, []string) error
 }
 
 type OpenDouyinVideoUsecase struct {
@@ -144,6 +149,47 @@ func (odvuc *OpenDouyinVideoUsecase) ListVideoIdOpenDouyinVideoByClientKeyAndOpe
 	}, nil
 }
 
+func (odvuc *OpenDouyinVideoUsecase) ListVideoIdOpenDouyinVideoByProductIds(ctx context.Context, pageNum, pageSize uint64) (*domain.OpenDouyinVideoList, error) {
+	list, err := odvuc.repo.ListVideoIdByProductId(ctx, int64(pageNum), int64(pageSize))
+
+	if err != nil {
+		return nil, DouyinOpenDouyinVideoListError
+	}
+
+	total, err := odvuc.repo.CountVideoIdByProductId(ctx)
+
+	if err != nil {
+		return nil, DouyinOpenDouyinVideoListError
+	}
+
+	return &domain.OpenDouyinVideoList{
+		PageNum:  pageNum,
+		PageSize: pageSize,
+		Total:    uint64(total),
+		List:     list,
+	}, nil
+}
+
+func (odvuc *OpenDouyinVideoUsecase) ListProductsByTokens(ctx context.Context, productOutId uint64, claimTime string, tokens []*domain.OpenDouyinToken) (*domain.OpenDouyinVideoList, error) {
+	t, err := tool.StringToTime("2006-01-02 15:04:05", claimTime)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claimTimeDuration := t.Unix()
+
+	list, err := odvuc.repo.ListProductsByTokens(ctx, productOutId, claimTimeDuration, tokens)
+
+	if err != nil {
+		return nil, DouyinOpenDouyinVideoListError
+	}
+
+	return &domain.OpenDouyinVideoList{
+		List: list,
+	}, nil
+}
+
 func (odvuc *OpenDouyinVideoUsecase) UpdateIsUpdateCoverAndProductIdOpenDouyinVideos(ctx context.Context, videoStatus uint8, videoId, cover, productId string) error {
 	if videoStatus == 99 {
 		if err := odvuc.repo.UpdateVideoStatus(ctx, int32(videoStatus), []string{videoId}); err != nil {
@@ -222,7 +268,7 @@ func (odvuc *OpenDouyinVideoUsecase) SyncOpenDouyinVideo(ctx context.Context, wg
 		}
 	}
 
-	odvuc.repo.UpdateVideoStatus(ctx, 99, videoIds)
+	//odvuc.repo.UpdateVideoStatus(ctx, 99, videoIds)
 }
 
 func (odvuc *OpenDouyinVideoUsecase) listVideos(ctx context.Context, limiter *rate.Limiter, cursor int64, openDouyinToken *domain.OpenDouyinToken, openDouyinUserInfo *domain.OpenDouyinUserInfo, jinritemaiOrderInfos []*domain.JinritemaiOrderInfo) (*video.ListVideoResponse, error) {
@@ -283,16 +329,4 @@ func (odvuc *OpenDouyinVideoUsecase) listVideos(ctx context.Context, limiter *ra
 	}
 
 	return videos, err
-}
-
-func (odvuc *OpenDouyinVideoUsecase) ListProductsByTokens(ctx context.Context, productOutId uint64, claimTime string, tokens []*domain.OpenDouyinToken) (*domain.OpenDouyinVideoList, error) {
-	list, err := odvuc.repo.ListProductsByTokens(ctx, productOutId, claimTime, tokens)
-
-	if err != nil {
-		return nil, DouyinOpenDouyinVideoListError
-	}
-
-	return &domain.OpenDouyinVideoList{
-		List: list,
-	}, nil
 }

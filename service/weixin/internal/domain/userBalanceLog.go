@@ -37,10 +37,12 @@ type UserBalanceLogList struct {
 }
 
 type UserBalance struct {
-	EstimatedCommissionBalance float32
-	RealCommissionBalance      float32
-	EstimatedCostBalance       float32
-	RealCostBalance            float32
+	EstimatedCommissionBalance     float32
+	SettleCommissionBalance        float32
+	CashableCommissionBalance      float32
+	EstimatedCommissionCostBalance float32
+	SettleCommissionCostBalance    float32
+	CashableCommissionCostBalance  float32
 }
 
 func NewUserBalanceLog(ctx context.Context, userId, relevanceId uint64, balanceType, operationType, balanceStatus uint8, amount float32, operationContent string) *UserBalanceLog {

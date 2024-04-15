@@ -3,10 +3,8 @@ package biz
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/log"
-	ctos "github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 	"io"
 	"strconv"
 	"strings"
@@ -17,6 +15,10 @@ import (
 	"weixin/internal/pkg/mini/oauth2"
 	"weixin/internal/pkg/mini/wxa"
 	"weixin/internal/pkg/tool"
+
+	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/log"
+	ctos "github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 )
 
 var (
@@ -26,6 +28,7 @@ var (
 	WeixinUserUpdateError         = errors.InternalServer("WEIXIN_USER_UPDATE_ERROR", "微信用户更新失败")
 	WeixinUserFollowCreateError   = errors.InternalServer("WEIXIN_USER_FOLLOW_CREATE_ERROR", "微信用户绑定关系创建失败")
 	WeixinLoginError              = errors.InternalServer("WEIXIN_LOGIN_ERROR", "微信用户异常错误")
+	WeixinUserListError           = errors.InternalServer("WEIXIN_USER_LIST_ERROR", "微信用户列表获取失败")
 
 	Mime = map[string]string{
 		"image/jpeg": ".jpeg",
@@ -39,8 +42,10 @@ type UserRepo interface {
 	GetByPhoneAndCountryCode(context.Context, string, string) (*domain.User, error)
 	List(context.Context) ([]*domain.User, error)
 	ListRanking(context.Context) ([]*domain.User, error)
+	ListByIds(context.Context, string, string, []uint64) ([]*domain.User, error)
 	Count(context.Context) (int64, error)
 	CountByUserId(context.Context, uint64) (int64, error)
+	CountByNickNameOrPhone(context.Context, string, string) (int64, error)
 	Update(context.Context, *domain.User) (*domain.User, error)
 	UpdateRanking(context.Context, uint64, uint64) error
 	Save(context.Context, *domain.User) (*domain.User, error)
@@ -158,6 +163,24 @@ func (uuc *UserUsecase) GetFollowUsers(ctx context.Context, organizationId, pare
 	followData.TotalNum = uint64(totalNum)
 
 	return followData, nil
+}
+
+func (uuc *UserUsecase) ListByIds(ctx context.Context, phone, keyword, ids string) (*domain.UserList, error) {
+	userIds := []uint64{}
+
+	if len(ids) > 0 {
+		json.Unmarshal([]byte(ids), &userIds)
+	}
+
+	list, err := uuc.repo.ListByIds(ctx, phone, keyword, userIds)
+
+	if err != nil {
+		return nil, WeixinUserListError
+	}
+
+	return &domain.UserList{
+		List: list,
+	}, nil
 }
 
 func (uuc *UserUsecase) CreateUsers(ctx context.Context, organizationId uint64, loginCode, phoneCode string) (*domain.User, error) {
@@ -555,7 +578,7 @@ func (uuc *UserUsecase) ImportDatas(ctx context.Context) error {
 }
 
 func (uuc *UserUsecase) ParentUserDatas(ctx context.Context) error {
-	var organizationId uint64 = 6
+	var organizationId uint64 = 5
 
 	userIntegralRelations, err := uuc.uirrepo.List(ctx, organizationId)
 
@@ -565,11 +588,31 @@ func (uuc *UserUsecase) ParentUserDatas(ctx context.Context) error {
 
 	for _, userIntegralRelation := range userIntegralRelations {
 		var childNum uint64 = 0
-		fmt.Println(userIntegralRelation.UserId)
-		uuc.uirrepo.GetChildNum(ctx, userIntegralRelation.UserId, &childNum, userIntegralRelations)
 
-		fmt.Println("用户ID:" + strconv.FormatUint(userIntegralRelation.UserId, 10) + "，孩子节点的个数：" + strconv.FormatUint(childNum, 10))
+		if userIntegralRelation.UserId == 2350 {
+			uuc.uirrepo.GetChildNum(ctx, userIntegralRelation.UserId, &childNum, userIntegralRelations)
+
+			fmt.Println("用户ID:" + strconv.FormatUint(userIntegralRelation.UserId, 10) + "，孩子节点的个数：" + strconv.FormatUint(childNum, 10))
+		}
 	}
+
+	return nil
+}
+
+func (uuc *UserUsecase) ChildUserDatas(ctx context.Context, userId uint64) error {
+	var organizationId uint64 = 5
+
+	userIntegralRelations, err := uuc.uirrepo.List(ctx, organizationId)
+
+	if err != nil {
+		return WeixinUserOrganizationRelationListError
+	}
+
+	tmpChildIds := make([]uint64, 0)
+
+	uuc.uirrepo.ListChildId(ctx, userId, &tmpChildIds, userIntegralRelations)
+
+	fmt.Println(tmpChildIds)
 
 	return nil
 }

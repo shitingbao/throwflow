@@ -2,6 +2,8 @@ package domain
 
 import (
 	"context"
+	"douyin/internal/pkg/tool"
+	"strconv"
 	"time"
 )
 
@@ -14,8 +16,11 @@ type DoukeOrderInfo struct {
 	ProductImg          string
 	PaySuccessTime      time.Time
 	SettleTime          *time.Time
+	RefundTime          *time.Time
+	ConfirmTime         *time.Time
 	TotalPayAmount      float32
 	PayGoodsAmount      float32
+	AfterSalesStatus    int64
 	FlowPoint           string
 	EstimatedCommission float32
 	RealCommission      float32
@@ -24,7 +29,7 @@ type DoukeOrderInfo struct {
 	UpdateTime          time.Time
 }
 
-func NewDoukeOrderInfo(ctx context.Context, userId, itemNum uint64, totalPayAmount, payGoodsAmount, estimatedCommission, realCommission float32, orderId, productId, productName, productImg, flowPoint string, paySuccessTime time.Time, settleTime *time.Time) *DoukeOrderInfo {
+func NewDoukeOrderInfo(ctx context.Context, userId, itemNum uint64, afterSalesStatus int64, totalPayAmount, payGoodsAmount, estimatedCommission, realCommission float32, orderId, productId, productName, productImg, flowPoint string, paySuccessTime time.Time) *DoukeOrderInfo {
 	return &DoukeOrderInfo{
 		UserId:              userId,
 		OrderId:             orderId,
@@ -32,9 +37,9 @@ func NewDoukeOrderInfo(ctx context.Context, userId, itemNum uint64, totalPayAmou
 		ProductName:         productName,
 		ProductImg:          productImg,
 		PaySuccessTime:      paySuccessTime,
-		SettleTime:          settleTime,
 		TotalPayAmount:      totalPayAmount,
 		PayGoodsAmount:      payGoodsAmount,
+		AfterSalesStatus:    afterSalesStatus,
 		FlowPoint:           flowPoint,
 		EstimatedCommission: estimatedCommission,
 		RealCommission:      realCommission,
@@ -70,12 +75,28 @@ func (doi *DoukeOrderInfo) SetSettleTime(ctx context.Context, settleTime *time.T
 	doi.SettleTime = settleTime
 }
 
+func (doi *DoukeOrderInfo) SetRefundTime(ctx context.Context, refundTime *time.Time) {
+	doi.RefundTime = refundTime
+}
+
+func (doi *DoukeOrderInfo) SetConfirmTime(ctx context.Context, confirmTime *time.Time) {
+	doi.ConfirmTime = confirmTime
+}
+
 func (doi *DoukeOrderInfo) SetTotalPayAmount(ctx context.Context, totalPayAmount float32) {
 	doi.TotalPayAmount = totalPayAmount
 }
 
+func (doi *DoukeOrderInfo) GetTotalPayAmount(ctx context.Context) string {
+	return strconv.FormatFloat(tool.Decimal(float64(doi.TotalPayAmount), 2), 'f', 2, 64)
+}
+
 func (doi *DoukeOrderInfo) SetPayGoodsAmount(ctx context.Context, payGoodsAmount float32) {
 	doi.PayGoodsAmount = payGoodsAmount
+}
+
+func (doi *DoukeOrderInfo) SetAfterSalesStatus(ctx context.Context, afterSalesStatus int64) {
+	doi.AfterSalesStatus = afterSalesStatus
 }
 
 func (doi *DoukeOrderInfo) SetFlowPoint(ctx context.Context, flowPoint string) {
@@ -86,8 +107,16 @@ func (doi *DoukeOrderInfo) SetEstimatedCommission(ctx context.Context, estimated
 	doi.EstimatedCommission = estimatedCommission
 }
 
+func (doi *DoukeOrderInfo) GetEstimatedCommission(ctx context.Context) string {
+	return strconv.FormatFloat(tool.Decimal(float64(doi.EstimatedCommission*0.75), 2), 'f', 2, 64)
+}
+
 func (doi *DoukeOrderInfo) SetRealCommission(ctx context.Context, realCommission float32) {
 	doi.RealCommission = realCommission
+}
+
+func (doi *DoukeOrderInfo) GetRealCommission(ctx context.Context) string {
+	return strconv.FormatFloat(tool.Decimal(float64(doi.RealCommission*0.75), 2), 'f', 2, 64)
 }
 
 func (doi *DoukeOrderInfo) SetItemNum(ctx context.Context, itemNum uint64) {

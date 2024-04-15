@@ -45,14 +45,17 @@ func (wuodr *weixinUserOpenDouyinRepo) List(ctx context.Context, userId uint64) 
 	return list, err
 }
 
-func (wuodr *weixinUserOpenDouyinRepo) Update(ctx context.Context, userId uint64, clientKey, openId, nickname, avatar, avatarLarger string) (*v1.UpdateOpenDouyinUsersReply, error) {
+func (wuodr *weixinUserOpenDouyinRepo) Update(ctx context.Context, userId, awemeId uint64, clientKey, openId, accountId, nickname, avatar, avatarLarger, area string) (*v1.UpdateOpenDouyinUsersReply, error) {
 	openDouyinUser, err := wuodr.data.weixinuc.UpdateOpenDouyinUsers(ctx, &v1.UpdateOpenDouyinUsersRequest{
 		UserId:       userId,
 		ClientKey:    clientKey,
 		OpenId:       openId,
+		AwemeId:      awemeId,
+		AccountId:    accountId,
 		Nickname:     nickname,
 		Avatar:       avatar,
 		AvatarLarger: avatarLarger,
+		Area:         area,
 	})
 
 	if err != nil {

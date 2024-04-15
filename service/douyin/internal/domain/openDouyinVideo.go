@@ -13,6 +13,35 @@ type VideoStatistics struct {
 	ShareCount    int32 `json:"share_count" bson:"share_count"`
 }
 
+type SucaiVideoRequest struct {
+	ProductId  string   `json:"product_id"`
+	OpenId     string   `json:"open_id"`
+	CreateTime int64    `json:"create_time"`
+	VideoIds   []string `json:"video_list"`
+}
+
+func NewSucaiVideoRequest(ctx context.Context, productId, openId string, createTime int64, videoIds []string) *SucaiVideoRequest {
+	return &SucaiVideoRequest{
+		ProductId:  productId,
+		OpenId:     openId,
+		CreateTime: createTime,
+		VideoIds:   videoIds,
+	}
+}
+
+type SucaiVideo struct {
+	VideoId    string `json:"video_id"`
+	ProductId  string `json:"product_id"`
+	CreateTime int32  `json:"create_time"`
+	OpenId     string `json:"open_id"`
+}
+
+type SucaiVideoResult struct {
+	Code int           `json:"code"`
+	Msg  string        `json:"msg"`
+	Data []*SucaiVideo `json:"data"`
+}
+
 type OpenDouyinVideo struct {
 	ClientKey     string
 	OpenId        string

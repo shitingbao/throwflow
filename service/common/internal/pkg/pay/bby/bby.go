@@ -16,6 +16,7 @@ import (
 const (
 	payService    = "unified.trade.online"
 	divideService = "unified.trade.divide"
+	refundService = "unified.trade.refund"
 	version       = "2.0"
 	charset       = "UTF-8"
 	signType      = "MD5"
@@ -273,6 +274,90 @@ func Divide(outTradeNo, transactionNo, outDivideNo, nonceStr, toMchId string, am
 	}
 
 	var replyData DivideReplyData
+
+	if err := xml.Unmarshal(respBytes, &replyData); err != nil {
+		return nil, errors.New(fmt.Sprintf("failed xml Unmarshal : %v", err.Error()))
+	}
+
+	return &replyData, nil
+}
+
+type RefundReplyData struct {
+	Version       string `xml:"version"`
+	Charset       string `xml:"charset"`
+	SignType      string `xml:"sign_type"`
+	ResultCode    string `xml:"result_code"`
+	ErrCode       string `xml:"err_code"`
+	ErrMsg        string `xml:"err_msg"`
+	MchId         string `xml:"mch_id"`
+	NonceStr      string `xml:"nonce_str"`
+	Sign          string `xml:"sign"`
+	TransactionId string `xml:"transaction_id"`
+	OutTradeNo    string `xml:"out_trade_no"`
+	OutRefundNo   string `xml:"out_refund_no"`
+	RefundId      string `xml:"refund_id"`
+	RefundFee     uint64 `xml:"refund_fee"`
+}
+
+type RefundRequestData struct {
+	Service       string `xml:"service"`
+	Version       string `xml:"version"`
+	Charset       string `xml:"charset"`
+	SignType      string `xml:"sign_type"`
+	MchId         string `xml:"mch_id"`
+	TransactionId string `xml:"transaction_id"`
+	OutRefundNo   string `xml:"out_refund_no"`
+	TotalFee      uint64 `xml:"total_fee"`
+	RefundFee     uint64 `xml:"refund_fee"`
+	NonceStr      string `xml:"nonce_str"`
+	Sign          string `xml:"sign"`
+}
+
+func Refund(outRefundNo, transactionId, nonceStr string, totalFee, refundFee uint64, conf *conf.Pay_BbyAccount) (*RefundReplyData, error) {
+	sign := tool.GetMd5("charset=" + charset + "&mch_id=" + conf.MchId + "&nonce_str=" + nonceStr + "&out_refund_no=" + outRefundNo + "&refund_fee=" + strconv.FormatUint(refundFee, 10) + "&service=" + refundService + "&sign_type=" + signType + "&total_fee=" + strconv.FormatUint(totalFee, 10) + "&transaction_id=" + transactionId + "&version=" + version + "&key=" + conf.SecretKey)
+
+	requestData := RefundRequestData{
+		Service:       refundService,
+		Version:       version,
+		Charset:       charset,
+		SignType:      signType,
+		MchId:         conf.MchId,
+		TransactionId: transactionId,
+		OutRefundNo:   outRefundNo,
+		TotalFee:      totalFee,
+		RefundFee:     refundFee,
+		NonceStr:      nonceStr,
+		Sign:          sign,
+	}
+	fmt.Println(requestData)
+	bytesData, err := xml.Marshal(requestData)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("failed xml marshal : %v", err.Error()))
+	}
+
+	request, err := http.NewRequest("POST", conf.Endpoint, bytes.NewReader(bytesData))
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("failed new request : %v", err.Error()))
+	}
+
+	request.Header.Set("Content-Type", "application/xml;charset=UTF-8")
+	client := http.Client{}
+	resp, err := client.Do(request)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("failed request : %v", err.Error()))
+	}
+
+	defer resp.Body.Close()
+	respBytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("failed file read : %v", err.Error()))
+	}
+	fmt.Println(respBytes)
+	var replyData RefundReplyData
 
 	if err := xml.Unmarshal(respBytes, &replyData); err != nil {
 		return nil, errors.New(fmt.Sprintf("failed xml Unmarshal : %v", err.Error()))

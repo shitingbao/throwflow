@@ -82,6 +82,7 @@ message Gongmall {
   }
   Gongmall default = 1;
   Gongmall dj = 2;
+  Gongmall lb = 3;
 }
 
 message Volcengine {
@@ -119,7 +120,8 @@ message Company {
 message Organization {
   uint64 default_organization_id = 1;
   uint64 dj_organization_id = 2;
-  string default_company_logo = 3;
+  uint64 lb_organization_id = 3;
+  string default_company_logo = 4;
 }
 
 message Service {

@@ -136,6 +136,25 @@ func (uor *userOrderRepo) List(ctx context.Context, pageNum, pageSize int) ([]*d
 	return list, nil
 }
 
+func (uor *userOrderRepo) ListOperation(ctx context.Context) ([]*domain.UserOrder, error) {
+	var userOrders []UserOrder
+	list := make([]*domain.UserOrder, 0)
+
+	if result := uor.data.db.WithContext(ctx).Where("pay_status = 1").
+		Where("pay_time >= '2024-01-01'").
+		Where("organization_id in (5,6,7)").
+		Order("pay_time ASC").
+		Find(&userOrders); result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, userOrder := range userOrders {
+		list = append(list, userOrder.ToDomain(ctx))
+	}
+
+	return list, nil
+}
+
 func (uor *userOrderRepo) Count(ctx context.Context) (int64, error) {
 	var count int64
 

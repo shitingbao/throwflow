@@ -93,6 +93,7 @@ func (k *kafkaReceiver) Receive(ctx context.Context, handler event.Handler) erro
 			}
 		}
 	}()
+
 	return nil
 }
 

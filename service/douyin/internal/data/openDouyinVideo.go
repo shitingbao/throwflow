@@ -5,9 +5,10 @@ import (
 	"douyin/internal/biz"
 	"douyin/internal/domain"
 	"douyin/internal/pkg/tool"
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -133,6 +134,70 @@ func (odvr *openDouyinVideoRepo) GetByClientKeyAndOpenId(ctx context.Context, cl
 	return openDouyinVideo.ToDomain(), nil
 }
 
+func (odvr *openDouyinVideoRepo) ListByVideoIds(ctx context.Context, videoIds []string) ([]*domain.OpenDouyinVideo, error) {
+	list := []*domain.OpenDouyinVideo{}
+	openDouyinVideos := []*OpenDouyinVideo{}
+
+	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
+
+	matchStage := bson.D{
+		{"$match", bson.M{"video_id": bson.D{{"$in", videoIds}}}},
+	}
+
+	cursor, err := collection.Aggregate(ctx, mongo.Pipeline{matchStage})
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &openDouyinVideos); err != nil {
+		return nil, err
+	}
+
+	for _, openDouyinVideo := range openDouyinVideos {
+		list = append(list, openDouyinVideo.ToDomain())
+	}
+
+	return list, nil
+}
+
+func (odvr *openDouyinVideoRepo) ListLastCreateTimeOpenId(ctx context.Context, openId string, limit int) ([]*domain.OpenDouyinVideo, error) {
+	list := []*domain.OpenDouyinVideo{}
+	openDouyinVideos := []*OpenDouyinVideo{}
+
+	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
+
+	pipeline := mongo.Pipeline{
+		{{"$match", bson.M{"open_id": openId}}},
+		{{"$sort", bson.D{{"create_time", -1}}}},
+		{{"$limit", limit}},
+	}
+
+	cursor, err := collection.Aggregate(ctx, pipeline)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &openDouyinVideos); err != nil {
+		return nil, err
+	}
+
+	for _, openDouyinVideo := range openDouyinVideos {
+		list = append(list, openDouyinVideo.ToDomain())
+	}
+
+	if len(list) == 0 {
+		return nil, errors.New("not find recode")
+	}
+
+	return list, nil
+}
+
 func (odvr *openDouyinVideoRepo) List(ctx context.Context, isExistProduct uint8, videoIds, keyword, videoStatus, mediaType string, openDouyinTokens []*domain.OpenDouyinToken, pageNum, pageSize int64) ([]*domain.OpenDouyinVideo, error) {
 	list := make([]*domain.OpenDouyinVideo, 0)
 	var openDouyinVideos []*OpenDouyinVideo
@@ -174,7 +239,10 @@ func (odvr *openDouyinVideoRepo) List(ctx context.Context, isExistProduct uint8,
 
 		and = append(and, bson.M{"media_type": bson.D{{"$in", imediaTypes}}})
 	}
-
+	fmt.Println("###########################")
+	fmt.Println(openDouyinTokens)
+	fmt.Println(len(openDouyinTokens) > 0)
+	fmt.Println("###########################")
 	if len(openDouyinTokens) > 0 {
 		for _, openDouyinToken := range openDouyinTokens {
 			aopenDouyinTokens = append(aopenDouyinTokens, bson.M{"$and": []bson.M{
@@ -183,7 +251,8 @@ func (odvr *openDouyinVideoRepo) List(ctx context.Context, isExistProduct uint8,
 			},
 			})
 		}
-
+		fmt.Println("213123123213")
+		fmt.Println(aopenDouyinTokens)
 		and = append(and, bson.M{"$or": aopenDouyinTokens})
 	}
 
@@ -364,15 +433,21 @@ func (odvr *openDouyinVideoRepo) ListVideoId(ctx context.Context, pageNum, pageS
 
 	groupStage := bson.D{
 		{"$group", bson.M{
-			"_id": bson.D{{"video_id", "$video_id"}},
+			"_id":         bson.D{{"video_id", "$video_id"}},
+			"create_time": bson.D{{"$max", "$create_time"}},
 		}},
 	}
 
 	projectStage := bson.D{
 		{"$project", bson.M{
-			"_id":      0,
-			"video_id": "$_id.video_id",
+			"_id":         0,
+			"video_id":    "$_id.video_id",
+			"create_time": 1,
 		}},
+	}
+
+	sortStage := bson.D{
+		{"$sort", bson.M{"create_time": -1}},
 	}
 
 	var cursor *mongo.Cursor
@@ -387,9 +462,9 @@ func (odvr *openDouyinVideoRepo) ListVideoId(ctx context.Context, pageNum, pageS
 			{"$limit", pageSize},
 		}
 
-		cursor, err = collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage, skipStage, limitStage})
+		cursor, err = collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage, sortStage, skipStage, limitStage})
 	} else {
-		cursor, err = collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage})
+		cursor, err = collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage, sortStage})
 	}
 
 	if err != nil {
@@ -413,7 +488,80 @@ func (odvr *openDouyinVideoRepo) ListVideoId(ctx context.Context, pageNum, pageS
 	return list, nil
 }
 
-func (odvr *openDouyinVideoRepo) ListProductsByTokens(ctx context.Context, productOutId uint64, claimTime string, openDouyinTokens []*domain.OpenDouyinToken) ([]*domain.OpenDouyinVideo, error) {
+func (odvr *openDouyinVideoRepo) ListVideoIdByProductId(ctx context.Context, pageNum, pageSize int64) ([]*domain.OpenDouyinVideo, error) {
+	list := make([]*domain.OpenDouyinVideo, 0)
+	var openDouyinVideos []*OpenDouyinVideo
+
+	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
+
+	var matchStage bson.D
+	matchStage = bson.D{
+		{"$match", bson.M{
+			"$and": []bson.M{
+				bson.M{"video_status": 1},
+				bson.M{"product_id": bson.D{{"$eq", ""}}},
+			},
+		}},
+	}
+
+	groupStage := bson.D{
+		{"$group", bson.M{
+			"_id":         bson.D{{"video_id", "$video_id"}},
+			"create_time": bson.D{{"$max", "$create_time"}},
+		}},
+	}
+
+	projectStage := bson.D{
+		{"$project", bson.M{
+			"_id":         0,
+			"video_id":    "$_id.video_id",
+			"create_time": 1,
+		}},
+	}
+
+	sortStage := bson.D{
+		{"$sort", bson.M{"create_time": -1}},
+	}
+
+	var cursor *mongo.Cursor
+	var err error
+
+	if pageNum > 0 {
+		skipStage := bson.D{
+			{"$skip", (pageNum - 1) * pageSize},
+		}
+
+		limitStage := bson.D{
+			{"$limit", pageSize},
+		}
+
+		cursor, err = collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage, sortStage, skipStage, limitStage})
+	} else {
+		cursor, err = collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage, sortStage})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursor.Close(ctx)
+
+	err = cursor.All(ctx, &openDouyinVideos)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, openDouyinVideo := range openDouyinVideos {
+		list = append(list, &domain.OpenDouyinVideo{
+			VideoId: openDouyinVideo.VideoId,
+		})
+	}
+
+	return list, nil
+}
+
+func (odvr *openDouyinVideoRepo) ListProductsByTokens(ctx context.Context, productOutId uint64, claimTime int64, openDouyinTokens []*domain.OpenDouyinToken) ([]*domain.OpenDouyinVideo, error) {
 	list := make([]*domain.OpenDouyinVideo, 0)
 	var openDouyinVideos []*OpenDouyinVideo
 	var aopenDouyinTokens []bson.M
@@ -427,18 +575,14 @@ func (odvr *openDouyinVideoRepo) ListProductsByTokens(ctx context.Context, produ
 
 	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
 
-	t, err := time.Parse("2006-01-02 15:04:05", claimTime)
-
-	if err != nil {
-		return nil, err
-	}
-
-	unixTimestamp := t.Unix()
+	// 必须视频，并且公开的
 	matchStage := bson.M{
-		"$or":        aopenDouyinTokens,
-		"product_id": strconv.FormatUint(productOutId, 10),
+		"$or":          aopenDouyinTokens,
+		"media_type":   4,
+		"video_status": 1,
+		"product_id":   strconv.FormatUint(productOutId, 10),
 		"create_time": bson.M{
-			"$gte": unixTimestamp,
+			"$gte": claimTime,
 		},
 	}
 
@@ -467,14 +611,6 @@ func (odvr *openDouyinVideoRepo) Count(ctx context.Context, isExistProduct uint8
 	var and []bson.M
 	var aopenDouyinTokens bson.A
 	var avideoIds bson.A
-
-	for _, openDouyinToken := range openDouyinTokens {
-		aopenDouyinTokens = append(aopenDouyinTokens, bson.M{"$and": []bson.M{
-			bson.M{"client_key": openDouyinToken.ClientKey},
-			bson.M{"open_id": openDouyinToken.OpenId},
-		},
-		})
-	}
 
 	svideoIds := tool.RemoveEmptyString(strings.Split(videoIds, ","))
 
@@ -506,7 +642,17 @@ func (odvr *openDouyinVideoRepo) Count(ctx context.Context, isExistProduct uint8
 		and = append(and, bson.M{"media_type": bson.D{{"$in", imediaTypes}}})
 	}
 
-	and = append(and, bson.M{"$or": aopenDouyinTokens})
+	if len(openDouyinTokens) > 0 {
+		for _, openDouyinToken := range openDouyinTokens {
+			aopenDouyinTokens = append(aopenDouyinTokens, bson.M{"$and": []bson.M{
+				bson.M{"client_key": openDouyinToken.ClientKey},
+				bson.M{"open_id": openDouyinToken.OpenId},
+			},
+			})
+		}
+
+		and = append(and, bson.M{"$or": aopenDouyinTokens})
+	}
 
 	if isExistProduct == 1 {
 		and = append(and, bson.M{"product_id": bson.D{{"$ne", ""}}})
@@ -653,6 +799,54 @@ func (odvr *openDouyinVideoRepo) CountVideoId(ctx context.Context) (int64, error
 	return total, nil
 }
 
+func (odvr *openDouyinVideoRepo) CountVideoIdByProductId(ctx context.Context) (int64, error) {
+	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
+
+	var matchStage bson.D
+	matchStage = bson.D{
+		{"$match", bson.M{
+			"$and": []bson.M{
+				bson.M{"video_status": 1},
+				bson.M{"product_id": bson.D{{"$eq", ""}}},
+			},
+		}},
+	}
+
+	groupStage := bson.D{
+		{"$group", bson.M{
+			"_id": bson.D{{"video_id", "$video_id"}},
+		}},
+	}
+
+	countStage := bson.D{
+		{"$count", "total"},
+	}
+
+	cursor, err := collection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, countStage})
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer cursor.Close(ctx)
+
+	var totalOpenDouyinVideos []*TotalOpenDouyinVideo
+
+	err = cursor.All(ctx, &totalOpenDouyinVideos)
+
+	if err != nil {
+		return 0, err
+	}
+
+	var total int64
+
+	for _, totalOpenDouyinVideo := range totalOpenDouyinVideos {
+		total = totalOpenDouyinVideo.Total
+	}
+
+	return total, nil
+}
+
 func (odvr *openDouyinVideoRepo) SaveIndex(ctx context.Context) {
 	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
 
@@ -715,9 +909,6 @@ func (odvr *openDouyinVideoRepo) Upsert(ctx context.Context, in *domain.OpenDouy
 			{"media_type", in.MediaType},
 			{"share_url", in.ShareUrl},
 			{"video_status", in.VideoStatus},
-			{"product_id", in.ProductId},
-			{"product_name", in.ProductName},
-			{"product_img", in.ProductImg},
 		}},
 	}, options.Update().SetUpsert(true)); err != nil {
 		return err
@@ -748,12 +939,26 @@ func (odvr *openDouyinVideoRepo) UpdateVideoStatus(ctx context.Context, videoSta
 	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
 
 	if _, err := collection.UpdateMany(ctx, bson.D{
-		{"video_id", bson.D{{"$nin", videoIds}}},
+		{"video_id", bson.D{{"$in", videoIds}}},
 	}, bson.D{
 		{"$set", bson.D{
 			{"video_status", videoStatus},
 		}},
 	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (odvr *openDouyinVideoRepo) UpdateVideoProductIdByVideoId(ctx context.Context, productId string, videoIds []string) error {
+	collection := odvr.data.mdb.Database(odvr.data.conf.Mongo.Dbname).Collection("open_douyin_video")
+
+	filter := bson.M{"video_id": bson.M{"$in": videoIds}}
+	update := bson.M{"$set": bson.M{"product_id": productId}}
+
+	_, err := collection.UpdateMany(ctx, filter, update)
+	if err != nil {
 		return err
 	}
 

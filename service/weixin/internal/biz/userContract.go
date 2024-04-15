@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"strconv"
@@ -75,8 +74,10 @@ func (ucuc *UserContractUsecase) GetContractUserContracts(ctx context.Context, u
 			gongmallConf = ucuc.gconf.Dj
 		} else if ucuc.oconf.DefaultOrganizationId == userOrganizationRelation.OrganizationId {
 			gongmallConf = ucuc.gconf.Default
+		} else if ucuc.oconf.LbOrganizationId == userOrganizationRelation.OrganizationId {
+			gongmallConf = ucuc.gconf.Lb
 		} else {
-			return nil, WeixinCompanyNotFound
+			return nil, WeixinCompanyOrganizationNotFound
 		}
 	}
 
@@ -118,7 +119,25 @@ func (ucuc *UserContractUsecase) GetUserContracts(ctx context.Context, userId ui
 		return nil, WeixinUserContractNotExist
 	}
 
-	userContract, err := ucuc.repo.GetByIdentityCardMark(ctx, contractType, user.IdentityCardMark)
+	var organizationId uint64
+
+	if contractType == 1 {
+		organizationId = 0
+	} else if contractType == 2 {
+		userOrganizationRelation, err := ucuc.uorrepo.GetByUserId(ctx, userId, 0, 0, "0")
+
+		if err != nil {
+			return nil, WeixinUserOrganizationRelationNotFound
+		}
+
+		if _, err := ucuc.corepo.Get(ctx, userOrganizationRelation.OrganizationId); err != nil {
+			return nil, WeixinCompanyOrganizationNotFound
+		}
+
+		organizationId = userOrganizationRelation.OrganizationId
+	}
+
+	userContract, err := ucuc.repo.Get(ctx, organizationId, user.IdentityCardMark)
 
 	if err != nil {
 		return nil, WeixinUserContractNotFound
@@ -159,16 +178,12 @@ func (ucuc *UserContractUsecase) CreateUserContracts(ctx context.Context, userId
 			gongmallConf = ucuc.gconf.Dj
 		} else if ucuc.oconf.DefaultOrganizationId == userOrganizationRelation.OrganizationId {
 			gongmallConf = ucuc.gconf.Default
+		} else if ucuc.oconf.LbOrganizationId == userOrganizationRelation.OrganizationId {
+			gongmallConf = ucuc.gconf.Lb
 		} else {
 			return nil, WeixinCompanyNotFound
 		}
 	}
-
-	fmt.Println("####################################")
-	fmt.Println(contractType)
-	fmt.Println(organizationId)
-	fmt.Println(gongmallConf)
-	fmt.Println("####################################")
 
 	enName, err := gongmall.RsaEncrypt(gongmallConf.GongmallPublicKey, name)
 
@@ -276,6 +291,8 @@ func (ucuc *UserContractUsecase) ConfirmUserContracts(ctx context.Context, userI
 			gongmallConf = ucuc.gconf.Dj
 		} else if ucuc.oconf.DefaultOrganizationId == inUserContract.OrganizationId {
 			gongmallConf = ucuc.gconf.Default
+		} else if ucuc.oconf.LbOrganizationId == inUserContract.OrganizationId {
+			gongmallConf = ucuc.gconf.Lb
 		} else {
 			return WeixinCompanyNotFound
 		}
@@ -316,20 +333,26 @@ func (ucuc *UserContractUsecase) AsyncNotificationUserContracts(ctx context.Cont
 
 	var gongmallConf *conf.Gongmall_Gongmall
 
-	if ucuc.oconf.DjOrganizationId == inUserContract.OrganizationId {
-		gongmallConf = ucuc.gconf.Dj
-	} else if ucuc.oconf.DefaultOrganizationId == inUserContract.OrganizationId {
+	if inUserContract.OrganizationId == 0 {
 		gongmallConf = ucuc.gconf.Default
 	} else {
-		return WeixinCompanyNotFound
+		if ucuc.oconf.DjOrganizationId == inUserContract.OrganizationId {
+			gongmallConf = ucuc.gconf.Dj
+		} else if ucuc.oconf.DefaultOrganizationId == inUserContract.OrganizationId {
+			gongmallConf = ucuc.gconf.Default
+		} else if ucuc.oconf.LbOrganizationId == inUserContract.OrganizationId {
+			gongmallConf = ucuc.gconf.Lb
+		} else {
+			return WeixinCompanyNotFound
+		}
 	}
 
 	if ok := gongmall.VerifySign("appKey="+contractAsyncNotificationData.AppKey+"&contractFileUrl="+contractAsyncNotificationData.ContractFileUrl+"&contractId="+strconv.FormatUint(contractAsyncNotificationData.ContractId, 10)+"&identity="+contractAsyncNotificationData.Identity+"&mobile="+contractAsyncNotificationData.Mobile+"&name="+contractAsyncNotificationData.Name+"&nonce="+contractAsyncNotificationData.Nonce+"&serviceId="+strconv.FormatUint(contractAsyncNotificationData.ServiceId, 10)+"&timestamp="+strconv.FormatUint(contractAsyncNotificationData.Timestamp, 10), gongmallConf.AppSecret, contractAsyncNotificationData.Sign); !ok {
 		return WeixinUserContractSignError
 	}
 
-	inUserContract.SetName(ctx, contractAsyncNotificationData.Name)
-	inUserContract.SetIdentityCard(ctx, contractAsyncNotificationData.Identity)
+	//inUserContract.SetName(ctx, contractAsyncNotificationData.Name)
+	//inUserContract.SetIdentityCard(ctx, contractAsyncNotificationData.Identity)
 	inUserContract.SetContractStatus(ctx, 3)
 	inUserContract.SetUpdateTime(ctx)
 

@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+const (
+	ZeroLevel         = iota + 1 // 0 级会员
+	PrimaryLevel                 // 初级会员
+	IntermediateLevel            // 中级会员
+	AdvancedLevel                // 高级会员
+)
+
 type UserOrganizationRelation struct {
 	Id                        uint64
 	UserId                    uint64

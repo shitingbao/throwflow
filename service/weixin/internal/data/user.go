@@ -3,12 +3,13 @@ package data
 import (
 	"context"
 	"errors"
-	"github.com/go-kratos/kratos/v2/log"
-	ctos "github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 	"io"
 	"time"
 	"weixin/internal/biz"
 	"weixin/internal/domain"
+
+	"github.com/go-kratos/kratos/v2/log"
+	ctos "github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 )
 
 // 微信小程序用户表
@@ -118,6 +119,37 @@ func (ur *userRepo) ListRanking(ctx context.Context) ([]*domain.User, error) {
 	return list, nil
 }
 
+func (ur *userRepo) ListByIds(ctx context.Context, phone, keyword string, ids []uint64) ([]*domain.User, error) {
+	var users []User
+	list := make([]*domain.User, 0)
+
+	db := ur.data.db.WithContext(ctx)
+
+	if len(ids) > 0 {
+		db = db.Where("id in (?)", ids)
+	}
+
+	if len(keyword) > 0 {
+		db = db.Where("nick_name like ?", "%"+keyword+"%")
+	}
+
+	if len(phone) > 0 {
+		db = db.Where("phone = ?", phone)
+	}
+
+	if result := db.
+		Order("create_time DESC,id DESC").
+		Find(&users); result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, user := range users {
+		list = append(list, user.ToDomain(ctx))
+	}
+
+	return list, nil
+}
+
 func (ur *userRepo) Count(ctx context.Context) (int64, error) {
 	var count int64
 
@@ -135,6 +167,26 @@ func (ur *userRepo) CountByUserId(ctx context.Context, userId uint64) (int64, er
 	if result := ur.data.db.WithContext(ctx).Where("id <= ?", userId).
 		Model(&User{}).Count(&count); result.Error != nil {
 		return 0, result.Error
+	}
+
+	return count, nil
+}
+
+func (ur *userRepo) CountByNickNameOrPhone(ctx context.Context, phone, keyword string) (int64, error) {
+	var count int64
+
+	db := ur.data.db.Model(&User{})
+
+	if len(phone) > 0 {
+		db = db.Where("phone = ?", phone)
+	}
+
+	if len(keyword) > 0 {
+		db = db.Where("locate(?, nick_name)>0", keyword)
+	}
+
+	if err := db.Count(&count).Error; err != nil {
+		return 0, err
 	}
 
 	return count, nil

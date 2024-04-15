@@ -20,16 +20,18 @@ func (ws *WeixinService) GetUserBalances(ctx context.Context, in *v1.GetUserBala
 	return &v1.GetUserBalancesReply{
 		Code: 200,
 		Data: &v1.GetUserBalancesReply_Data{
-			EstimatedCommissionBalance: fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.EstimatedCommissionBalance), 2)),
-			RealCommissionBalance:      fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.RealCommissionBalance), 2)),
-			EstimatedCostBalance:       fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.EstimatedCostBalance), 2)),
-			RealCostBalance:            fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.RealCostBalance), 2)),
+			EstimatedCommissionBalance:     fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.EstimatedCommissionBalance), 2)),
+			SettleCommissionBalance:        fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.SettleCommissionBalance), 2)),
+			CashableCommissionBalance:      fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.CashableCommissionBalance), 2)),
+			EstimatedCommissionCostBalance: fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.EstimatedCommissionCostBalance), 2)),
+			SettleCommissionCostBalance:    fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.SettleCommissionCostBalance), 2)),
+			CashableCommissionCostBalance:  fmt.Sprintf("%.2f", tool.Decimal(float64(userBalance.CashableCommissionCostBalance), 2)),
 		},
 	}, nil
 }
 
 func (ws *WeixinService) ListUserBalances(ctx context.Context, in *v1.ListUserBalancesRequest) (*v1.ListUserBalancesReply, error) {
-	userBalances, err := ws.ubuc.ListUserBalances(ctx, in.PageNum, in.PageSize, in.UserId, uint8(in.OperationType))
+	userBalances, err := ws.ubuc.ListUserBalances(ctx, in.PageNum, in.PageSize, in.UserId, uint8(in.OperationType), in.Keyword)
 
 	if err != nil {
 		return nil, err
@@ -39,12 +41,13 @@ func (ws *WeixinService) ListUserBalances(ctx context.Context, in *v1.ListUserBa
 
 	for _, userBalance := range userBalances.List {
 		list = append(list, &v1.ListUserBalancesReply_UserBalance{
-			Amount:           tool.Decimal(float64(userBalance.Amount), 2),
-			BalanceType:      uint32(userBalance.BalanceType),
-			OperationType:    uint32(userBalance.OperationType),
-			OperationContent: userBalance.OperationContent,
-			CreateTime:       tool.TimeToString("2006/01/02 15:04", userBalance.CreateTime),
-			BalanceStatus:    uint32(userBalance.BalanceStatus),
+			Amount:             tool.Decimal(float64(userBalance.CommissionAmount), 2),
+			NickName:           userBalance.ChildNickName,
+			Phone:              tool.FormatPhone(userBalance.ChildPhone),
+			CommissionTypeName: userBalance.CommissionTypeName,
+			OperationType:      uint32(userBalance.OperationType),
+			OperationContent:   userBalance.OperationContent,
+			CreateTime:         tool.TimeToString("2006/01/02 15:04", userBalance.CreateTime),
 		})
 	}
 

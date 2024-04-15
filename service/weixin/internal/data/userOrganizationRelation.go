@@ -100,6 +100,16 @@ func (uorr *userOrganizationRelationRepo) GetByUserId(ctx context.Context, userI
 	return userOrganizationRelation.ToDomain(ctx), nil
 }
 
+func (uorr *userOrganizationRelationRepo) GetChildNum(ctx context.Context, userId uint64, childNum *uint64, userOrganizationRelations []*domain.UserOrganizationRelation) {
+	for _, userOrganizationRelation := range userOrganizationRelations {
+		if userOrganizationRelation.OrganizationUserId == userId {
+			*childNum += 1
+
+			uorr.GetChildNum(ctx, userOrganizationRelation.UserId, childNum, userOrganizationRelations)
+		}
+	}
+}
+
 func (uorr *userOrganizationRelationRepo) List(ctx context.Context, organizationId uint64) ([]*domain.UserOrganizationRelation, error) {
 	var userOrganizationRelations []UserOrganizationRelation
 	list := make([]*domain.UserOrganizationRelation, 0)
@@ -138,6 +148,16 @@ func (uorr *userOrganizationRelationRepo) ListDirectChild(ctx context.Context, u
 	}
 
 	return list, nil
+}
+
+func (uirr *userOrganizationRelationRepo) ListChildId(ctx context.Context, userId uint64, childIds *[]uint64, userOrganizationRelations []*domain.UserOrganizationRelation) {
+	for _, userOrganizationRelation := range userOrganizationRelations {
+		if userOrganizationRelation.OrganizationUserId == userId {
+			*childIds = append(*childIds, userOrganizationRelation.UserId)
+
+			uirr.ListChildId(ctx, userOrganizationRelation.UserId, childIds, userOrganizationRelations)
+		}
+	}
 }
 
 func (uorr *userOrganizationRelationRepo) Count(ctx context.Context, userId, organizationId uint64, day string) (int64, error) {

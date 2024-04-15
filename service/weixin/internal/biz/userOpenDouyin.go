@@ -39,14 +39,15 @@ type UserOpenDouyinUsecase struct {
 	repo     UserOpenDouyinRepo
 	oduirepo OpenDouyinUserInfoRepo
 	aawarepo AwemesAdvertiserWeixinAuthRepo
+	darepo   DjAwemeRepo
 	urepo    UserRepo
 	tm       Transaction
 	conf     *conf.Data
 	log      *log.Helper
 }
 
-func NewUserOpenDouyinUsecase(repo UserOpenDouyinRepo, oduirepo OpenDouyinUserInfoRepo, aawarepo AwemesAdvertiserWeixinAuthRepo, urepo UserRepo, tm Transaction, conf *conf.Data, logger log.Logger) *UserOpenDouyinUsecase {
-	return &UserOpenDouyinUsecase{repo: repo, oduirepo: oduirepo, aawarepo: aawarepo, urepo: urepo, tm: tm, conf: conf, log: log.NewHelper(logger)}
+func NewUserOpenDouyinUsecase(repo UserOpenDouyinRepo, oduirepo OpenDouyinUserInfoRepo, aawarepo AwemesAdvertiserWeixinAuthRepo, darepo DjAwemeRepo, urepo UserRepo, tm Transaction, conf *conf.Data, logger log.Logger) *UserOpenDouyinUsecase {
+	return &UserOpenDouyinUsecase{repo: repo, oduirepo: oduirepo, aawarepo: aawarepo, darepo: darepo, urepo: urepo, tm: tm, conf: conf, log: log.NewHelper(logger)}
 }
 
 func (uoduc *UserOpenDouyinUsecase) GetOpenDouyinUsers(ctx context.Context, clientKey, openId string) (*domain.UserOpenDouyin, error) {
@@ -93,6 +94,12 @@ func (uoduc *UserOpenDouyinUsecase) ListOpenDouyinUsers(ctx context.Context, pag
 	list := make([]*domain.UserOpenDouyin, 0)
 
 	for _, openDouyinUser := range openDouyinUsers {
+		if len(openDouyinUser.AccountId) > 0 {
+			if djAweme, err := uoduc.darepo.Get(ctx, openDouyinUser.AccountId, ""); err == nil {
+				openDouyinUser.SetLevel(ctx, djAweme.Level)
+			}
+		}
+
 		openDouyinUser.SetFansShow(ctx)
 
 		list = append(list, &domain.UserOpenDouyin{
@@ -109,6 +116,7 @@ func (uoduc *UserOpenDouyinUsecase) ListOpenDouyinUsers(ctx context.Context, pag
 			Fans:            openDouyinUser.Fans,
 			FansShow:        openDouyinUser.FansShow,
 			Area:            openDouyinUser.Area,
+			Level:           openDouyinUser.Level,
 			CreateTime:      openDouyinUser.CreateTime,
 			UpdateTime:      openDouyinUser.UpdateTime,
 		})

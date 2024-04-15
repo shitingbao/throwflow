@@ -161,6 +161,24 @@ func (joir *jinritemaiOrderInfoRepo) List(ctx context.Context, pageNum, pageSize
 	return list, nil
 }
 
+func (joir *jinritemaiOrderInfoRepo) ListOperation(ctx context.Context, pageNum, pageSize int) ([]*domain.JinritemaiOrderInfo, error) {
+	var jinritemaiOrderInfos []JinritemaiOrderInfo
+	list := make([]*domain.JinritemaiOrderInfo, 0)
+
+	if result := joir.data.db.WithContext(ctx).
+		Order("id asc").
+		Limit(pageSize).Offset((pageNum - 1) * pageSize).
+		Find(&jinritemaiOrderInfos); result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, jinritemaiOrderInfo := range jinritemaiOrderInfos {
+		list = append(list, jinritemaiOrderInfo.ToDomain())
+	}
+
+	return list, nil
+}
+
 func (joir *jinritemaiOrderInfoRepo) ListProductByClientKeyAndOpenIdAndMediaType(ctx context.Context, clientKey, openId, mediaType string) ([]*domain.JinritemaiOrderInfo, error) {
 	var jinritemaiOrderInfos []JinritemaiOrderInfo
 	list := make([]*domain.JinritemaiOrderInfo, 0)
@@ -391,6 +409,16 @@ func (joir *jinritemaiOrderInfoRepo) Count(ctx context.Context, openDouyinTokens
 	return count, nil
 }
 
+func (joir *jinritemaiOrderInfoRepo) CountOperation(ctx context.Context) (int64, error) {
+	var count int64
+
+	if result := joir.data.db.WithContext(ctx).Model(&JinritemaiOrderInfo{}).Count(&count); result.Error != nil {
+		return 0, result.Error
+	}
+
+	return count, nil
+}
+
 func (joir *jinritemaiOrderInfoRepo) CountProductIdAndMediaIds(ctx context.Context) (int64, error) {
 	var count int64
 
@@ -491,6 +519,46 @@ func (joir *jinritemaiOrderInfoRepo) StatisticsRealcommission(ctx context.Contex
 	return jinritemaiOrderInfo.ToDomain(), nil
 }
 
+func (joir *jinritemaiOrderInfoRepo) StatisticsRealcommissionPayTime(ctx context.Context, openDouyinTokens []*domain.OpenDouyinToken, payTime, startDay, endDay, pickExtra string) (*domain.JinritemaiOrderInfo, error) {
+	jinritemaiOrderInfo := &JinritemaiOrderInfo{}
+
+	db := joir.data.db.WithContext(ctx).
+		Where("flow_point = 'SETTLE'").
+		Select("sum(real_commission) as real_commission")
+
+	if len(payTime) > 0 {
+		db = db.Where("pay_success_time > ?", payTime+" 23:59:59")
+	}
+
+	if len(startDay) > 0 {
+		db = db.Where("settle_time >= ?", startDay+" 00:00:00")
+	}
+
+	if len(endDay) > 0 {
+		db = db.Where("settle_time <= ?", endDay+" 23:59:59")
+	} else {
+		db = db.Where("settle_time <= ?", startDay+" 23:59:59")
+	}
+
+	if len(pickExtra) > 0 {
+		db = db.Where("pick_extra = ?", pickExtra)
+	}
+
+	openDouyinTokenSqls := make([]string, 0)
+
+	for _, openDouyinToken := range openDouyinTokens {
+		openDouyinTokenSqls = append(openDouyinTokenSqls, "(client_key = '"+openDouyinToken.ClientKey+"' and open_id = '"+openDouyinToken.OpenId+"')")
+	}
+
+	db = db.Where(strings.Join(openDouyinTokenSqls, " or "))
+
+	if result := db.First(jinritemaiOrderInfo); result.Error != nil {
+		return nil, result.Error
+	}
+
+	return jinritemaiOrderInfo.ToDomain(), nil
+}
+
 func (joir *jinritemaiOrderInfoRepo) StatisticsAwemeIndustry(ctx context.Context, companyId uint64, startDay, endDay string, openDouyinUserInfos []*domain.OpenDouyinUserInfo) ([]*domain.JinritemaiOrderInfoStatisticsAwemeIndustry, error) {
 	list := make([]*domain.JinritemaiOrderInfoStatisticsAwemeIndustry, 0)
 
@@ -556,7 +624,29 @@ func (joir *jinritemaiOrderInfoRepo) Upsert(ctx context.Context, in *domain.Jinr
 	if result := joir.data.DB(ctx).Table("douyin_jinritemai_order_info").Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "order_id"}},
 		DoUpdates: clause.AssignmentColumns([]string{"client_key", "open_id", "buyin_id", "order_id", "product_id", "product_name", "product_img", "commission_rate", "pay_success_time", "settle_time", "total_pay_amount", "pay_goods_amount", "flow_point", "estimated_commission", "real_commission", "item_num", "pick_extra", "media_type", "media_id", "update_time"}),
-	}).Create(&in); result.Error != nil {
+	}).Create(&domain.JinritemaiOrderInfoGorm{
+		ClientKey:           in.ClientKey,
+		OpenId:              in.OpenId,
+		BuyinId:             in.BuyinId,
+		OrderId:             in.OrderId,
+		ProductId:           in.ProductId,
+		ProductName:         in.ProductName,
+		ProductImg:          in.ProductImg,
+		CommissionRate:      in.CommissionRate,
+		PaySuccessTime:      in.PaySuccessTime,
+		SettleTime:          in.SettleTime,
+		TotalPayAmount:      in.TotalPayAmount,
+		PayGoodsAmount:      in.PayGoodsAmount,
+		FlowPoint:           in.FlowPoint,
+		EstimatedCommission: in.EstimatedCommission,
+		RealCommission:      in.RealCommission,
+		ItemNum:             in.ItemNum,
+		PickExtra:           in.PickExtra,
+		MediaType:           in.MediaType,
+		MediaId:             in.MediaId,
+		CreateTime:          in.CreateTime,
+		UpdateTime:          in.UpdateTime,
+	}); result.Error != nil {
 		return result.Error
 	}
 

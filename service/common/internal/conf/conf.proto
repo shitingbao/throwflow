@@ -72,6 +72,7 @@ message Suolink {
 message Organization {
   uint64 default_organization_id = 1;
   uint64 dj_organization_id = 2;
+  uint64 lb_organization_id = 3;
 }
 
 message Pay {

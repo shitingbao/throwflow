@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/sha3"
+	"google.golang.org/grpc/status"
 	"strconv"
 	"time"
 )
@@ -125,4 +126,10 @@ func Decimal(num float64, places int32) float64 {
 	num, _ = decimal.NewFromFloat(num).Round(places).Float64()
 
 	return num
+}
+
+func GetGRPCErrorInfo(err error) string {
+	grpcErr, _ := status.FromError(err)
+
+	return grpcErr.Message()
 }

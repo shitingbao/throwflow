@@ -93,11 +93,12 @@ service Company {
   rpc UpdateMaterialCompanyProducts (UpdateMaterialCompanyProductsRequest) returns (UpdateMaterialCompanyProductsReply) {}
   rpc UpdateInvestmentRatioCompanyProducts (UpdateInvestmentRatioCompanyProductsRequest) returns (UpdateInvestmentRatioCompanyProductsReply) {}
   rpc UpdateOutProductCompanyProducts (UpdateOutProductCompanyProductsRequest) returns (UpdateOutProductCompanyProductsReply) {}
+  rpc ParseCompanyProducts (ParseCompanyProductsRequest) returns (ParseCompanyProductsReply) {}
   rpc UploadPartCompanyProducts (UploadPartCompanyProductsRequest) returns (UploadPartCompanyProductsReply) {}
   rpc CompleteUploadCompanyProducts (CompleteUploadCompanyProductsRequest) returns (CompleteUploadCompanyProductsReply) {}
   rpc AbortUploadCompanyProducts (AbortUploadCompanyProductsRequest) returns (AbortUploadCompanyProductsReply) {}
   rpc DeleteCompanyProducts (DeleteCompanyProductsRequest) returns (DeleteCompanyProductsReply) {}
-
+  
   // 机构管理
   rpc GetCompanyOrganizations (GetCompanyOrganizationsRequest) returns (GetCompanyOrganizationsReply) {}
   rpc GetCompanyOrganizationByOrganizationCodes (GetCompanyOrganizationByOrganizationCodesRequest) returns (GetCompanyOrganizationByOrganizationCodesReply) {}
@@ -155,6 +156,7 @@ service Company {
 
   // 种草任务
   rpc GetByProductOutId(GetByProductOutIdRequest)returns(GetByProductOutIdReply){}
+  rpc GetCompanyTaskAccountRelations(GetCompanyTaskAccountRelationsRequest)returns(GetCompanyTaskAccountRelationsReply){}
   rpc ListCompanyTask(ListCompanyTaskRequest)returns(ListCompanyTaskReply){}
   rpc ListCompanyTaskDetail(ListCompanyTaskDetailRequest)returns(ListCompanyTaskDetailReply){}
   rpc ListCompanyTaskAccountRelation(ListCompanyTaskAccountRelationRequest)returns(ListCompanyTaskAccountRelationReply){}
@@ -2293,6 +2295,30 @@ message UpdateOutProductCompanyProductsReply {
   Data data = 2;
 }
 
+message ParseCompanyProductsRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message ParseCompanyProductsReply {
+  message Data {
+    uint64 productId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string productPrice = 4;
+    uint32 isTop = 5;
+    string pureCommission = 6;
+    string pureServiceCommission = 7;
+    string commonCommission = 8;
+    string investmentRatio = 9;
+    uint32 isHot = 10;
+    uint64 TotalSale = 11;
+    uint32 isTask = 12;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message UploadPartCompanyProductsRequest {
   string uploadId = 1 [(validate.rules).string = {min_len: 1}];
   uint64 partNumber = 2 [(validate.rules).uint64.gt = 0];
@@ -2362,27 +2388,45 @@ message GetCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2443,27 +2487,45 @@ message GetCompanyOrganizationByOrganizationCodesReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2525,27 +2587,45 @@ message ListCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2639,27 +2719,45 @@ message CreateCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2726,27 +2824,45 @@ message UpdateCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2808,27 +2924,45 @@ message UpdateTeamCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2890,27 +3024,45 @@ message UpdateCommissionCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2972,27 +3124,45 @@ message UpdateColonelCommissionCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -3054,27 +3224,45 @@ message UpdateCourseCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -3994,6 +4182,23 @@ message GetByProductOutIdReply{
     uint64 claimQuota = 11;
     uint64 successQuota = 12;
     uint32 isExist = 13;
+  }
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetCompanyTaskAccountRelationsRequest{
+  uint64 taskAccountRelationId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetCompanyTaskAccountRelationsReply{
+  message Data{
+    uint64 taskAccountRelationId = 1;
+    uint64 taskId = 2;
+    uint64 productOutId = 3;
+    uint64 userId = 4;
+    string claimTime = 5;
+    string expireTime = 6;
   }
   uint32 code = 1;
   Data data = 2;

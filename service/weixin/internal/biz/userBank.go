@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"weixin/internal/conf"
@@ -99,11 +100,16 @@ func (ubuc *UserBankUsecase) CreateUserBanks(ctx context.Context, userId uint64,
 			gongmallConf = ubuc.gconf.Dj
 		} else if ubuc.oconf.DefaultOrganizationId == userContract.OrganizationId {
 			gongmallConf = ubuc.gconf.Default
+		} else if ubuc.oconf.LbOrganizationId == userContract.OrganizationId {
+			gongmallConf = ubuc.gconf.Lb
 		} else {
 			return nil, WeixinCompanyNotFound
 		}
 	}
-
+	fmt.Println("######################################")
+	fmt.Println(userContract)
+	fmt.Println(gongmallConf)
+	fmt.Println("######################################")
 	enBankCode, err := gongmall.RsaEncrypt(gongmallConf.GongmallPublicKey, bankCode)
 
 	if err != nil {
@@ -113,6 +119,10 @@ func (ubuc *UserBankUsecase) CreateUserBanks(ctx context.Context, userId uint64,
 	name, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, userContract.Name)
 
 	if err != nil {
+		fmt.Println("####################")
+		fmt.Println(userContract.Name)
+		fmt.Println(1)
+		fmt.Println("####################")
 		return nil, WeixinUserContractRsaDecryptError
 	}
 
@@ -125,6 +135,10 @@ func (ubuc *UserBankUsecase) CreateUserBanks(ctx context.Context, userId uint64,
 	identityCard, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, userContract.IdentityCard)
 
 	if err != nil {
+		fmt.Println("####################")
+		fmt.Println(userContract.IdentityCard)
+		fmt.Println(2)
+		fmt.Println("####################")
 		return nil, WeixinUserContractRsaDecryptError
 	}
 
@@ -143,6 +157,10 @@ func (ubuc *UserBankUsecase) CreateUserBanks(ctx context.Context, userId uint64,
 	deBankCode, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, bank.Data.BankAccountNo)
 
 	if err != nil {
+		fmt.Println("####################")
+		fmt.Println(bank.Data.BankAccountNo)
+		fmt.Println(3)
+		fmt.Println("####################")
 		return nil, WeixinUserContractRsaDecryptError
 	}
 
@@ -181,4 +199,30 @@ func (ubuc *UserBankUsecase) DeleteUserBanks(ctx context.Context, userId uint64,
 	}
 
 	return nil
+}
+
+func (ubuc *UserBankUsecase) DecryptDatas(ctx context.Context, organizationId uint64, content string) (string, error) {
+	var gongmallConf *conf.Gongmall_Gongmall
+
+	if ubuc.oconf.DjOrganizationId == organizationId {
+		gongmallConf = ubuc.gconf.Dj
+	} else if ubuc.oconf.DefaultOrganizationId == organizationId {
+		gongmallConf = ubuc.gconf.Default
+	} else if ubuc.oconf.LbOrganizationId == organizationId {
+		gongmallConf = ubuc.gconf.Lb
+	} else {
+		return "", WeixinCompanyNotFound
+	}
+
+	content, err := gongmall.RsaDecrypt(gongmallConf.PrivateKey, content)
+
+	fmt.Println("#################################")
+	fmt.Println(err)
+	fmt.Println("#################################")
+
+	if err != nil {
+		return "", WeixinUserContractRsaDecryptError
+	}
+
+	return content, nil
 }

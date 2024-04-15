@@ -24,6 +24,21 @@ func StringToTime(layout, value string) (time.Time, error) {
 	return time.ParseInLocation(layout, value, time.Local)
 }
 
+func RemoveEmptyString(slice []string) []string {
+	if len(slice) == 0 {
+		return slice
+	}
+
+	for i, v := range slice {
+		if v == "" {
+			slice = append(slice[:i], slice[i+1:]...)
+			return RemoveEmptyString(slice)
+			break
+		}
+	}
+	return slice
+}
+
 func Marshal(i interface{}) ([]byte, error) {
 	buffer := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(buffer)
@@ -103,7 +118,7 @@ func StructToMap(s interface{}) map[string]interface{} {
 		value := v.Field(i).Interface()
 
 		tag := field.Tag.Get("json")
-		
+
 		if strings.Contains(tag, ",omitempty") && reflect.DeepEqual(value, reflect.Zero(field.Type).Interface()) {
 			continue
 		}

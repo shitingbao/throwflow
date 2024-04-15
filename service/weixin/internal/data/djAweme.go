@@ -8,6 +8,7 @@ import (
 	"strings"
 	"weixin/internal/biz"
 	"weixin/internal/domain"
+	"weixin/internal/pkg/tool"
 )
 
 // 星达当家mcn机构达人表
@@ -21,6 +22,7 @@ type DjAweme struct {
 	Account       string `json:"account" bson:"account"`
 	BindStartTime string `json:"bind_start_time" bson:"bind_start_time"`
 	BindEndTime   string `json:"bind_end_time" bson:"bind_end_time"`
+	Level         uint64 `json:"level" bson:"level"`
 }
 
 type djAwemeRepo struct {
@@ -39,6 +41,7 @@ func (dj *DjAweme) ToDomain() *domain.DjAweme {
 		Account:       dj.Account,
 		BindStartTime: dj.BindStartTime,
 		BindEndTime:   dj.BindEndTime,
+		Level:         dj.Level,
 	}
 }
 
@@ -55,19 +58,29 @@ func (dar *djAwemeRepo) Get(ctx context.Context, accountId, accounts string) (*d
 
 	collection := dar.data.mdb.Database(dar.data.conf.Mongo.Dbname).Collection("dj_aweme")
 
-	saccounts := strings.Split(accounts, ",")
+	saccounts := tool.RemoveEmptyString(strings.Split(accounts, ","))
 
 	for _, saccount := range saccounts {
 		aaccounts = append(aaccounts, saccount)
 	}
 
-	if err := collection.FindOne(ctx, bson.M{
-		"$and": []bson.M{
-			bson.M{"account": bson.D{{"$in", aaccounts}}},
-			bson.M{"aweme_id": accountId},
-		},
-	}).Decode(&djAweme); err != nil {
-		return nil, err
+	if len(saccounts) > 0 {
+		if err := collection.FindOne(ctx, bson.M{
+			"$and": []bson.M{
+				bson.M{"account": bson.D{{"$in", aaccounts}}},
+				bson.M{"aweme_id": accountId},
+			},
+		}).Decode(&djAweme); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := collection.FindOne(ctx, bson.M{
+			"$and": []bson.M{
+				bson.M{"aweme_id": accountId},
+			},
+		}).Decode(&djAweme); err != nil {
+			return nil, err
+		}
 	}
 
 	return djAweme.ToDomain(), nil

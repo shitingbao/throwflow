@@ -31,8 +31,10 @@ var (
 type UserOrganizationRelationRepo interface {
 	Get(context.Context, uint64, uint64, string) (*domain.UserOrganizationRelation, error)
 	GetByUserId(context.Context, uint64, uint64, uint64, string) (*domain.UserOrganizationRelation, error)
+	GetChildNum(context.Context, uint64, *uint64, []*domain.UserOrganizationRelation)
 	List(context.Context, uint64) ([]*domain.UserOrganizationRelation, error)
 	ListDirectChild(context.Context, uint64, uint64) ([]*domain.UserOrganizationRelation, error)
+	ListChildId(context.Context, uint64, *[]uint64, []*domain.UserOrganizationRelation)
 	Count(context.Context, uint64, uint64, string) (int64, error)
 	Save(context.Context, *domain.UserOrganizationRelation) (*domain.UserOrganizationRelation, error)
 	Update(context.Context, *domain.UserOrganizationRelation) (*domain.UserOrganizationRelation, error)
@@ -109,6 +111,17 @@ func (uoruc *UserOrganizationRelationUsecase) GetUserOrganizationRelations(ctx c
 
 		levelName := WeixinUserOrganizationRelationLevel[userOrganizationRelation.Level-1]
 
+		var parentUserId uint64 = 0
+		parentNickName, parentAvatarUrl := "", ""
+
+		if userOrganizationRelation.OrganizationUserId > 0 {
+			if parentUser, err := uoruc.urepo.Get(ctx, userOrganizationRelation.OrganizationUserId); err == nil {
+				parentUserId = parentUser.Id
+				parentNickName = parentUser.NickName
+				parentAvatarUrl = parentUser.AvatarUrl
+			}
+		}
+
 		return &domain.UserOrganizationRelationInfo{
 			OrganizationId:            companyOrganization.Data.OrganizationId,
 			OrganizationName:          companyOrganization.Data.OrganizationName,
@@ -121,6 +134,9 @@ func (uoruc *UserOrganizationRelationUsecase) GetUserOrganizationRelations(ctx c
 			LevelName:                 levelName,
 			Level:                     userOrganizationRelation.Level,
 			OrganizationUserQrCodeUrl: userOrganizationRelation.OrganizationUserQrCodeUrl,
+			ParentUserId:              parentUserId,
+			ParentNickName:            parentNickName,
+			ParentAvatarUrl:           parentAvatarUrl,
 			Total:                     uint64(total),
 		}, nil
 	} else {
@@ -279,6 +295,8 @@ func (uoruc *UserOrganizationRelationUsecase) GetBindUserOrganizationRelations(c
 							BindEndTime:   bindEndTime,
 						})
 					}
+				} else {
+					fmt.Println(err)
 				}
 			}
 		}
@@ -300,9 +318,7 @@ func (uoruc *UserOrganizationRelationUsecase) ListParentUserOrganizationRelation
 		return nil, WeixinUserOrganizationRelationExist
 	}
 
-	companyOrganization, err := uoruc.corepo.Get(ctx, organizationId)
-
-	if err != nil {
+	if _, err := uoruc.corepo.Get(ctx, organizationId); err != nil {
 		return nil, WeixinCompanyOrganizationNotFound
 	}
 
@@ -311,14 +327,7 @@ func (uoruc *UserOrganizationRelationUsecase) ListParentUserOrganizationRelation
 
 	userScanRecord, err := uoruc.usrrepo.Get(ctx, user.Id, organizationId, 1)
 
-	if err != nil {
-		list = append(list, &domain.ParentUserOrganizationRelation{
-			ParentUserId:    0,
-			ParentNickName:  companyOrganization.Data.OrganizationName,
-			ParentAvatarUrl: companyOrganization.Data.OrganizationLogoUrl,
-			ParentUserType:  "companyOrganization",
-		})
-	} else {
+	if err == nil {
 		if userScanRecord.OrganizationUserId > 0 {
 			if parentUser, err := uoruc.urepo.Get(ctx, userScanRecord.OrganizationUserId); err == nil {
 				isNotExist := true
@@ -342,18 +351,11 @@ func (uoruc *UserOrganizationRelationUsecase) ListParentUserOrganizationRelation
 					})
 				}
 			}
-		} else {
-			list = append(list, &domain.ParentUserOrganizationRelation{
-				ParentUserId:    0,
-				ParentNickName:  companyOrganization.Data.OrganizationName,
-				ParentAvatarUrl: companyOrganization.Data.OrganizationLogoUrl,
-				ParentUserType:  "organization",
-			})
 		}
 	}
 
 	if relationType == "coupon" {
-		if userCoupon, err := uoruc.ucorepo.GetByPhone(ctx, organizationId, user.Phone, "", "2"); err == nil {
+		if userCoupon, err := uoruc.ucorepo.GetByPhone(ctx, organizationId, 0, user.Phone, "2"); err == nil {
 			if parentUser, err := uoruc.urepo.Get(ctx, userCoupon.UserId); err == nil {
 				isNotExist := true
 
@@ -605,79 +607,6 @@ func (uoruc *UserOrganizationRelationUsecase) SyncUserOrganizationRelations(ctx 
 				uoruc.repo.Save(ctx, inUserOrganizationRelation)
 			}
 		}
-	}
-
-	jinritemaiOrders, err := uoruc.jorepo.ListByPickExtra(ctx)
-
-	if err != nil {
-		inTaskLog := domain.NewTaskLog(ctx, "SyncOrganizationUsers", fmt.Sprintf("[SyncOrganizationUsersError] Description=%s", "获取达人订单列表失败"))
-		inTaskLog.SetCreateTime(ctx)
-
-		uoruc.tlrepo.Save(ctx, inTaskLog)
-
-		return err
-	}
-
-	clientKeyAndOpenIds := make([]*domain.UserOpenDouyin, 0)
-
-	for _, jinritemaiOrder := range jinritemaiOrders.Data.List {
-		clientKeyAndOpenIds = append(clientKeyAndOpenIds, &domain.UserOpenDouyin{
-			ClientKey: jinritemaiOrder.ClientKey,
-			OpenId:    jinritemaiOrder.OpenId,
-		})
-	}
-
-	if len(clientKeyAndOpenIds) > 0 {
-		list, err := uoruc.uodrepo.ListByClientKeyAndOpenId(ctx, 0, 40, clientKeyAndOpenIds, "")
-
-		if err != nil {
-			inTaskLog := domain.NewTaskLog(ctx, "SyncOrganizationUsers", fmt.Sprintf("[SyncOrganizationUsersError] Description=%s", "获取微信用户关联抖音用户列表失败"))
-			inTaskLog.SetCreateTime(ctx)
-
-			uoruc.tlrepo.Save(ctx, inTaskLog)
-
-			return err
-		}
-
-		var wg sync.WaitGroup
-
-		for _, l := range list {
-			wg.Add(1)
-
-			go func(l *domain.UserOpenDouyin) {
-				defer wg.Done()
-
-				if _, err := uoruc.repo.GetByUserId(ctx, l.UserId, 0, 0, ""); err != nil {
-					if userScanRecord, err := uoruc.usrrepo.Get(ctx, l.UserId, 0, 1); err == nil {
-						var organizationTutorId uint64 = 0
-
-						if userScanRecord.OrganizationUserId > 0 {
-							if parentUserOrganizationRelation, err := uoruc.repo.GetByUserId(ctx, userScanRecord.OrganizationUserId, userScanRecord.OrganizationId, 0, "0"); err == nil {
-								if parentUserOrganizationRelation.Level == 4 {
-									organizationTutorId = parentUserOrganizationRelation.UserId
-								} else {
-									if userIntegralRelations, err := uoruc.uirrepo.List(ctx, userScanRecord.OrganizationId); err == nil {
-										tutorUserIntegralRelation := uoruc.uirrepo.GetSuperior(ctx, parentUserOrganizationRelation.UserId, 4, userIntegralRelations)
-
-										if tutorUserIntegralRelation != nil {
-											organizationTutorId = tutorUserIntegralRelation.UserId
-										}
-									}
-								}
-							}
-						}
-
-						inUserOrganizationRelation := domain.NewUserOrganizationRelation(ctx, userScanRecord.UserId, userScanRecord.OrganizationId, userScanRecord.OrganizationUserId, organizationTutorId, 0, 1, "")
-						inUserOrganizationRelation.SetCreateTime(ctx)
-						inUserOrganizationRelation.SetUpdateTime(ctx)
-
-						uoruc.repo.Save(ctx, inUserOrganizationRelation)
-					}
-				}
-			}(l)
-		}
-
-		wg.Wait()
 	}
 
 	return nil

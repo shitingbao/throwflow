@@ -37,6 +37,31 @@ type JinritemaiOrderInfo struct {
 	UpdateTime          time.Time
 }
 
+type JinritemaiOrderInfoGorm struct {
+	Id                  uint64
+	ClientKey           string
+	OpenId              string
+	BuyinId             string
+	OrderId             string
+	ProductId           string
+	ProductName         string
+	ProductImg          string
+	CommissionRate      uint8
+	PaySuccessTime      time.Time
+	SettleTime          *time.Time
+	TotalPayAmount      float32
+	PayGoodsAmount      float32
+	FlowPoint           string
+	EstimatedCommission float32
+	RealCommission      float32
+	ItemNum             uint64
+	PickExtra           string
+	MediaType           string
+	MediaId             uint64
+	CreateTime          time.Time
+	UpdateTime          time.Time
+}
+
 type JinritemaiOrderInfoList struct {
 	PageNum  uint64
 	PageSize uint64

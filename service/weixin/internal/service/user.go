@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
+	"math"
 	"time"
 	v1 "weixin/api/weixin/v1"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (ws *WeixinService) GetUsers(ctx context.Context, in *v1.GetUsersRequest) (*v1.GetUsersReply, error) {
@@ -132,6 +134,39 @@ func (ws *WeixinService) CreateUsers(ctx context.Context, in *v1.CreateUsersRequ
 	}, nil
 }
 
+func (ws *WeixinService) ListByIds(ctx context.Context, in *v1.ListByIdsRequest) (*v1.ListByIdsReply, error) {
+	userList, err := ws.uuc.ListByIds(ctx, in.Phone, in.Keyword, in.UserIds)
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := []*v1.ListByIdsReply_User{}
+
+	for _, user := range userList.List {
+		u := &v1.ListByIdsReply_User{
+			Id:        user.Id,
+			NickName:  user.NickName,
+			AvatarUrl: user.AvatarUrl,
+		}
+
+		list = append(list, u)
+	}
+
+	totalPage := uint64(math.Ceil(float64(userList.Total) / float64(userList.PageSize)))
+
+	return &v1.ListByIdsReply{
+		Code: 200,
+		Data: &v1.ListByIdsReply_Data{
+			PageNum:   userList.PageNum,
+			PageSize:  userList.PageSize,
+			Total:     userList.Total,
+			TotalPage: totalPage,
+			List:      list,
+		},
+	}, nil
+}
+
 func (ws *WeixinService) UpdateUsers(ctx context.Context, in *v1.UpdateUsersRequest) (*v1.UpdateUsersReply, error) {
 	user, err := ws.uuc.UpdateUsers(ctx, in.UserId, in.NickName, in.Avatar)
 
@@ -215,5 +250,22 @@ func (ws *WeixinService) ParentUserDatas(ctx context.Context, in *emptypb.Empty)
 	return &v1.ParentUserDatasReply{
 		Code: 200,
 		Data: &v1.ParentUserDatasReply_Data{},
+	}, nil
+}
+
+func (ws *WeixinService) ChildUserDatas(ctx context.Context, in *v1.ChildUserDatasRequest) (*v1.ChildUserDatasReply, error) {
+	ws.log.Infof("导入用户数据, 开始时间 %s \n", time.Now())
+
+	ctx = context.Background()
+
+	if err := ws.uuc.ChildUserDatas(ctx, in.UserId); err != nil {
+		return nil, err
+	}
+
+	ws.log.Infof("导入用户数据, 结束时间 %s \n", time.Now())
+
+	return &v1.ChildUserDatasReply{
+		Code: 200,
+		Data: &v1.ChildUserDatasReply_Data{},
 	}, nil
 }

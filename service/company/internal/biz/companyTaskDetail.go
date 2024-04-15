@@ -27,21 +27,21 @@ type CompanyTaskDetailRepo interface {
 	Update(context.Context, *domain.CompanyTaskDetail) (*domain.CompanyTaskDetail, error)
 	UpdateOnDuplicateKey(context.Context, []*domain.CompanyTaskDetail) error
 	Count(context.Context, uint64, []uint64, []domain.CompanyTaskClientKeyAndOpenId) (int64, error)
-	CountIsPlauSuccess(context.Context, uint64, uint64) (int64, error)
-	ListByClientKeyAndOpenIds(context.Context, uint64, uint64, string, string) (*v1.ListByClientKeyAndOpenIdsReply, error)
-	DeleteOpenDouyinUsers(context.Context, []uint64) error
+	CountByIsPlauSuccess(context.Context, uint64, uint64) (int64, error)
+	DeleteByUserIds(context.Context, []uint64) error
 }
 
 type CompanyTaskDetailUsecase struct {
-	repo    CompanyTaskDetailRepo
-	ctarepo CompanyTaskAccountRelationRepo
-	wurepo  WeixinUserRepo
-	conf    *conf.Data
-	log     *log.Helper
+	repo     CompanyTaskDetailRepo
+	ctarepo  CompanyTaskAccountRelationRepo
+	wurepo   WeixinUserRepo
+	wuodrepo WeixinUserOpenDouyinRepo
+	conf     *conf.Data
+	log      *log.Helper
 }
 
-func NewCompanyTaskDetailUsecase(repo CompanyTaskDetailRepo, ctarepo CompanyTaskAccountRelationRepo, wurepo WeixinUserRepo, conf *conf.Data, logger log.Logger) *CompanyTaskDetailUsecase {
-	return &CompanyTaskDetailUsecase{repo: repo, ctarepo: ctarepo, wurepo: wurepo, conf: conf, log: log.NewHelper(logger)}
+func NewCompanyTaskDetailUsecase(repo CompanyTaskDetailRepo, ctarepo CompanyTaskAccountRelationRepo, wurepo WeixinUserRepo, wuodrepo WeixinUserOpenDouyinRepo, conf *conf.Data, logger log.Logger) *CompanyTaskDetailUsecase {
+	return &CompanyTaskDetailUsecase{repo: repo, ctarepo: ctarepo, wurepo: wurepo, wuodrepo: wuodrepo, conf: conf, log: log.NewHelper(logger)}
 }
 
 // first,use nickname to get opid in weixin
@@ -144,7 +144,7 @@ func (ctduc *CompanyTaskDetailUsecase) ListCompanyTaskDetail(ctx context.Context
 			return nil, CompanyTaskDetailJsonError
 		}
 
-		users, err := ctduc.repo.ListByClientKeyAndOpenIds(ctx, 0, 40, string(b), "")
+		users, err := ctduc.wuodrepo.ListByClientKeyAndOpenIds(ctx, 0, 40, string(b), "")
 
 		if err != nil {
 			return nil, CompanyTaskGetDouyinUserError

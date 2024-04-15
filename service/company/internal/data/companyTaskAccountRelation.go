@@ -159,7 +159,11 @@ func (ctr *companyTaskAccountRelationRepo) List(ctx context.Context, companyTask
 	}
 
 	if status >= 0 {
-		db = db.Where("status = ?", status)
+		if status == 1 {
+			db = db.Where("status = 1 or status = 3")
+		} else {
+			db = db.Where("status = ?", status)
+		}
 	}
 
 	if userId > 0 {
@@ -288,7 +292,7 @@ func (ctr *companyTaskAccountRelationRepo) CountAvailableByTaskId(ctx context.Co
 	var count int64
 
 	err := ctr.data.db.WithContext(ctx).Model(&CompanyTaskAccountRelation{}).
-		Where("company_task_id = ? and (expire_time > ? or status = 1)", companyTaskId, time.Now()).
+		Where("company_task_id = ? and (expire_time > ? or status = 1 or status = 3)", companyTaskId, time.Now()).
 		Count(&count).Error
 
 	if err != nil {
@@ -308,7 +312,11 @@ func (ctr *companyTaskAccountRelationRepo) CountByCondition(ctx context.Context,
 	}
 
 	if status >= 0 {
-		db = db.Where("status = ?", status)
+		if status == 1 {
+			db = db.Where("status = 1 or status = 3")
+		} else {
+			db = db.Where("status = ?", status)
+		}
 	}
 
 	if userId > 0 {
@@ -430,7 +438,7 @@ func (cor *companyTaskAccountRelationRepo) PutContent(ctx context.Context, fileN
 	return nil, errors.New("tos is not exist")
 }
 
-func (ctr *companyTaskAccountRelationRepo) SaveCache(ctx context.Context, keyword string, timeout time.Duration) bool {
+func (ctr *companyTaskAccountRelationRepo) SaveCacheHash(ctx context.Context, keyword string, timeout time.Duration) bool {
 	ok, err := ctr.data.rdb.SetNX(ctx, keyword, 1, timeout).Result()
 
 	if err != nil {
@@ -440,7 +448,7 @@ func (ctr *companyTaskAccountRelationRepo) SaveCache(ctx context.Context, keywor
 	return ok
 }
 
-func (ctr *companyTaskAccountRelationRepo) DelCache(ctx context.Context, keyword string) error {
+func (ctr *companyTaskAccountRelationRepo) DelCacheHash(ctx context.Context, keyword string) error {
 	ctr.data.rdb.Del(ctx, keyword)
 
 	return nil

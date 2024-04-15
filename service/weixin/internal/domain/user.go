@@ -25,6 +25,13 @@ type User struct {
 	UpdateTime        time.Time
 }
 
+type UserList struct {
+	PageNum  uint64
+	PageSize uint64
+	Total    uint64
+	List     []*User
+}
+
 type FollowData struct {
 	FollowType    string
 	FollowName    string

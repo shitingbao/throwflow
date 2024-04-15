@@ -111,6 +111,27 @@ func (oduiuc *OpenDouyinUserInfoUsecase) UpdateOpenDouyinUserInfos(ctx context.C
 	if _, err := oduiuc.wuodrepo.UpdateUserInfos(ctx, inOpenDouyinUserInfo.AwemeId, inOpenDouyinUserInfo.ClientKey, inOpenDouyinUserInfo.OpenId, inOpenDouyinUserInfo.AccountId, inOpenDouyinUserInfo.Nickname, inOpenDouyinUserInfo.Avatar, inOpenDouyinUserInfo.AvatarLarger, inOpenDouyinUserInfo.Area); err != nil {
 		return DouyinOpenDouyinUserInfoUpdateError
 	}
-	
+
+	return nil
+}
+
+func (oduiuc *OpenDouyinUserInfoUsecase) UpdateFansOpenDouyinUserInfos(ctx context.Context, fans uint64, clientKey, openId string) error {
+	inOpenDouyinUserInfo, err := oduiuc.repo.GetByClientKeyAndOpenId(ctx, clientKey, openId)
+
+	if err != nil {
+		return DouyinOpenDouyinUserInfoNotFound
+	}
+
+	inOpenDouyinUserInfo.SetFans(ctx, fans)
+	inOpenDouyinUserInfo.SetUpdateTime(ctx)
+
+	if _, err := oduiuc.repo.Update(ctx, inOpenDouyinUserInfo); err != nil {
+		return DouyinOpenDouyinUserInfoUpdateError
+	}
+
+	if _, err := oduiuc.wuodrepo.UpdateUserFans(ctx, inOpenDouyinUserInfo.ClientKey, inOpenDouyinUserInfo.OpenId, inOpenDouyinUserInfo.Fans); err != nil {
+		return DouyinOpenDouyinUserInfoUpdateError
+	}
+
 	return nil
 }

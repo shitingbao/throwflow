@@ -14,6 +14,7 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"golang.org/x/time/rate"
+	"math"
 	"strconv"
 	"sync"
 	"time"
@@ -39,8 +40,10 @@ type JinritemaiOrderRepo interface {
 type JinritemaiOrderUsecase struct {
 	repo       JinritemaiOrderRepo
 	joirepo    JinritemaiOrderInfoRepo
+	doirepo    DoukeOrderInfoRepo
 	wurepo     WeixinUserRepo
 	wuodrepo   WeixinUserOpenDouyinRepo
+	wucrepo    WeixinUserCommissionRepo
 	odtrepo    OpenDouyinTokenRepo
 	oduirepo   OpenDouyinUserInfoRepo
 	oduiclrepo OpenDouyinUserInfoCreateLogRepo
@@ -56,8 +59,8 @@ type JinritemaiOrderUsecase struct {
 	log        *log.Helper
 }
 
-func NewJinritemaiOrderUsecase(repo JinritemaiOrderRepo, joirepo JinritemaiOrderInfoRepo, wurepo WeixinUserRepo, wuodrepo WeixinUserOpenDouyinRepo, odtrepo OpenDouyinTokenRepo, oduirepo OpenDouyinUserInfoRepo, oduiclrepo OpenDouyinUserInfoCreateLogRepo, odvrepo OpenDouyinVideoRepo, tlrepo TaskLogRepo, jalrepo JinritemaiApiLogRepo, cprepo CompanyProductRepo, qasrepo QianchuanAdvertiserStatusRepo, qaoirepo QianchuanAwemeOrderInfoRepo, conf *conf.Data, econf *conf.Event, dconf *conf.Developer, logger log.Logger) *JinritemaiOrderUsecase {
-	return &JinritemaiOrderUsecase{repo: repo, joirepo: joirepo, wurepo: wurepo, wuodrepo: wuodrepo, odtrepo: odtrepo, oduirepo: oduirepo, oduiclrepo: oduiclrepo, odvrepo: odvrepo, tlrepo: tlrepo, jalrepo: jalrepo, cprepo: cprepo, qasrepo: qasrepo, qaoirepo: qaoirepo, conf: conf, econf: econf, dconf: dconf, log: log.NewHelper(logger)}
+func NewJinritemaiOrderUsecase(repo JinritemaiOrderRepo, joirepo JinritemaiOrderInfoRepo, doirepo DoukeOrderInfoRepo, wurepo WeixinUserRepo, wuodrepo WeixinUserOpenDouyinRepo, wucrepo WeixinUserCommissionRepo, odtrepo OpenDouyinTokenRepo, oduirepo OpenDouyinUserInfoRepo, oduiclrepo OpenDouyinUserInfoCreateLogRepo, odvrepo OpenDouyinVideoRepo, tlrepo TaskLogRepo, jalrepo JinritemaiApiLogRepo, cprepo CompanyProductRepo, qasrepo QianchuanAdvertiserStatusRepo, qaoirepo QianchuanAwemeOrderInfoRepo, conf *conf.Data, econf *conf.Event, dconf *conf.Developer, logger log.Logger) *JinritemaiOrderUsecase {
+	return &JinritemaiOrderUsecase{repo: repo, joirepo: joirepo, doirepo: doirepo, wurepo: wurepo, wuodrepo: wuodrepo, wucrepo: wucrepo, odtrepo: odtrepo, oduirepo: oduirepo, oduiclrepo: oduiclrepo, odvrepo: odvrepo, tlrepo: tlrepo, jalrepo: jalrepo, cprepo: cprepo, qasrepo: qasrepo, qaoirepo: qaoirepo, conf: conf, econf: econf, dconf: dconf, log: log.NewHelper(logger)}
 }
 
 func (jouc *JinritemaiOrderUsecase) GetStorePreferenceJinritemaiOrders(ctx context.Context, userId uint64) ([]*domain.StorePreference, error) {
@@ -291,17 +294,38 @@ func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrders(ctx context.Conte
 
 	statistics := make([]*domain.StatisticsJinritemaiOrder, 0)
 	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
-		Key:   "全部销量",
-		Value: "0",
-	})
-	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
-		Key:   "有效销量",
+		Key:   "带货销量",
 		Value: "0",
 	})
 
 	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
-		Key:   "全部销额",
+		Key:   "带货销额",
 		Value: "0.00",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "带货佣金",
+		Value: "0.00",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "成本购订单",
+		Value: "0",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "成本购金额",
+		Value: "0.00",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "成本购返佣",
+		Value: "0.00",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "有效销量",
+		Value: "0",
 	})
 
 	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
@@ -310,18 +334,8 @@ func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrders(ctx context.Conte
 	})
 
 	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
-		Key:   "全部佣金",
-		Value: "0",
-	})
-
-	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
 		Key:   "有效佣金",
 		Value: "0",
-	})
-
-	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
-		Key:   "退款率",
-		Value: "0%",
 	})
 
 	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
@@ -330,9 +344,33 @@ func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrders(ctx context.Conte
 	})
 
 	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "退款率",
+		Value: "0%",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
 		Key:   "投流",
 		Value: "0.00",
 	})
+
+	var doukeOrder *domain.DoukeOrderInfo
+	var doukeOrderNum int64
+
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+
+		doukeOrder, _ = jouc.doirepo.Statistics(ctx, userId, startDay, endDay, "pay_succ")
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		doukeOrderNum, _ = jouc.doirepo.Count(ctx, userId, startDay, endDay)
+	}()
 
 	if len(weixinUserOpenDouyins.Data.List) > 0 {
 		openDouyinTokens := make([]*domain.OpenDouyinToken, 0)
@@ -344,23 +382,51 @@ func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrders(ctx context.Conte
 			})
 		}
 
-		jinritemaiOrder, _ := jouc.joirepo.Statistics(ctx, openDouyinTokens, startDay, endDay, "pay_succ", "")
-		jinritemaiRefundOrder, _ := jouc.joirepo.Statistics(ctx, openDouyinTokens, startDay, endDay, "refund", "")
-		jinritemaiOrderRealcommission, _ := jouc.joirepo.StatisticsRealcommission(ctx, openDouyinTokens, startDay, endDay, "")
+		wg.Add(3)
+
+		var jinritemaiOrder, jinritemaiRefundOrder, jinritemaiOrderRealcommission *domain.JinritemaiOrderInfo
+
+		go func() {
+			defer wg.Done()
+
+			jinritemaiOrder, _ = jouc.joirepo.Statistics(ctx, openDouyinTokens, startDay, endDay, "pay_succ", "")
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			jinritemaiRefundOrder, _ = jouc.joirepo.Statistics(ctx, openDouyinTokens, startDay, endDay, "refund", "")
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			jinritemaiOrderRealcommission, _ = jouc.joirepo.StatisticsRealcommission(ctx, openDouyinTokens, startDay, endDay, "")
+		}()
+
+		wg.Wait()
 
 		for _, statistic := range statistics {
-			if statistic.Key == "全部销量" {
+			if statistic.Key == "带货销量" {
 				statistic.Value = strconv.FormatUint(jinritemaiOrder.ItemNum+jinritemaiRefundOrder.ItemNum, 10)
+			} else if statistic.Key == "带货销额" {
+				statistic.Value = strconv.FormatFloat(tool.Decimal(float64(jinritemaiOrder.TotalPayAmount+jinritemaiRefundOrder.TotalPayAmount), 2), 'f', 2, 64)
+			} else if statistic.Key == "带货佣金" {
+				statistic.Value = jinritemaiOrder.GetEstimatedCommission(ctx)
+			} else if statistic.Key == "成本购订单" {
+				statistic.Value = strconv.FormatInt(doukeOrderNum, 10)
+			} else if statistic.Key == "成本购金额" {
+				statistic.Value = doukeOrder.GetTotalPayAmount(ctx)
+			} else if statistic.Key == "成本购返佣" {
+				statistic.Value = doukeOrder.GetEstimatedCommission(ctx)
 			} else if statistic.Key == "有效销量" {
 				statistic.Value = jinritemaiOrder.GetItemNum(ctx)
-			} else if statistic.Key == "全部销额" {
-				statistic.Value = strconv.FormatFloat(tool.Decimal(float64(jinritemaiOrder.TotalPayAmount+jinritemaiRefundOrder.TotalPayAmount), 2), 'f', 2, 64)
 			} else if statistic.Key == "有效销额" {
 				statistic.Value = jinritemaiOrder.GetTotalPayAmount(ctx)
-			} else if statistic.Key == "全部佣金" {
-				statistic.Value = jinritemaiOrder.GetEstimatedCommission(ctx)
 			} else if statistic.Key == "有效佣金" {
 				statistic.Value = jinritemaiOrderRealcommission.GetRealCommission(ctx)
+			} else if statistic.Key == "佣金率" {
+				statistic.Value = jinritemaiOrder.GetRealCommissionRate(ctx)
 			} else if statistic.Key == "退款率" {
 				var refundRate float64
 
@@ -369,8 +435,18 @@ func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrders(ctx context.Conte
 				}
 
 				statistic.Value = strconv.FormatFloat(tool.Decimal(refundRate*100, 2), 'f', 2, 64) + "%"
-			} else if statistic.Key == "佣金率" {
-				statistic.Value = jinritemaiOrder.GetRealCommissionRate(ctx)
+			}
+		}
+	} else {
+		wg.Wait()
+
+		for _, statistic := range statistics {
+			if statistic.Key == "成本购订单" {
+				statistic.Value = strconv.FormatInt(doukeOrderNum, 10)
+			} else if statistic.Key == "成本购金额" {
+				statistic.Value = doukeOrder.GetTotalPayAmount(ctx)
+			} else if statistic.Key == "成本购返佣" {
+				statistic.Value = doukeOrder.GetEstimatedCommission(ctx)
 			}
 		}
 	}
@@ -491,6 +567,84 @@ func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrderByDays(ctx context.
 	}, nil
 }
 
+func (jouc *JinritemaiOrderUsecase) StatisticsJinritemaiOrderByPayTimeAndDays(ctx context.Context, day, payTime, content, pickExtra string) (*domain.StatisticsJinritemaiOrders, error) {
+	statistics := make([]*domain.StatisticsJinritemaiOrder, 0)
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "orderNum",
+		Value: "0",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "orderRefundNum",
+		Value: "0",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "totalPayAmount",
+		Value: "0.00",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "estimatedCommission",
+		Value: "0.00",
+	})
+
+	statistics = append(statistics, &domain.StatisticsJinritemaiOrder{
+		Key:   "realCommission",
+		Value: "0.00",
+	})
+
+	var openDouyinTokens []*domain.OpenDouyinToken
+
+	if err := json.Unmarshal([]byte(content), &openDouyinTokens); err == nil {
+		var wg sync.WaitGroup
+
+		var jinritemaiRefundOrder *domain.JinritemaiOrderInfo
+		var jinritemaiNotRefundOrder *domain.JinritemaiOrderInfo
+		var jinritemaiOrderRealcommission *domain.JinritemaiOrderInfo
+
+		wg.Add(3)
+
+		go func() {
+			defer wg.Done()
+
+			jinritemaiRefundOrder, _ = jouc.joirepo.Statistics(ctx, openDouyinTokens, "", day, "refund", pickExtra)
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			jinritemaiNotRefundOrder, _ = jouc.joirepo.Statistics(ctx, openDouyinTokens, "", day, "", pickExtra)
+		}()
+
+		go func() {
+			defer wg.Done()
+
+			jinritemaiOrderRealcommission, _ = jouc.joirepo.StatisticsRealcommissionPayTime(ctx, openDouyinTokens, payTime, day, day, pickExtra)
+		}()
+
+		wg.Wait()
+
+		for _, statistic := range statistics {
+			if statistic.Key == "orderRefundNum" {
+				statistic.Value = strconv.FormatUint(jinritemaiRefundOrder.ItemNum, 10)
+			} else if statistic.Key == "orderNum" {
+				statistic.Value = strconv.FormatUint(jinritemaiRefundOrder.ItemNum+jinritemaiNotRefundOrder.ItemNum, 10)
+			} else if statistic.Key == "totalPayAmount" {
+				statistic.Value = fmt.Sprintf("%.2f", tool.Decimal(float64(jinritemaiNotRefundOrder.TotalPayAmount), 2))
+			} else if statistic.Key == "estimatedCommission" {
+				statistic.Value = fmt.Sprintf("%.2f", tool.Decimal(float64(jinritemaiNotRefundOrder.EstimatedCommission), 2))
+			} else if statistic.Key == "realCommission" {
+				statistic.Value = fmt.Sprintf("%.2f", tool.Decimal(float64(jinritemaiOrderRealcommission.RealCommission), 2))
+			}
+		}
+	}
+
+	return &domain.StatisticsJinritemaiOrders{
+		Statistics: statistics,
+	}, nil
+}
+
 func (jouc *JinritemaiOrderUsecase) AsyncNotificationJinritemaiOrders(ctx context.Context, msgId, sign, content string) error {
 	if ok := jinritemai.VerifyMessageSign(jouc.dconf.Aweme.OpenDouyin.ClientSecret, content, sign); !ok {
 		return DouyinJinritemaiOrderMessageVerifySignError
@@ -530,16 +684,31 @@ func (jouc *JinritemaiOrderUsecase) AsyncNotificationJinritemaiOrders(ctx contex
 	}
 
 	paySuccessTime, _ := tool.StringToTime("2006-01-02 15:04:05", allianceDarenOrderDataResponse.PaySuccessTime)
-	commissionRate := uint8(allianceDarenOrderDataResponse.CommissionRate / 100)
+
+	var commissionRate uint8
+
+	if allianceDarenOrderDataResponse.CommissionRate > 0 {
+		commissionRate = uint8(allianceDarenOrderDataResponse.CommissionRate / 100)
+	} else {
+		commissionRate = uint8(allianceDarenOrderDataResponse.CommissionAte / 100)
+	}
+
+	openId := ""
+
+	if len(allianceDarenOrderDataResponse.AuthorOpenId) > 0 {
+		openId = allianceDarenOrderDataResponse.AuthorOpenId
+	} else {
+		openId = allianceDarenOrderResponse.FromUserId
+	}
 
 	var inJinritemaiOrderInfo *domain.JinritemaiOrderInfo
 
 	if len(allianceDarenOrderDataResponse.SettleTime) > 0 {
 		settleTime, _ := tool.StringToTime("2006-01-02 15:04:05", allianceDarenOrderDataResponse.SettleTime)
 
-		inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(allianceDarenOrderDataResponse.ItemNum), uint64(allianceDarenOrderDataResponse.MediaId), commissionRate, float32(tool.Decimal(allianceDarenOrderDataResponse.TotalPayAmount/100, 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.PayGoodsAmount/100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.EstimatedCommission/100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.RealCommission/100), 2)), allianceDarenOrderResponse.ClientKey, allianceDarenOrderDataResponse.AuthorOpenId, "", allianceDarenOrderDataResponse.OrderId, allianceDarenOrderDataResponse.ProductId, allianceDarenOrderDataResponse.ProductName, allianceDarenOrderDataResponse.ProductImg, allianceDarenOrderDataResponse.FlowPoint, allianceDarenOrderDataResponse.PickExtra, allianceDarenOrderDataResponse.MediaType, paySuccessTime, &settleTime)
+		inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(allianceDarenOrderDataResponse.ItemNum), uint64(allianceDarenOrderDataResponse.MediaId), commissionRate, float32(tool.Decimal(float64(allianceDarenOrderDataResponse.TotalPayAmount)/float64(100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.PayGoodsAmount)/float64(100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.EstimatedCommission)/float64(100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.RealCommission)/float64(100), 2)), allianceDarenOrderResponse.ClientKey, openId, "", allianceDarenOrderDataResponse.OrderId, allianceDarenOrderDataResponse.ProductId, allianceDarenOrderDataResponse.ProductName, allianceDarenOrderDataResponse.ProductImg, allianceDarenOrderDataResponse.FlowPoint, allianceDarenOrderDataResponse.PickExtra, allianceDarenOrderDataResponse.MediaType, paySuccessTime, &settleTime)
 	} else {
-		inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(allianceDarenOrderDataResponse.ItemNum), uint64(allianceDarenOrderDataResponse.MediaId), commissionRate, float32(tool.Decimal(allianceDarenOrderDataResponse.TotalPayAmount/100, 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.PayGoodsAmount/100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.EstimatedCommission/100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.RealCommission/100), 2)), allianceDarenOrderResponse.ClientKey, allianceDarenOrderDataResponse.AuthorOpenId, "", allianceDarenOrderDataResponse.OrderId, allianceDarenOrderDataResponse.ProductId, allianceDarenOrderDataResponse.ProductName, allianceDarenOrderDataResponse.ProductImg, allianceDarenOrderDataResponse.FlowPoint, allianceDarenOrderDataResponse.PickExtra, allianceDarenOrderDataResponse.MediaType, paySuccessTime, nil)
+		inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(allianceDarenOrderDataResponse.ItemNum), uint64(allianceDarenOrderDataResponse.MediaId), commissionRate, float32(tool.Decimal(float64(allianceDarenOrderDataResponse.TotalPayAmount)/float64(100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.PayGoodsAmount)/float64(100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.EstimatedCommission)/float64(100), 2)), float32(tool.Decimal(float64(allianceDarenOrderDataResponse.RealCommission)/float64(100), 2)), allianceDarenOrderResponse.ClientKey, openId, "", allianceDarenOrderDataResponse.OrderId, allianceDarenOrderDataResponse.ProductId, allianceDarenOrderDataResponse.ProductName, allianceDarenOrderDataResponse.ProductImg, allianceDarenOrderDataResponse.FlowPoint, allianceDarenOrderDataResponse.PickExtra, allianceDarenOrderDataResponse.MediaType, paySuccessTime, nil)
 	}
 
 	inJinritemaiOrderInfo.SetCreateTime(ctx)
@@ -552,6 +721,16 @@ func (jouc *JinritemaiOrderUsecase) AsyncNotificationJinritemaiOrders(ctx contex
 		inTaskLog.SetCreateTime(ctx)
 
 		jouc.tlrepo.Save(ctx, inTaskLog)
+	}
+
+	if allianceDarenOrderDataResponse.FlowPoint == "SETTLE" {
+		if allianceDarenOrderDataResponse.RealCommission > 0 {
+			jouc.wucrepo.CreateOrder(ctx, tool.Decimal(float64(allianceDarenOrderDataResponse.TotalPayAmount)/float64(100), 2), tool.Decimal(float64(allianceDarenOrderDataResponse.RealCommission)/float64(100), 2), allianceDarenOrderResponse.ClientKey, openId, allianceDarenOrderDataResponse.OrderId, allianceDarenOrderDataResponse.FlowPoint, allianceDarenOrderDataResponse.PaySuccessTime)
+		}
+	} else {
+		if allianceDarenOrderDataResponse.EstimatedCommission > 0 {
+			jouc.wucrepo.CreateOrder(ctx, tool.Decimal(float64(allianceDarenOrderDataResponse.TotalPayAmount)/float64(100), 2), tool.Decimal(float64(allianceDarenOrderDataResponse.EstimatedCommission)/float64(100), 2), allianceDarenOrderResponse.ClientKey, openId, allianceDarenOrderDataResponse.OrderId, allianceDarenOrderDataResponse.FlowPoint, allianceDarenOrderDataResponse.PaySuccessTime)
+		}
 	}
 
 	return nil
@@ -659,9 +838,9 @@ func (jouc *JinritemaiOrderUsecase) listOrders(ctx context.Context, limiter *rat
 				if len(order.SettleTime) > 0 {
 					settleTime, _ := tool.StringToTime("2006-01-02 15:04:05", order.SettleTime)
 
-					inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(order.ItemNum), uint64(order.MediaId), commissionRate, float32(tool.Decimal(order.TotalPayAmount/100, 2)), float32(tool.Decimal(float64(order.PayGoodsAmount/100), 2)), float32(tool.Decimal(float64(order.EstimatedCommission/100), 2)), float32(tool.Decimal(float64(order.RealCommission/100), 2)), openDouyinToken.ClientKey, order.AuthorOpenId, openDouyinUserInfo.BuyinId, order.OrderId, order.ProductId, order.ProductName, order.ProductImg, order.FlowPoint, order.PickExtra, order.MediaType, paySuccessTime, &settleTime)
+					inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(order.ItemNum), uint64(order.MediaId), commissionRate, float32(tool.Decimal(float64(order.TotalPayAmount)/float64(100), 2)), float32(tool.Decimal(float64(order.PayGoodsAmount)/float64(100), 2)), float32(tool.Decimal(float64(order.EstimatedCommission)/float64(100), 2)), float32(tool.Decimal(float64(order.RealCommission)/float64(100), 2)), openDouyinToken.ClientKey, order.AuthorOpenId, openDouyinUserInfo.BuyinId, order.OrderId, order.ProductId, order.ProductName, order.ProductImg, order.FlowPoint, order.PickExtra, order.MediaType, paySuccessTime, &settleTime)
 				} else {
-					inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(order.ItemNum), uint64(order.MediaId), commissionRate, float32(tool.Decimal(order.TotalPayAmount/100, 2)), float32(tool.Decimal(float64(order.PayGoodsAmount/100), 2)), float32(tool.Decimal(float64(order.EstimatedCommission/100), 2)), float32(tool.Decimal(float64(order.RealCommission/100), 2)), openDouyinToken.ClientKey, order.AuthorOpenId, openDouyinUserInfo.BuyinId, order.OrderId, order.ProductId, order.ProductName, order.ProductImg, order.FlowPoint, order.PickExtra, order.MediaType, paySuccessTime, nil)
+					inJinritemaiOrderInfo = domain.NewJinritemaiOrderInfo(ctx, uint64(order.ItemNum), uint64(order.MediaId), commissionRate, float32(tool.Decimal(float64(order.TotalPayAmount)/float64(100), 2)), float32(tool.Decimal(float64(order.PayGoodsAmount)/float64(100), 2)), float32(tool.Decimal(float64(order.EstimatedCommission)/float64(100), 2)), float32(tool.Decimal(float64(order.RealCommission)/float64(100), 2)), openDouyinToken.ClientKey, order.AuthorOpenId, openDouyinUserInfo.BuyinId, order.OrderId, order.ProductId, order.ProductName, order.ProductImg, order.FlowPoint, order.PickExtra, order.MediaType, paySuccessTime, nil)
 				}
 
 				inJinritemaiOrderInfo.SetCreateTime(ctx)
@@ -746,4 +925,66 @@ func (jouc *JinritemaiOrderUsecase) Sync90DayJinritemaiOrder(ctx context.Context
 	}
 
 	sdjowg.Wait()
+}
+
+func (jouc *JinritemaiOrderUsecase) CompensateJinritemaiOrders(ctx context.Context) error {
+	openDouyinUserInfos, err := jouc.oduirepo.List(ctx, 0, 40)
+
+	if err != nil {
+		return DouyinOpenDouyinUserInfoListError
+	}
+
+	var wg sync.WaitGroup
+
+	limiter := rate.NewLimiter(0, 60)
+	limiter.SetLimit(rate.Limit(60))
+
+	for _, openDouyinUserInfo := range openDouyinUserInfos {
+		openDouyinToken, err := jouc.odtrepo.GetByClientKeyAndOpenId(ctx, openDouyinUserInfo.ClientKey, openDouyinUserInfo.OpenId)
+
+		if err != nil {
+			return DouyinOpenDouyinTokenNotFound
+		}
+
+		wg.Add(1)
+
+		go jouc.CompensateJinritemaiOrder(ctx, &wg, limiter, openDouyinToken, openDouyinUserInfo)
+	}
+
+	wg.Wait()
+
+	return nil
+}
+
+func (jouc *JinritemaiOrderUsecase) CompensateJinritemaiOrder(ctx context.Context, wg *sync.WaitGroup, limiter *rate.Limiter, openDouyinToken *domain.OpenDouyinToken, openDouyinUserInfo *domain.OpenDouyinUserInfo) {
+	day := time.Now().AddDate(0, 0, -2).Format("2006-01-02")
+
+	jouc.repo.SaveIndex(ctx)
+	jouc.SyncJinritemaiOrder(ctx, wg, limiter, day+" 00:00:00", day+" 23:59:59", openDouyinToken, openDouyinUserInfo)
+}
+
+func (jouc *JinritemaiOrderUsecase) OperationJinritemaiOrders(ctx context.Context) error {
+	total, err := jouc.joirepo.CountOperation(ctx)
+
+	if err != nil {
+		return DouyinJinritemaiOrderListError
+	}
+
+	totalPage := uint64(math.Ceil(float64(total) / float64(40000)))
+
+	var i uint64 = 0
+
+	for ; i < totalPage; i++ {
+		if jinritemaiOrders, err := jouc.joirepo.ListOperation(ctx, int(i), 40000); err == nil {
+			for _, jinritemaiOrder := range jinritemaiOrders {
+				if jinritemaiOrder.FlowPoint == "SETTLE" {
+					jouc.wucrepo.CreateOrder(ctx, tool.Decimal(float64(jinritemaiOrder.TotalPayAmount), 2), tool.Decimal(float64(jinritemaiOrder.RealCommission), 2), jinritemaiOrder.ClientKey, jinritemaiOrder.OpenId, jinritemaiOrder.OrderId, jinritemaiOrder.FlowPoint, tool.TimeToString("2006-01-02 15:04:05", jinritemaiOrder.PaySuccessTime))
+				} else {
+					jouc.wucrepo.CreateOrder(ctx, tool.Decimal(float64(jinritemaiOrder.TotalPayAmount), 2), tool.Decimal(float64(jinritemaiOrder.EstimatedCommission), 2), jinritemaiOrder.ClientKey, jinritemaiOrder.OpenId, jinritemaiOrder.OrderId, jinritemaiOrder.FlowPoint, tool.TimeToString("2006-01-02 15:04:05", jinritemaiOrder.PaySuccessTime))
+				}
+			}
+		}
+	}
+
+	return nil
 }

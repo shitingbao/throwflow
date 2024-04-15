@@ -1,7 +1,6 @@
 package oauth2
 
 import (
-	"fmt"
 	"github.com/go-resty/resty/v2"
 	"weixin/internal/pkg/mini"
 )
@@ -22,7 +21,7 @@ func GetAccessToken(appid, secret string) (*GetAccessTokenResponse, error) {
 	if err != nil {
 		return nil, mini.NewMiniError(err.Error())
 	}
-	fmt.Println(resp.String())
+
 	var getAccessTokenResponse GetAccessTokenResponse
 
 	if err := getAccessTokenResponse.Struct(resp.String()); err != nil {

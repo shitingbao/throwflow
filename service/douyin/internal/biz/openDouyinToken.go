@@ -4,7 +4,6 @@ import (
 	"context"
 	"douyin/internal/conf"
 	"douyin/internal/domain"
-	"douyin/internal/pkg/jinritemai/kol"
 	"douyin/internal/pkg/openDouyin/js"
 	"douyin/internal/pkg/openDouyin/oauth2"
 	"douyin/internal/pkg/openDouyin/user"
@@ -267,10 +266,6 @@ func (odtuc *OpenDouyinTokenUsecase) CreateOpenDouyinTokens(ctx context.Context,
 		return DouyinOpenDouyinTokenCreateError
 	}
 
-	if _, err := odtuc.wuodrepo.Get(ctx, stateParam.ClientKey, accessToken.Data.OpenId); err == nil {
-		return DouyinOpenDouyinTokenExist
-	}
-
 	userInfo, err := oauth2.GetUserInfo(accessToken.Data.AccessToken, accessToken.Data.OpenId)
 
 	if err != nil {
@@ -282,7 +277,7 @@ func (odtuc *OpenDouyinTokenUsecase) CreateOpenDouyinTokens(ctx context.Context,
 		return DouyinOpenDouyinTokenCreateError
 	}
 
-	buyinId, err := kol.GetBuyinId(accessToken.Data.AccessToken, accessToken.Data.OpenId)
+	/*buyinId, err := kol.GetBuyinId(accessToken.Data.AccessToken, accessToken.Data.OpenId)
 
 	if err != nil {
 		inOpenDouyinApiLog := domain.NewOpenDouyinApiLog(ctx, stateParam.ClientKey, "", "", err.Error())
@@ -291,7 +286,26 @@ func (odtuc *OpenDouyinTokenUsecase) CreateOpenDouyinTokens(ctx context.Context,
 		odtuc.odalrepo.Save(ctx, inOpenDouyinApiLog)
 
 		return DouyinOpenDouyinTokenCreateError
-	}
+	}*/
+
+	/*var fans uint64
+
+	if userFans, err := user.ListUserFans(accessToken.Data.AccessToken, accessToken.Data.OpenId); err == nil {
+		date, _ := tool.StringToTime("2006-01-02", "2006-01-02")
+
+		for _, userFan := range userFans.Data.ResultList {
+			if day, err := tool.StringToTime("2006-01-02", userFan.Date); err == nil {
+				if day.After(date) {
+					date = day
+					fans = uint64(userFan.TotalFans)
+				}
+			}
+		}
+	} else {
+		fmt.Println("####################################")
+		fmt.Println(err)
+		fmt.Println("####################################")
+	}*/
 
 	err = odtuc.tm.InTx(ctx, func(ctx context.Context) error {
 		var inOpenDouyinToken *domain.OpenDouyinToken
@@ -317,18 +331,22 @@ func (odtuc *OpenDouyinTokenUsecase) CreateOpenDouyinTokens(ctx context.Context,
 		}
 
 		var inOpenDouyinUserInfo *domain.OpenDouyinUserInfo
+		var openDouyinUserInfo *domain.OpenDouyinUserInfo
 
 		if inOpenDouyinUserInfo, err = odtuc.oduirepo.GetByClientKeyAndOpenId(ctx, stateParam.ClientKey, userInfo.Data.OpenId); err != nil {
-			inOpenDouyinUserInfo = domain.NewOpenDouyinUserInfo(ctx, stateParam.ClientKey, userInfo.Data.OpenId, userInfo.Data.UnionId, "", buyinId.Data.BuyinId, userInfo.Data.Nickname, userInfo.Data.Avatar, userInfo.Data.AvatarLarger, "", userInfo.Data.Country, userInfo.Data.Province, userInfo.Data.City, userInfo.Data.District, userInfo.Data.EAccountRole, "", userInfo.Data.Gender)
+			//inOpenDouyinUserInfo = domain.NewOpenDouyinUserInfo(ctx, stateParam.ClientKey, userInfo.Data.OpenId, userInfo.Data.UnionId, "", buyinId.Data.BuyinId, userInfo.Data.Nickname, userInfo.Data.Avatar, userInfo.Data.AvatarLarger, "", userInfo.Data.Country, userInfo.Data.Province, userInfo.Data.City, userInfo.Data.District, userInfo.Data.EAccountRole, "", userInfo.Data.Gender)
+			inOpenDouyinUserInfo = domain.NewOpenDouyinUserInfo(ctx, stateParam.ClientKey, userInfo.Data.OpenId, userInfo.Data.UnionId, "", "", userInfo.Data.Nickname, userInfo.Data.Avatar, userInfo.Data.AvatarLarger, "", userInfo.Data.Country, userInfo.Data.Province, userInfo.Data.City, userInfo.Data.District, userInfo.Data.EAccountRole, "", userInfo.Data.Gender)
 			inOpenDouyinUserInfo.SetCreateTime(ctx)
 			inOpenDouyinUserInfo.SetUpdateTime(ctx)
 
-			if _, err := odtuc.oduirepo.Save(ctx, inOpenDouyinUserInfo); err != nil {
+			openDouyinUserInfo, err = odtuc.oduirepo.Save(ctx, inOpenDouyinUserInfo)
+
+			if err != nil {
 				return err
 			}
 		} else {
 			inOpenDouyinUserInfo.SetUnionId(ctx, userInfo.Data.UnionId)
-			inOpenDouyinUserInfo.SetBuyinId(ctx, buyinId.Data.BuyinId)
+			//inOpenDouyinUserInfo.SetBuyinId(ctx, buyinId.Data.BuyinId)
 			inOpenDouyinUserInfo.SetNickname(ctx, userInfo.Data.Nickname)
 			inOpenDouyinUserInfo.SetAvatar(ctx, userInfo.Data.Avatar)
 			inOpenDouyinUserInfo.SetAvatarLarger(ctx, userInfo.Data.AvatarLarger)
@@ -341,12 +359,14 @@ func (odtuc *OpenDouyinTokenUsecase) CreateOpenDouyinTokens(ctx context.Context,
 			inOpenDouyinUserInfo.SetGender(ctx, userInfo.Data.Gender)
 			inOpenDouyinUserInfo.SetUpdateTime(ctx)
 
-			if _, err := odtuc.oduirepo.Update(ctx, inOpenDouyinUserInfo); err != nil {
+			openDouyinUserInfo, err = odtuc.oduirepo.Update(ctx, inOpenDouyinUserInfo)
+
+			if err != nil {
 				return err
 			}
 		}
 
-		if _, err := odtuc.wuodrepo.Update(ctx, weixinUser.Data.UserId, stateParam.ClientKey, userInfo.Data.OpenId, userInfo.Data.Nickname, userInfo.Data.Avatar, userInfo.Data.AvatarLarger); err != nil {
+		if _, err := odtuc.wuodrepo.Update(ctx, weixinUser.Data.UserId, openDouyinUserInfo.AwemeId, stateParam.ClientKey, userInfo.Data.OpenId, openDouyinUserInfo.AccountId, userInfo.Data.Nickname, userInfo.Data.Avatar, userInfo.Data.AvatarLarger, openDouyinUserInfo.Area); err != nil {
 			return err
 		}
 

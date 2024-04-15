@@ -56,13 +56,13 @@ func NewUserCouponRepo(data *Data, logger log.Logger) biz.UserCouponRepo {
 	}
 }
 
-func (ucr *userCouponRepo) Get(ctx context.Context, userId uint64, level, userCouponStatus string) (*domain.UserCoupon, error) {
+func (ucr *userCouponRepo) Get(ctx context.Context, userId uint64, level uint8, userCouponStatus string) (*domain.UserCoupon, error) {
 	userCoupon := &UserCoupon{}
 
 	db := ucr.data.db.WithContext(ctx).
 		Where("user_id = ?", userId)
 
-	if len(level) > 0 {
+	if level > 0 {
 		db = db.Where("level = ?", level)
 	}
 
@@ -77,7 +77,7 @@ func (ucr *userCouponRepo) Get(ctx context.Context, userId uint64, level, userCo
 	return userCoupon.ToDomain(ctx), nil
 }
 
-func (ucr *userCouponRepo) GetByPhone(ctx context.Context, organizationId uint64, phone, level, userCouponStatus string) (*domain.UserCoupon, error) {
+func (ucr *userCouponRepo) GetByPhone(ctx context.Context, organizationId uint64, level uint8, phone, userCouponStatus string) (*domain.UserCoupon, error) {
 	userCoupon := &UserCoupon{}
 
 	db := ucr.data.db.WithContext(ctx).
@@ -87,7 +87,7 @@ func (ucr *userCouponRepo) GetByPhone(ctx context.Context, organizationId uint64
 		db = db.Where("organization_id = ?", organizationId)
 	}
 
-	if len(level) > 0 {
+	if level > 0 {
 		db = db.Where("level = ?", level)
 	}
 
@@ -95,14 +95,14 @@ func (ucr *userCouponRepo) GetByPhone(ctx context.Context, organizationId uint64
 		db = db.Where("user_coupon_status = ?", userCouponStatus)
 	}
 
-	if result := db.Order("update_time ASC").First(userCoupon); result.Error != nil {
+	if result := db.Order("level desc,update_time ASC").First(userCoupon); result.Error != nil {
 		return nil, result.Error
 	}
 
 	return userCoupon.ToDomain(ctx), nil
 }
 
-func (ucr *userCouponRepo) List(ctx context.Context, pageNum, pageSize int, userId, organizationId uint64, userCouponStatus string) ([]*domain.UserCoupon, error) {
+func (ucr *userCouponRepo) List(ctx context.Context, pageNum, pageSize int, userId, organizationId uint64, level uint8, userCouponStatus string) ([]*domain.UserCoupon, error) {
 	var userCoupons []UserCoupon
 	list := make([]*domain.UserCoupon, 0)
 
@@ -114,6 +114,10 @@ func (ucr *userCouponRepo) List(ctx context.Context, pageNum, pageSize int, user
 
 	if organizationId > 0 {
 		db = db.Where("organization_id = ?", organizationId)
+	}
+
+	if level > 0 {
+		db = db.Where("level = ?", level)
 	}
 
 	if len(userCouponStatus) > 0 {
@@ -140,12 +144,16 @@ func (ucr *userCouponRepo) List(ctx context.Context, pageNum, pageSize int, user
 	return list, nil
 }
 
-func (ucr *userCouponRepo) Count(ctx context.Context, userId, organizationId uint64, userCouponStatus string) (int64, error) {
+func (ucr *userCouponRepo) Count(ctx context.Context, userId, organizationId uint64, level uint8, userCouponStatus string) (int64, error) {
 	var count int64
 
 	db := ucr.data.db.WithContext(ctx).
 		Where("user_id = ?", userId).
 		Where("organization_id = ?", organizationId)
+
+	if level > 0 {
+		db = db.Where("level = ?", level)
+	}
 
 	if len(userCouponStatus) > 0 {
 		db = db.Where("user_coupon_status = ?", userCouponStatus)

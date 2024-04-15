@@ -11,6 +11,9 @@ import (
 )
 
 func (ds *DouyinService) ListOpenDouyinVideos(ctx context.Context, in *v1.ListOpenDouyinVideosRequest) (*v1.ListOpenDouyinVideosReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	openDouyinVideos, err := ds.odvuc.ListOpenDouyinVideos(ctx, in.PageNum, in.PageSize, uint8(in.IsExistProduct), in.VideoIds, in.Keyword)
 
 	if err != nil {
@@ -82,6 +85,9 @@ func (ds *DouyinService) ListProductOpenDouyinVideos(ctx context.Context, in *v1
 }
 
 func (ds *DouyinService) ListVideoIdOpenDouyinVideos(ctx context.Context, in *v1.ListVideoIdOpenDouyinVideosRequest) (*v1.ListVideoIdOpenDouyinVideosReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+	defer cancel()
+
 	openDouyinVideos, err := ds.odvuc.ListVideoIdOpenDouyinVideos(ctx, in.PageNum, in.PageSize)
 
 	if err != nil {
@@ -139,31 +145,35 @@ func (ds *DouyinService) ListVideoIdOpenDouyinVideoByClientKeyAndOpenIds(ctx con
 	}, nil
 }
 
-func (ds *DouyinService) UpdateIsUpdateCoverAndProductIdOpenDouyinVideos(ctx context.Context, in *v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosRequest) (*v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply, error) {
-	if err := ds.odvuc.UpdateIsUpdateCoverAndProductIdOpenDouyinVideos(ctx, uint8(in.VideoStatus), in.VideoId, in.Cover, in.ProductId); err != nil {
+func (ds *DouyinService) ListVideoIdOpenDouyinVideoByProductIds(ctx context.Context, in *v1.ListVideoIdOpenDouyinVideoByProductIdsRequest) (*v1.ListVideoIdOpenDouyinVideoByProductIdsReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+	defer cancel()
+
+	openDouyinVideos, err := ds.odvuc.ListVideoIdOpenDouyinVideoByProductIds(ctx, in.PageNum, in.PageSize)
+
+	if err != nil {
 		return nil, err
 	}
 
-	return &v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply{
-		Code: 200,
-		Data: &v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply_Data{},
-	}, nil
-}
+	list := make([]*v1.ListVideoIdOpenDouyinVideoByProductIdsReply_OpenDouyinVideo, 0)
 
-func (ds *DouyinService) SyncOpenDouyinVideos(ctx context.Context, in *empty.Empty) (*v1.SyncOpenDouyinVideosReply, error) {
-	ds.log.Infof("同步精选联盟达人视频数据, 开始时间 %s \n", time.Now())
-
-	ctx = context.Background()
-
-	if err := ds.odvuc.SyncOpenDouyinVideos(ctx); err != nil {
-		return nil, err
+	for _, openDouyinVideo := range openDouyinVideos.List {
+		list = append(list, &v1.ListVideoIdOpenDouyinVideoByProductIdsReply_OpenDouyinVideo{
+			VideoId: openDouyinVideo.VideoId,
+		})
 	}
 
-	ds.log.Infof("同步精选联盟达人视频数据, 结束时间 %s \n", time.Now())
+	totalPage := uint64(math.Ceil(float64(openDouyinVideos.Total) / float64(openDouyinVideos.PageSize)))
 
-	return &v1.SyncOpenDouyinVideosReply{
+	return &v1.ListVideoIdOpenDouyinVideoByProductIdsReply{
 		Code: 200,
-		Data: &v1.SyncOpenDouyinVideosReply_Data{},
+		Data: &v1.ListVideoIdOpenDouyinVideoByProductIdsReply_Data{
+			PageNum:   openDouyinVideos.PageNum,
+			PageSize:  openDouyinVideos.PageSize,
+			Total:     openDouyinVideos.Total,
+			TotalPage: totalPage,
+			List:      list,
+		},
 	}, nil
 }
 
@@ -221,5 +231,33 @@ func (ds *DouyinService) ListVideoTokensOpenDouyinVideos(ctx context.Context, in
 		Data: &v1.ListVideoTokensOpenDouyinVideosReply_Data{
 			List: list,
 		},
+	}, nil
+}
+
+func (ds *DouyinService) UpdateIsUpdateCoverAndProductIdOpenDouyinVideos(ctx context.Context, in *v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosRequest) (*v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply, error) {
+	if err := ds.odvuc.UpdateIsUpdateCoverAndProductIdOpenDouyinVideos(ctx, uint8(in.VideoStatus), in.VideoId, in.Cover, in.ProductId); err != nil {
+		return nil, err
+	}
+
+	return &v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply{
+		Code: 200,
+		Data: &v1.UpdateIsUpdateCoverAndProductIdOpenDouyinVideosReply_Data{},
+	}, nil
+}
+
+func (ds *DouyinService) SyncOpenDouyinVideos(ctx context.Context, in *empty.Empty) (*v1.SyncOpenDouyinVideosReply, error) {
+	ds.log.Infof("同步精选联盟达人视频数据, 开始时间 %s \n", time.Now())
+
+	ctx = context.Background()
+
+	if err := ds.odvuc.SyncOpenDouyinVideos(ctx); err != nil {
+		return nil, err
+	}
+
+	ds.log.Infof("同步精选联盟达人视频数据, 结束时间 %s \n", time.Now())
+
+	return &v1.SyncOpenDouyinVideosReply{
+		Code: 200,
+		Data: &v1.SyncOpenDouyinVideosReply_Data{},
 	}, nil
 }
