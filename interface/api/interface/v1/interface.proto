@@ -997,7 +997,7 @@ service Interface {
   }
 
   // 种草任务[种草任务明细列表]
-  rpc GetByProductOutId(GetByProductOutIdRequest)returns(GetByProductOutIdReply) {
+  rpc GetCompanyTaskByProductOutId(GetCompanyTaskByProductOutIdRequest)returns(GetCompanyTaskByProductOutIdReply) {
     option (google.api.http) = {
       get: "/mini/v1/task",
     };
@@ -3657,6 +3657,7 @@ message CreateCompanyTaskRequest {
   double price = 4 [(validate.rules).double.gt = 0.00];
   uint64 quota = 5 [(validate.rules).uint64.gt = 0];
   uint32 isGoodReviews = 6 [(validate.rules).uint32.gte = 0];
+  string releaseTime = 7 [(validate.rules).string = {min_len: 0}];
 }
 
 message CreateCompanyTaskReply{
@@ -3673,6 +3674,7 @@ message CreateCompanyTaskReply{
     uint32 isGoodReviews =10;
     uint64 claimQuota = 11;
     uint64 successQuota = 12;
+    string releaseTime = 13;
   }
   
   uint32 code = 1;
@@ -5034,12 +5036,12 @@ message CreateMiniUserBalancesReply {
   Data data = 2;
 }
 
-message GetByProductOutIdRequest{
+message GetCompanyTaskByProductOutIdRequest{
   uint64 productOutId = 1 [(validate.rules).uint64.gt = 0];;
   uint64 userId = 2 [(validate.rules).uint64.gt = 0];;
 }
 
-message GetByProductOutIdReply{
+message GetCompanyTaskByProductOutIdReply{
   message Data{
     uint64 id = 1;
     uint64 productOutId = 2;
@@ -5084,10 +5086,11 @@ message ListCompanyTaskReply{
     uint32 isTop = 7;
     uint32 isDel =8;
     string createTime = 9;
-    CompanyProduct companyProduct = 10;
+    string releaseTime = 10;
     uint32 isGoodReviews = 11;
     uint64 claimQuota = 12;
     uint64 successQuota = 13;
+    CompanyProduct companyProduct = 14;
   }
 
   message Data {

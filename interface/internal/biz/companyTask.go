@@ -9,11 +9,11 @@ import (
 )
 
 type CompanyTaskRepo interface {
-	GetByProductOutId(context.Context, uint64, uint64) (*v1.GetByProductOutIdReply, error)
-	ListCompanyTask(context.Context, uint32, int32, uint64, uint64, string) (*v1.ListCompanyTaskReply, error)
+	GetCompanyTaskByProductOutId(context.Context, uint64, uint64) (*v1.GetCompanyTaskByProductOutIdReply, error)
+	ListCompanyTask(context.Context, uint32, int32, uint64, uint64, string, string) (*v1.ListCompanyTaskReply, error)
 	ListCompanyTaskAccountRelation(context.Context, uint64, uint64, uint64, uint64, int32, string, string, string) (*v1.ListCompanyTaskAccountRelationReply, error)
 	ListCompanyTaskDetail(context.Context, uint64, uint64, uint64, string) (*v1.ListCompanyTaskDetailReply, error)
-	CreateCompanyTask(context.Context, uint64, uint64, uint64, uint64, uint32, float64) (*v1.CreateCompanyTaskReply, error)
+	CreateCompanyTask(context.Context, uint64, uint64, uint64, uint64, uint32, float64, string) (*v1.CreateCompanyTaskReply, error)
 	CreateCompanyTaskAccountRelation(context.Context, uint64, uint64, uint64) (*v1.CreateCompanyTaskAccountRelationReply, error)
 	UpdateCompanyTaskQuota(context.Context, uint64, uint64) (*v1.UpdateCompanyTaskReply, error)
 	UpdateCompanyTaskIsTop(context.Context, uint64, uint32) (*v1.UpdateCompanyTaskReply, error)
@@ -32,12 +32,12 @@ func NewCompanyTaskUsecase(repo CompanyTaskRepo, conf *conf.Data, logger log.Log
 	return &CompanyTaskUsecase{repo: repo, conf: conf, log: log.NewHelper(logger)}
 }
 
-func (cuc *CompanyTaskUsecase) GetByProductOutId(ctx context.Context, productOutId, userId uint64) (*v1.GetByProductOutIdReply, error) {
-	return cuc.repo.GetByProductOutId(ctx, productOutId, userId)
+func (cuc *CompanyTaskUsecase) GetCompanyTaskByProductOutId(ctx context.Context, productOutId, userId uint64) (*v1.GetCompanyTaskByProductOutIdReply, error) {
+	return cuc.repo.GetCompanyTaskByProductOutId(ctx, productOutId, userId)
 }
 
-func (cuc *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isTop uint32, isDel int32, pageNum, pageSize uint64, keyword string) (*v1.ListCompanyTaskReply, error) {
-	return cuc.repo.ListCompanyTask(ctx, isTop, isDel, pageNum, pageSize, keyword)
+func (cuc *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isTop uint32, isDel int32, pageNum, pageSize uint64, keyword, releaseTime string) (*v1.ListCompanyTaskReply, error) {
+	return cuc.repo.ListCompanyTask(ctx, isTop, isDel, pageNum, pageSize, keyword, releaseTime)
 }
 
 func (cuc *CompanyTaskUsecase) ListCompanyTaskAccountRelation(ctx context.Context, pageNum uint64, pageSize uint64, companyTaskId uint64, userId uint64, status int32, expireTime string, expiredTime, productName string) (*v1.ListCompanyTaskAccountRelationReply, error) {
@@ -49,8 +49,8 @@ func (cuc *CompanyTaskUsecase) ListCompanyTaskDetail(ctx context.Context,
 	return cuc.repo.ListCompanyTaskDetail(ctx, pageNum, pageSize, taskId, nickname)
 }
 
-func (cuc *CompanyTaskUsecase) CreateCompanyTask(ctx context.Context, productId, expireTime, playNum, quota uint64, isGoodReviews uint32, price float64) (*v1.CreateCompanyTaskReply, error) {
-	return cuc.repo.CreateCompanyTask(ctx, productId, expireTime, playNum, quota, isGoodReviews, price)
+func (cuc *CompanyTaskUsecase) CreateCompanyTask(ctx context.Context, productId, expireTime, playNum, quota uint64, isGoodReviews uint32, price float64, releaseTime string) (*v1.CreateCompanyTaskReply, error) {
+	return cuc.repo.CreateCompanyTask(ctx, productId, expireTime, playNum, quota, isGoodReviews, price, releaseTime)
 }
 
 func (cuc *CompanyTaskUsecase) CreateCompanyTaskAccountRelation(ctx context.Context, companyTaskId, productOutId, userId uint64) (*v1.CreateCompanyTaskAccountRelationReply, error) {

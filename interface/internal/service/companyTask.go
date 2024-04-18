@@ -3,22 +3,24 @@ package service
 import (
 	"context"
 	v1 "interface/api/interface/v1"
+	"interface/internal/pkg/tool"
+	"time"
 )
 
-func (is *InterfaceService) GetByProductOutId(ctx context.Context, in *v1.GetByProductOutIdRequest) (*v1.GetByProductOutIdReply, error) {
+func (is *InterfaceService) GetCompanyTaskByProductOutId(ctx context.Context, in *v1.GetCompanyTaskByProductOutIdRequest) (*v1.GetCompanyTaskByProductOutIdReply, error) {
 	if _, err := is.verifyMiniUserLogin(ctx); err != nil {
 		return nil, err
 	}
 
-	task, err := is.ctuc.GetByProductOutId(ctx, in.ProductOutId, in.UserId)
+	task, err := is.ctuc.GetCompanyTaskByProductOutId(ctx, in.ProductOutId, in.UserId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &v1.GetByProductOutIdReply{
+	return &v1.GetCompanyTaskByProductOutIdReply{
 		Code: 200,
-		Data: &v1.GetByProductOutIdReply_Data{
+		Data: &v1.GetCompanyTaskByProductOutIdReply_Data{
 			Id:            task.Data.Id,
 			ProductOutId:  task.Data.ProductOutId,
 			ExpireTime:    task.Data.ExpireTime,
@@ -41,7 +43,7 @@ func (is *InterfaceService) ListCompanyTask(ctx context.Context, in *v1.ListComp
 		return nil, err
 	}
 
-	res, err := is.ctuc.ListCompanyTask(ctx, 0, -1, in.PageNum, in.PageSize, in.Keyword)
+	res, err := is.ctuc.ListCompanyTask(ctx, 0, -1, in.PageNum, in.PageSize, in.Keyword, "")
 
 	if err != nil {
 		return nil, err
@@ -82,6 +84,7 @@ func (is *InterfaceService) ListCompanyTask(ctx context.Context, in *v1.ListComp
 			CreateTime:     v.CreateTime,
 			CompanyProduct: companyProduct,
 			IsGoodReviews:  v.IsGoodReviews,
+			ReleaseTime:    v.ReleaseTime,
 		})
 	}
 
@@ -89,7 +92,7 @@ func (is *InterfaceService) ListCompanyTask(ctx context.Context, in *v1.ListComp
 }
 
 func (is *InterfaceService) ListCompanyTaskUsable(ctx context.Context, in *v1.ListCompanyTaskUsableRequest) (*v1.ListCompanyTaskReply, error) {
-	res, err := is.ctuc.ListCompanyTask(ctx, 1, 0, in.PageNum, in.PageSize, "")
+	res, err := is.ctuc.ListCompanyTask(ctx, 1, 0, in.PageNum, in.PageSize, "", tool.TimeToString("2006-01-02 15:04:05", time.Now()))
 
 	if err != nil {
 		return nil, err
@@ -130,6 +133,7 @@ func (is *InterfaceService) ListCompanyTaskUsable(ctx context.Context, in *v1.Li
 			CreateTime:     v.CreateTime,
 			CompanyProduct: companyProduct,
 			IsGoodReviews:  v.IsGoodReviews,
+			ReleaseTime:    v.ReleaseTime,
 		})
 	}
 
@@ -314,7 +318,7 @@ func (is *InterfaceService) CreateCompanyTask(ctx context.Context, in *v1.Create
 		return nil, err
 	}
 
-	task, err := is.ctuc.CreateCompanyTask(ctx, in.ProductOutId, in.ExpireTime, in.PlayNum, in.Quota, in.IsGoodReviews, in.Price)
+	task, err := is.ctuc.CreateCompanyTask(ctx, in.ProductOutId, in.ExpireTime, in.PlayNum, in.Quota, in.IsGoodReviews, in.Price, in.ReleaseTime)
 
 	if err != nil {
 		return nil, err
@@ -335,6 +339,7 @@ func (is *InterfaceService) CreateCompanyTask(ctx context.Context, in *v1.Create
 			IsDel:         task.Data.IsDel,
 			CreateTime:    task.Data.CreateTime,
 			IsGoodReviews: task.Data.IsGoodReviews,
+			ReleaseTime:   task.Data.ReleaseTime,
 		},
 	}, nil
 }

@@ -20,20 +20,21 @@ func NewCompanyTaskRepo(data *Data, logger log.Logger) biz.CompanyTaskRepo {
 	}
 }
 
-func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId, userId uint64) (*v1.GetByProductOutIdReply, error) {
-	return ctr.data.companyuc.GetByProductOutId(ctx, &v1.GetByProductOutIdRequest{
+func (ctr *companyTaskRepo) GetCompanyTaskByProductOutId(ctx context.Context, productOutId, userId uint64) (*v1.GetCompanyTaskByProductOutIdReply, error) {
+	return ctr.data.companyuc.GetCompanyTaskByProductOutId(ctx, &v1.GetCompanyTaskByProductOutIdRequest{
 		ProductOutId: productOutId,
 		UserId:       userId,
 	})
 }
 
-func (ctr *companyTaskRepo) ListCompanyTask(ctx context.Context, isTop uint32, isDel int32, pageNum, pageSize uint64, keyword string) (*v1.ListCompanyTaskReply, error) {
+func (ctr *companyTaskRepo) ListCompanyTask(ctx context.Context, isTop uint32, isDel int32, pageNum, pageSize uint64, keyword, releaseTime string) (*v1.ListCompanyTaskReply, error) {
 	return ctr.data.companyuc.ListCompanyTask(ctx, &v1.ListCompanyTaskRequest{
-		PageNum:  pageNum,
-		PageSize: pageSize,
-		Keyword:  keyword,
-		IsTop:    isTop,
-		IsDel:    isDel,
+		PageNum:     pageNum,
+		PageSize:    pageSize,
+		Keyword:     keyword,
+		IsTop:       isTop,
+		IsDel:       isDel,
+		ReleaseTime: releaseTime,
 	})
 }
 
@@ -61,7 +62,7 @@ func (ctr *companyTaskRepo) ListCompanyTaskDetail(ctx context.Context,
 	})
 }
 
-func (ctr *companyTaskRepo) CreateCompanyTask(ctx context.Context, productOutId, expireTime, playNum, quota uint64, isGoodReviews uint32, price float64) (*v1.CreateCompanyTaskReply, error) {
+func (ctr *companyTaskRepo) CreateCompanyTask(ctx context.Context, productOutId, expireTime, playNum, quota uint64, isGoodReviews uint32, price float64, releaseTime string) (*v1.CreateCompanyTaskReply, error) {
 	return ctr.data.companyuc.CreateCompanyTask(ctx, &v1.CreateCompanyTaskRequest{
 		ProductOutId:  productOutId,
 		ExpireTime:    expireTime,
@@ -69,6 +70,7 @@ func (ctr *companyTaskRepo) CreateCompanyTask(ctx context.Context, productOutId,
 		Price:         price,
 		Quota:         quota,
 		IsGoodReviews: isGoodReviews,
+		ReleaseTime:   releaseTime,
 	})
 }
 
