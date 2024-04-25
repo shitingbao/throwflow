@@ -106,6 +106,7 @@ service Weixin {
   rpc ListCourseRoot(ListCourseRootRequest) returns (ListCourseRootReply){}
   rpc ListCourseVideo(ListCourseVideoRequest) returns (ListCourseVideoReply){}
   rpc UpdateCourseUser(UpdateCourseUserRequest) returns (UpdateCourseUserReply){}
+  rpc OperationUserOrders (google.protobuf.Empty) returns (OperationUserOrdersReply) {}
   
   rpc SyncQrCodeUserOrganizationRelations (google.protobuf.Empty) returns (SyncQrCodeUserOrganizationRelationsReply) {}
 }
@@ -1077,10 +1078,11 @@ message CreateOrderUserCommissionsReply {
 message CreateCostOrderUserCommissionsRequest {
   uint64 userId = 1 [(validate.rules).uint64.gt = 0];
   string orderId = 2 [(validate.rules).string ={min_len: 1}];
-  string flowPoint = 3 [(validate.rules).string ={min_len: 1}];
-  string paySuccessTime = 4 [(validate.rules).string ={min_len: 1}];
-  double TotalPayAmount = 5 [(validate.rules).double.gte = 0.00];
-  double commission = 6 [(validate.rules).double.gte = 0.00];
+  string productId = 3 [(validate.rules).string ={min_len: 1}];
+  string flowPoint = 4 [(validate.rules).string ={min_len: 1}];
+  string paySuccessTime = 5 [(validate.rules).string ={min_len: 1}];
+  double TotalPayAmount = 6 [(validate.rules).double.gte = 0.00];
+  double commission = 7 [(validate.rules).double.gte = 0.00];
 }
 
 message CreateCostOrderUserCommissionsReply {
@@ -1543,6 +1545,14 @@ message UpdateCourseUserRequest {
 }
 
 message UpdateCourseUserReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message OperationUserOrdersReply {
   message Data {
   }
 
