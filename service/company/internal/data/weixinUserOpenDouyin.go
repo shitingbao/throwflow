@@ -29,3 +29,12 @@ func (wur *weixinUserOpenDouyinRepo) ListByClientKeyAndOpenIds(ctx context.Conte
 		Keyword:             keyword,
 	})
 }
+
+func (ctr *weixinUserOpenDouyinRepo) ListOpenDouyinUsers(ctx context.Context, userId, pageNum, pageSize uint64, keyword string) (*v1.ListOpenDouyinUsersReply, error) {
+	return ctr.data.weixinuc.ListOpenDouyinUsers(ctx, &v1.ListOpenDouyinUsersRequest{
+		PageNum:  pageNum,
+		PageSize: pageSize,
+		UserId:   userId,
+		Keyword:  keyword,
+	})
+}

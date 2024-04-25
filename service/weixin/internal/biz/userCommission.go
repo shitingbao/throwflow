@@ -30,6 +30,7 @@ type UserCommissionRepo interface {
 	ListTask(context.Context, string, string) ([]*domain.UserCommission, error)
 	ListBalance(context.Context, int, int, uint64, uint8, string) ([]*domain.UserCommission, error)
 	ListCashable(context.Context) ([]*domain.UserCommission, error)
+	ListOperation(context.Context) ([]*domain.UserCommission, error)
 	Count(context.Context, uint64, uint64, []uint64, uint8, string, string, string) (int64, error)
 	CountBalance(context.Context, uint64, uint8, string) (int64, error)
 	Statistics(context.Context, uint64, uint8, uint8, []uint8, []uint8) (*domain.UserCommission, error)
@@ -51,6 +52,7 @@ type UserCommissionUsecase struct {
 	ublrepo  UserBalanceLogRepo
 	corepo   CompanyOrganizationRepo
 	ctrepo   CompanyTaskRepo
+	cprepo   CompanyProductRepo
 	jorepo   JinritemaiOrderRepo
 	dorepo   DoukeOrderRepo
 	darepo   DjAwemeRepo
@@ -62,8 +64,8 @@ type UserCommissionUsecase struct {
 	log      *log.Helper
 }
 
-func NewUserCommissionUsecase(repo UserCommissionRepo, urepo UserRepo, uorerepo UserOrganizationRelationRepo, uirrepo UserIntegralRelationRepo, uodrepo UserOpenDouyinRepo, uorrepo UserOrderRepo, ucrepo UserCouponRepo, usrrepo UserScanRecordRepo, ublrepo UserBalanceLogRepo, corepo CompanyOrganizationRepo, ctrepo CompanyTaskRepo, jorepo JinritemaiOrderRepo, dorepo DoukeOrderRepo, darepo DjAwemeRepo, tlrepo TaskLogRepo, tm Transaction, conf *conf.Data, cconf *conf.Company, oconf *conf.Organization, logger log.Logger) *UserCommissionUsecase {
-	return &UserCommissionUsecase{repo: repo, urepo: urepo, uorerepo: uorerepo, uirrepo: uirrepo, uodrepo: uodrepo, uorrepo: uorrepo, ucrepo: ucrepo, usrrepo: usrrepo, ublrepo: ublrepo, corepo: corepo, ctrepo: ctrepo, jorepo: jorepo, dorepo: dorepo, darepo: darepo, tlrepo: tlrepo, tm: tm, conf: conf, cconf: cconf, oconf: oconf, log: log.NewHelper(logger)}
+func NewUserCommissionUsecase(repo UserCommissionRepo, urepo UserRepo, uorerepo UserOrganizationRelationRepo, uirrepo UserIntegralRelationRepo, uodrepo UserOpenDouyinRepo, uorrepo UserOrderRepo, ucrepo UserCouponRepo, usrrepo UserScanRecordRepo, ublrepo UserBalanceLogRepo, corepo CompanyOrganizationRepo, ctrepo CompanyTaskRepo, cprepo CompanyProductRepo, jorepo JinritemaiOrderRepo, dorepo DoukeOrderRepo, darepo DjAwemeRepo, tlrepo TaskLogRepo, tm Transaction, conf *conf.Data, cconf *conf.Company, oconf *conf.Organization, logger log.Logger) *UserCommissionUsecase {
+	return &UserCommissionUsecase{repo: repo, urepo: urepo, uorerepo: uorerepo, uirrepo: uirrepo, uodrepo: uodrepo, uorrepo: uorrepo, ucrepo: ucrepo, usrrepo: usrrepo, ublrepo: ublrepo, corepo: corepo, ctrepo: ctrepo, cprepo: cprepo, jorepo: jorepo, dorepo: dorepo, darepo: darepo, tlrepo: tlrepo, tm: tm, conf: conf, cconf: cconf, oconf: oconf, log: log.NewHelper(logger)}
 }
 
 func (ucuc *UserCommissionUsecase) ListUserCommissions(ctx context.Context, pageNum, pageSize, userId, organizationId uint64, commissionType uint8, month, keyword string) (*domain.UserCommissionList, error) {
@@ -433,6 +435,16 @@ func (ucuc *UserCommissionUsecase) CreateOrderUserCommissions(ctx context.Contex
 		return WeixinUserCommissionOrderCreateError
 	}
 
+	tendTime, err := tool.StringToTime("2006-01-02 15:04:05", "2024-04-01 00:00:00")
+
+	if err != nil {
+		return WeixinUserCommissionOrderCreateError
+	}
+
+	if err != nil {
+		return WeixinUserCommissionOrderCreateError
+	}
+
 	if flowPoint == "REFUND" {
 		err := ucuc.repo.DeleteByRelevanceId(ctx, relevanceId, 2)
 
@@ -454,8 +466,6 @@ func (ucuc *UserCommissionUsecase) CreateOrderUserCommissions(ctx context.Contex
 	if err != nil {
 		return WeixinUserCommissionOrderCreateError
 	}
-
-	createTime, _ := tool.StringToTime("2006-01-02 15:04:05", paySuccessTime)
 
 	if len(userCommissions) == 0 {
 		var commissionStatus uint8
@@ -495,7 +505,13 @@ func (ucuc *UserCommissionUsecase) CreateOrderUserCommissions(ctx context.Contex
 				if bindStartTime, err := tool.StringToTime("2006-01-02", djAweme.BindStartTime); err == nil {
 					if ratio > 0.00 && bindStartTime.Add(24*time.Hour).Before(tpaySuccessTime) {
 						err = ucuc.tm.InTx(ctx, func(ctx context.Context) error {
-							return ucuc.getOrderComission(ctx, relevanceId, commissionStatus, totalPayAmount, commission, ratio, createTime, userOrganizationRelation, companyOrganization)
+							if tpaySuccessTime.Before(tendTime) {
+								if ratio == 70 {
+									ratio = 90
+								}
+							}
+
+							return ucuc.getOrderComission(ctx, relevanceId, commissionStatus, totalPayAmount, commission, ratio, tpaySuccessTime, userOrganizationRelation, companyOrganization)
 						})
 
 						if err != nil {
@@ -596,7 +612,10 @@ func (ucuc *UserCommissionUsecase) getOrderComission(ctx context.Context, releva
 		commissionPool := commission * 100 / ratio * companyOrganization.Data.OrganizationColonelCommission.OrderRatio / 100
 
 		var realCommission float64
-
+		fmt.Println("#################3")
+		fmt.Println(organizationParentUser)
+		fmt.Println(organizationTutorUser)
+		fmt.Println("#################3")
 		if organizationParentUser.Level == 2 {
 			realCommission = commissionPool * companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterOrderCommissionRule / 100
 		} else if organizationParentUser.Level == 3 {
@@ -648,7 +667,7 @@ func (ucuc *UserCommissionUsecase) getOrderComission(ctx context.Context, releva
 	return nil
 }
 
-func (ucuc *UserCommissionUsecase) CreateCostOrderUserCommissions(ctx context.Context, userId uint64, totalPayAmount, commission float64, orderId, flowPoint, paySuccessTime string) error {
+func (ucuc *UserCommissionUsecase) CreateCostOrderUserCommissions(ctx context.Context, userId uint64, totalPayAmount, commission float64, orderId, productId, flowPoint, paySuccessTime string) error {
 	relevanceId, err := strconv.ParseUint(orderId, 10, 64)
 
 	if err != nil {
@@ -777,8 +796,8 @@ func (ucuc *UserCommissionUsecase) CreateCostOrderUserCommissions(ctx context.Co
 			err = ucuc.tm.InTx(ctx, func(ctx context.Context) error {
 				for _, inUserCommission := range userCommissions {
 					if inUserCommission.CommissionType == 3 {
-						commissionPool := commission * 0.75
-						realCommission := commission * 0.75
+						commissionPool := commission * 0.6
+						realCommission := commission * 0.6
 
 						inUserCommission.SetCommissionStatus(ctx, 2)
 						inUserCommission.SetCommissionPool(ctx, float32(commissionPool))
@@ -839,8 +858,8 @@ func (ucuc *UserCommissionUsecase) getCostOrderComission(ctx context.Context, re
 	var organizationTutorUser *domain.UserOrganizationRelation
 	var err error
 
-	commissionPool := commission * 0.75
-	realCommission := commission * 0.75
+	commissionPool := commission * 0.6
+	realCommission := commission * 0.6
 
 	inUserCommission := domain.NewUserCommission(ctx, userOrganizationRelation.UserId, userOrganizationRelation.OrganizationId, userOrganizationRelation.UserId, relevanceId, userOrganizationRelation.Level, userOrganizationRelation.Level, 1, commissionStatus, 3, 1, 1, float32(tool.Decimal(totalPayAmount, 2)), float32(commissionPool), float32(tool.Decimal(realCommission, 2)))
 	inUserCommission.SetCreateTime(ctx, createTime)

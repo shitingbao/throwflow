@@ -345,7 +345,7 @@ func (ubuc *UserBalanceUsecase) AsyncNotificationUserBalances(ctx context.Contex
 				}
 			}
 		}
-
+		fmt.Println(strings.Join(paramPattern, "&"))
 		if ok := gongmall.VerifySign(strings.Join(paramPattern, "&"), gongmallConf.AppSecret, balanceAsyncNotificationData.Sign); !ok {
 			return WeixinUserContractRsaDecryptError
 		}

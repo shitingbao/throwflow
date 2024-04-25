@@ -3,8 +3,10 @@ package biz
 import (
 	"company/internal/conf"
 	"company/internal/domain"
+	"company/internal/pkg/tool"
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
@@ -20,15 +22,16 @@ var (
 	CompanyTaskProductDelete      = errors.InternalServer("COMPANY_TASK_PRODUCT_DELETE", "删除失败")
 	CompanyTaskProductUpdateTop   = errors.InternalServer("COMPANY_TASK_PRODUCT_UPDATE_TOP", "更新置顶失败")
 	CompanyTaskProductUpdateQuota = errors.InternalServer("COMPANY_TASK_PRODUCT_UPDATE_QUOTA", "更新任务数量失败")
+	CompanyTaskReleaseTimeError   = errors.InternalServer("COMPANY_TASK_RELEASE_TIME_ERROR", "商品任务发布时间出错")
 )
 
 type CompanyTaskRepo interface {
 	GetById(context.Context, uint64) (*domain.CompanyTask, error)
-	GetByProductOutId(context.Context, uint64, uint32) (*domain.CompanyTask, error)
-	List(context.Context, int, int, int, int, []uint64) ([]*domain.CompanyTask, error)
+	GetByProductOutId(context.Context, uint64, uint32, string) (*domain.CompanyTask, error)
+	List(context.Context, int, int, int, int, []uint64, string) ([]*domain.CompanyTask, error)
 	ListByProductOutId(context.Context, []string) ([]*domain.CompanyTask, error)
 	ListByIds(context.Context, []uint64) ([]*domain.CompanyTask, error)
-	Count(context.Context, int, []uint64) (int64, error)
+	Count(context.Context, int, []uint64, string) (int64, error)
 	Save(context.Context, *domain.CompanyTask) (*domain.CompanyTask, error)
 	Update(context.Context, *domain.CompanyTask) (*domain.CompanyTask, error)
 	UpdateCompanyTaskIsDel(context.Context, uint64) error
@@ -53,7 +56,7 @@ func NewCompanyTaskUsecase(repo CompanyTaskRepo, ctarpo CompanyTaskAccountRelati
 }
 
 func (c *CompanyTaskUsecase) GetByProductOutId(ctx context.Context, productOutId, userId uint64) (*domain.CompanyTask, error) {
-	task, err := c.repo.GetByProductOutId(ctx, productOutId, 0)
+	task, err := c.repo.GetByProductOutId(ctx, productOutId, 0, tool.TimeToString("2006-01-02 15:04:05", time.Now()))
 
 	if err != nil {
 		return nil, CompanyTaskInfoError
@@ -69,7 +72,7 @@ func (c *CompanyTaskUsecase) GetByProductOutId(ctx context.Context, productOutId
 		}
 	}
 
-	_, err = c.ctarpo.GetByProductOutIdAndUserId(ctx, productOutId, userId)
+	_, err = c.ctarpo.GetByProductOutIdAndUserId(ctx, productOutId, userId, tool.TimeToString("2006-01-02 15:04:05", time.Now()))
 
 	if err == nil {
 		task.SetIsUserExist(ctx)
@@ -78,7 +81,7 @@ func (c *CompanyTaskUsecase) GetByProductOutId(ctx context.Context, productOutId
 	return task, nil
 }
 
-func (c *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isDel int, isTop uint32, pageNum, pageSize uint64, keyword string) (*domain.CompanyTaskList, error) {
+func (c *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isDel int, isTop uint32, pageNum, pageSize uint64, keyword, releaseTime string) (*domain.CompanyTaskList, error) {
 	productIds := []uint64{}
 
 	if len(keyword) > 0 {
@@ -102,7 +105,7 @@ func (c *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isDel int, isT
 		}
 	}
 
-	tasks, err := c.repo.List(ctx, int(pageNum), int(pageSize), int(isTop), isDel, productIds)
+	tasks, err := c.repo.List(ctx, int(pageNum), int(pageSize), int(isTop), isDel, productIds, releaseTime)
 
 	if err != nil {
 		return nil, CompanyTaskListError
@@ -114,7 +117,7 @@ func (c *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isDel int, isT
 		return nil, CompanyTaskListError
 	}
 
-	total, err := c.repo.Count(ctx, isDel, productIds)
+	total, err := c.repo.Count(ctx, isDel, productIds, releaseTime)
 
 	if err != nil {
 		return nil, CompanyTaskListError
@@ -154,8 +157,8 @@ func (c *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isDel int, isT
 
 // CreateCompanyTask
 // create task and set use‘s number in redis
-func (c *CompanyTaskUsecase) CreateCompanyTask(ctx context.Context, productOutId, expireTime, playNum, quota uint64, isGoodReviews uint8, price float64) (*domain.CompanyTask, error) {
-	existTask, err := c.repo.GetByProductOutId(ctx, productOutId, 0)
+func (c *CompanyTaskUsecase) CreateCompanyTask(ctx context.Context, productOutId, expireTime, playNum, quota uint64, isGoodReviews uint8, price float64, releaseTime string) (*domain.CompanyTask, error) {
+	existTask, err := c.repo.GetByProductOutId(ctx, productOutId, 0, "")
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, CompanyTaskProductCreate
@@ -166,6 +169,24 @@ func (c *CompanyTaskUsecase) CreateCompanyTask(ctx context.Context, productOutId
 	}
 
 	tk := domain.NewCompanyTask(ctx, productOutId, expireTime, playNum, quota, isGoodReviews, price)
+
+	reTime := time.Now()
+
+	if len(releaseTime) > 0 {
+		tm, err := tool.StringToTime("2006-01-02 15:04:05", releaseTime)
+
+		if err != nil {
+			return nil, CompanyTaskReleaseTimeError
+		}
+
+		if tm.Before(time.Now()) {
+			return nil, CompanyTaskReleaseTimeError
+		}
+
+		reTime = tm
+	}
+
+	tk.SetReleaseTime(ctx, reTime)
 	tk.SetCreateTime(ctx)
 	tk.SetUpdateTime(ctx)
 

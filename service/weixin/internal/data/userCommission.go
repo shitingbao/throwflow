@@ -291,6 +291,24 @@ func (ucr *userCommissionRepo) ListCashable(ctx context.Context) ([]*domain.User
 	return list, nil
 }
 
+func (ucr *userCommissionRepo) ListOperation(ctx context.Context) ([]*domain.UserCommission, error) {
+	var userCommissions []UserCommission
+	list := make([]*domain.UserCommission, 0)
+
+	if result := ucr.data.db.WithContext(ctx).
+		Where("commission_type=2 and commission_mcn_ratio=70 and operation_type=1").
+		Where("create_time < ?", "2024-04-01 00:00:00").
+		Find(&userCommissions); result.Error != nil {
+		return nil, result.Error
+	}
+
+	for _, userCommission := range userCommissions {
+		list = append(list, userCommission.ToDomain(ctx))
+	}
+
+	return list, nil
+}
+
 func (ucr *userCommissionRepo) Count(ctx context.Context, userId, organizationId uint64, childIds []uint64, commissionType uint8, startTime, endTime, keyword string) (int64, error) {
 	var count int64
 

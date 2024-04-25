@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/go-kratos/kratos/v2/errors"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 	"io"
 	"io/ioutil"
 	v1 "material/api/service/company/v1"
@@ -19,10 +22,6 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
-
-	"github.com/go-kratos/kratos/v2/errors"
-	"github.com/go-kratos/kratos/v2/log"
-	"github.com/volcengine/ve-tos-golang-sdk/v2/tos"
 )
 
 var (
@@ -45,7 +44,6 @@ type MaterialRepo interface {
 	List(context.Context, int, int, uint64, string, string, string, string, []domain.CompanyProductCategory) ([]*domain.Material, error)
 	ListAwemeByProductId(context.Context, uint64) ([]*domain.Material, error)
 	ListByPromotionId(context.Context, int, int, uint64, string) ([]*domain.Material, error)
-	ListByVideoIds(context.Context, []uint64) ([]*domain.Material, error)
 	Count(context.Context, uint64, string, string, string, []domain.CompanyProductCategory) (int64, error)
 	CountByPromotionId(context.Context, uint64, string) (int64, error)
 	Statistics(context.Context, string) (int64, error)

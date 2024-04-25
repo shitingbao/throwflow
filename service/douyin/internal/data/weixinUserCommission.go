@@ -37,10 +37,11 @@ func (wucr *weixinUserCommissionRepo) CreateOrder(ctx context.Context, totalPayA
 	return userCommission, err
 }
 
-func (wucr *weixinUserCommissionRepo) CreateCostOrder(ctx context.Context, userId uint64, totalPayAmount, commission float64, orderId, flowPoint, paySuccessTime string) (*v1.CreateCostOrderUserCommissionsReply, error) {
+func (wucr *weixinUserCommissionRepo) CreateCostOrder(ctx context.Context, userId uint64, totalPayAmount, commission float64, orderId, productId, flowPoint, paySuccessTime string) (*v1.CreateCostOrderUserCommissionsReply, error) {
 	userCommission, err := wucr.data.weixinuc.CreateCostOrderUserCommissions(ctx, &v1.CreateCostOrderUserCommissionsRequest{
 		UserId:         userId,
 		OrderId:        orderId,
+		ProductId:      productId,
 		FlowPoint:      flowPoint,
 		PaySuccessTime: paySuccessTime,
 		TotalPayAmount: totalPayAmount,

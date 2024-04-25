@@ -108,7 +108,7 @@ func (doi *DoukeOrderInfo) SetEstimatedCommission(ctx context.Context, estimated
 }
 
 func (doi *DoukeOrderInfo) GetEstimatedCommission(ctx context.Context) string {
-	return strconv.FormatFloat(tool.Decimal(float64(doi.EstimatedCommission*0.75), 2), 'f', 2, 64)
+	return strconv.FormatFloat(tool.Decimal(float64(doi.EstimatedCommission*0.6), 2), 'f', 2, 64)
 }
 
 func (doi *DoukeOrderInfo) SetRealCommission(ctx context.Context, realCommission float32) {
@@ -116,7 +116,7 @@ func (doi *DoukeOrderInfo) SetRealCommission(ctx context.Context, realCommission
 }
 
 func (doi *DoukeOrderInfo) GetRealCommission(ctx context.Context) string {
-	return strconv.FormatFloat(tool.Decimal(float64(doi.RealCommission*0.75), 2), 'f', 2, 64)
+	return strconv.FormatFloat(tool.Decimal(float64(doi.RealCommission*0.6), 2), 'f', 2, 64)
 }
 
 func (doi *DoukeOrderInfo) SetItemNum(ctx context.Context, itemNum uint64) {

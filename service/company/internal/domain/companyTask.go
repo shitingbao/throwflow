@@ -17,6 +17,7 @@ type CompanyTask struct {
 	IsTop          uint8
 	IsDel          uint8
 	IsGoodReviews  uint8
+	ReleaseTime    time.Time
 	CreateTime     time.Time
 	UpdateTime     time.Time
 	IsUserExist    uint32
@@ -55,6 +56,10 @@ func (c *CompanyTask) SetSuccessQuota(ctx context.Context, SuccessQuota uint64) 
 
 func (c *CompanyTask) SetIsTop(ctx context.Context, isTop uint8) {
 	c.IsTop = isTop
+}
+
+func (c *CompanyTask) SetReleaseTime(ctx context.Context, releaseTime time.Time) {
+	c.ReleaseTime = releaseTime
 }
 
 func (c *CompanyTask) SetUpdateTime(ctx context.Context) {

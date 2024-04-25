@@ -73,11 +73,11 @@ func NewDoukeOrderInfoRepo(data *Data, logger log.Logger) biz.DoukeOrderInfoRepo
 	}
 }
 
-func (doir *doukeOrderInfoRepo) GetByUserIdAndProductId(ctx context.Context, userId uint64, productId, flowPoint, createTime string) (*domain.DoukeOrderInfo, error) {
+func (doir *doukeOrderInfoRepo) GetByUserIdAndProductId(ctx context.Context, userId uint64, productId, flowPoint, paySuccessTime string) (*domain.DoukeOrderInfo, error) {
 	doukeOrderInfo := &DoukeOrderInfo{}
 
 	db := doir.data.db.WithContext(ctx).Model(&DoukeOrderInfo{}).
-		Where("product_id = ? and user_id = ? and create_time > ? and flow_point != ?", productId, userId, createTime, flowPoint).Limit(1)
+		Where("product_id = ? and user_id = ? and pay_success_time > ? and flow_point != ?", productId, userId, paySuccessTime, flowPoint).Limit(1)
 
 	if err := db.Scan(&doukeOrderInfo).Error; err != nil {
 		return nil, err

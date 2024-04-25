@@ -195,6 +195,8 @@ func (cpuc *CompanyProductUsecase) GetExternalProductShareCompanyProducts(ctx co
 	}
 
 	if companyProduct.IsExist == 1 {
+		companyProduct.SetCommissions(ctx)
+
 		_, _, productUrl = companyProduct.GetCommission(ctx)
 
 		if len(productUrl) == 0 {

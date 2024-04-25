@@ -20,6 +20,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	grpcx "google.golang.org/grpc"
+	"gorm.io/gorm/logger"
+	slog "log"
 	"os"
 	"strings"
 	"time"
@@ -30,8 +32,6 @@ import (
 	"github.com/google/wire"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	slog "log"
 )
 
 // ProviderSet is data providers.

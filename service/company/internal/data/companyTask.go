@@ -28,6 +28,7 @@ type CompanyTask struct {
 	IsTop         uint8     `gorm:"column:is_top;type:tinyint(3) UNSIGNED;not null;default:0;comment:置顶:1:是,0:否"`
 	IsDel         uint8     `gorm:"column:is_del;type:tinyint(3) UNSIGNED;not null;default:0;comment:是否移除,1:已移除,0:未移除"`
 	IsGoodReviews uint8     `gorm:"column:is_good_reviews;type:tinyint(3) UNSIGNED;not null;default:0;comment:是否需要好评,1:需要,0:不需要"`
+	ReleaseTime   time.Time `gorm:"column:release_time;type:datetime;not null;comment:任务开始发布时间"`
 	CreateTime    time.Time `gorm:"column:create_time;type:datetime;not null;comment:新增时间"`
 	UpdateTime    time.Time `gorm:"column:update_time;type:datetime;not null;comment:修改时间"`
 }
@@ -49,6 +50,7 @@ func (c *CompanyTask) ToDomain(ctx context.Context) *domain.CompanyTask {
 		IsTop:         c.IsTop,
 		IsDel:         c.IsDel,
 		IsGoodReviews: c.IsGoodReviews,
+		ReleaseTime:   c.ReleaseTime,
 		CreateTime:    c.CreateTime,
 		UpdateTime:    c.UpdateTime,
 	}
@@ -78,11 +80,17 @@ func (ctr *companyTaskRepo) GetById(ctx context.Context, id uint64) (*domain.Com
 	return task.ToDomain(ctx), nil
 }
 
-func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId uint64, isDel uint32) (*domain.CompanyTask, error) {
+func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId uint64, isDel uint32, releaseTime string) (*domain.CompanyTask, error) {
 	task := &CompanyTask{}
 
-	if err := ctr.data.db.WithContext(ctx).Model(&CompanyTask{}).
-		Where("product_out_id = ? and is_del = ?", productOutId, isDel).First(task).Error; err != nil {
+	db := ctr.data.db.WithContext(ctx).Model(&CompanyTask{}).
+		Where("product_out_id = ? and is_del = ?", productOutId, isDel)
+
+	if len(releaseTime) > 0 {
+		db = db.Where("release_time <= ?", releaseTime)
+	}
+
+	if err := db.First(task).Error; err != nil {
 		return nil, err
 	}
 
@@ -91,7 +99,7 @@ func (ctr *companyTaskRepo) GetByProductOutId(ctx context.Context, productOutId 
 
 // 排序根据置顶和操作时间
 // isDel >= -1
-func (ctr *companyTaskRepo) List(ctx context.Context, pageNum, pageSize, isTop, isDel int, productOutIds []uint64) ([]*domain.CompanyTask, error) {
+func (ctr *companyTaskRepo) List(ctx context.Context, pageNum, pageSize, isTop, isDel int, productOutIds []uint64, releaseTime string) ([]*domain.CompanyTask, error) {
 	list := []*domain.CompanyTask{}
 	tasks := []CompanyTask{}
 
@@ -109,8 +117,15 @@ func (ctr *companyTaskRepo) List(ctx context.Context, pageNum, pageSize, isTop, 
 		db = db.Order("is_top DESC")
 	}
 
+	if len(releaseTime) > 0 {
+		db = db.Where("release_time <= ?", releaseTime)
+	}
+
+	if pageNum > 0 {
+		db = db.Limit(pageSize).Offset((pageNum - 1) * pageSize)
+	}
+
 	if err := db.Order("create_time DESC").
-		Limit(pageSize).Offset((pageNum - 1) * pageSize).
 		Find(&tasks).Error; err != nil {
 		return nil, err
 	}
@@ -158,7 +173,7 @@ func (ctr *companyTaskRepo) ListByIds(ctx context.Context, ids []uint64) ([]*dom
 	return list, nil
 }
 
-func (ctr *companyTaskRepo) Count(ctx context.Context, isDel int, productOutIds []uint64) (int64, error) {
+func (ctr *companyTaskRepo) Count(ctx context.Context, isDel int, productOutIds []uint64, releaseTime string) (int64, error) {
 	db := ctr.data.db.WithContext(ctx).Model(&CompanyTask{})
 
 	if isDel >= 0 {
@@ -167,6 +182,10 @@ func (ctr *companyTaskRepo) Count(ctx context.Context, isDel int, productOutIds 
 
 	if len(productOutIds) > 0 {
 		db = db.Where("product_out_id in (?)", productOutIds)
+	}
+
+	if len(releaseTime) > 0 {
+		db = db.Where("release_time <= ?", releaseTime)
 	}
 
 	var count int64
@@ -190,6 +209,7 @@ func (ctr *companyTaskRepo) Save(ctx context.Context, in *domain.CompanyTask) (*
 		IsTop:         in.IsTop,
 		IsDel:         in.IsDel,
 		IsGoodReviews: in.IsGoodReviews,
+		ReleaseTime:   in.ReleaseTime,
 		CreateTime:    in.CreateTime,
 		UpdateTime:    in.UpdateTime,
 	}
@@ -214,6 +234,7 @@ func (ctr *companyTaskRepo) Update(ctx context.Context, in *domain.CompanyTask) 
 		IsTop:         in.IsTop,
 		IsDel:         in.IsDel,
 		IsGoodReviews: in.IsGoodReviews,
+		ReleaseTime:   in.ReleaseTime,
 		CreateTime:    in.CreateTime,
 		UpdateTime:    in.UpdateTime,
 	}

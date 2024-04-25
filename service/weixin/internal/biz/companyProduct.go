@@ -11,6 +11,7 @@ var (
 )
 
 type CompanyProductRepo interface {
+	GetByProductOutId(context.Context, uint64) (*v1.GetCompanyProductByProductOutIdsReply, error)
 	GetExternal(context.Context, uint64) (*v1.GetExternalCompanyProductsReply, error)
 	Statistics(context.Context, uint64, uint64, uint64, string) (*v1.StatisticsCompanyProductsReply, error)
 }

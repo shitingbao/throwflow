@@ -4,8 +4,8 @@ import (
 	"context"
 	"douyin/internal/conf"
 	"douyin/internal/domain"
+	"douyin/internal/pkg/csj"
 	order1 "douyin/internal/pkg/csj/order"
-	"douyin/internal/pkg/jinritemai"
 	"douyin/internal/pkg/tool"
 	"encoding/json"
 	"fmt"
@@ -267,7 +267,7 @@ func (douc *DoukeOrderUsecase) SyncDoukeOrder(ctx context.Context, wg *sync.Wait
 	orders, err := douc.listOrders(ctx, limiter, startTime, endTime, "0")
 
 	if err == nil {
-		for len(orders.Data.Orders) == jinritemai.PageSize20 {
+		for len(orders.Data.Orders) == csj.PageSize50 {
 			orders, err = douc.listOrders(ctx, limiter, startTime, endTime, orders.Data.Cursor)
 		}
 	}
@@ -339,11 +339,11 @@ func (douc *DoukeOrderUsecase) listOrders(ctx context.Context, limiter *rate.Lim
 
 				if order.FlowPoint == "SETTLE" {
 					if order.AdsRealCommission > 0 {
-						douc.wucrepo.CreateCostOrder(ctx, userId, tool.Decimal(float64(order.TotalPayAmount)/float64(100), 2), tool.Decimal(float64(order.AdsRealCommission)/float64(100), 2), order.OrderId, order.FlowPoint, order.PaySuccessTime)
+						douc.wucrepo.CreateCostOrder(ctx, userId, tool.Decimal(float64(order.TotalPayAmount)/float64(100), 2), tool.Decimal(float64(order.AdsRealCommission)/float64(100), 2), order.OrderId, order.ProductId, order.FlowPoint, order.PaySuccessTime)
 					}
 				} else {
 					if order.EstimatedCommission > 0 {
-						douc.wucrepo.CreateCostOrder(ctx, userId, tool.Decimal(float64(order.TotalPayAmount)/float64(100), 2), tool.Decimal(float64(order.EstimatedCommission)/float64(100), 2), order.OrderId, order.FlowPoint, order.PaySuccessTime)
+						douc.wucrepo.CreateCostOrder(ctx, userId, tool.Decimal(float64(order.TotalPayAmount)/float64(100), 2), tool.Decimal(float64(order.EstimatedCommission)/float64(100), 2), order.OrderId, order.ProductId, order.FlowPoint, order.PaySuccessTime)
 					}
 				}
 			}
@@ -370,9 +370,9 @@ func (douc *DoukeOrderUsecase) OperationDoukeOrders(ctx context.Context) error {
 		if doukeOrders, err := douc.doirepo.ListOperation(ctx, int(i), 40000); err == nil {
 			for _, doukeOrder := range doukeOrders {
 				if doukeOrder.FlowPoint == "SETTLE" {
-					douc.wucrepo.CreateCostOrder(ctx, doukeOrder.UserId, float64(doukeOrder.TotalPayAmount), float64(doukeOrder.RealCommission), doukeOrder.OrderId, doukeOrder.FlowPoint, tool.TimeToString("2006-01-02 15:04:05", doukeOrder.PaySuccessTime))
+					douc.wucrepo.CreateCostOrder(ctx, doukeOrder.UserId, float64(doukeOrder.TotalPayAmount), float64(doukeOrder.RealCommission), doukeOrder.OrderId, doukeOrder.ProductId, doukeOrder.FlowPoint, tool.TimeToString("2006-01-02 15:04:05", doukeOrder.PaySuccessTime))
 				} else {
-					douc.wucrepo.CreateCostOrder(ctx, doukeOrder.UserId, float64(doukeOrder.TotalPayAmount), float64(doukeOrder.EstimatedCommission), doukeOrder.OrderId, doukeOrder.FlowPoint, tool.TimeToString("2006-01-02 15:04:05", doukeOrder.PaySuccessTime))
+					douc.wucrepo.CreateCostOrder(ctx, doukeOrder.UserId, float64(doukeOrder.TotalPayAmount), float64(doukeOrder.EstimatedCommission), doukeOrder.OrderId, doukeOrder.ProductId, doukeOrder.FlowPoint, tool.TimeToString("2006-01-02 15:04:05", doukeOrder.PaySuccessTime))
 				}
 			}
 		}

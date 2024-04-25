@@ -2,7 +2,6 @@ package biz
 
 import (
 	douyinv1 "company/api/service/douyin/v1"
-	v1 "company/api/service/weixin/v1"
 	"company/internal/conf"
 	"company/internal/domain"
 	"company/internal/pkg/tool"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/errors"
 	ctos "github.com/volcengine/ve-tos-golang-sdk/v2/tos"
+	"gorm.io/gorm"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -34,11 +34,9 @@ var (
 
 type CompanyTaskAccountRelationRepo interface {
 	GetById(context.Context, uint64) (*domain.CompanyTaskAccountRelation, error)
-	GetUserOrganizationRelations(context.Context, uint64) (*v1.GetUserOrganizationRelationsReply, error)
-	GetByProductOutIdAndUserId(context.Context, uint64, uint64) (*domain.CompanyTaskAccountRelation, error)
+	GetByProductOutIdAndUserId(context.Context, uint64, uint64, string) (*domain.CompanyTaskAccountRelation, error)
+	GetByTaskId(context.Context, uint64) (*domain.CompanyTaskAccountRelation, error)
 	List(context.Context, uint64, uint64, int, int, int, string, string, string) ([]*domain.CompanyTaskAccountRelation, error)
-	ListOpenDouyinUsers(context.Context, uint64, uint64, uint64, string) (*v1.ListOpenDouyinUsersReply, error)
-	ListVideoTokensOpenDouyinVideos(context.Context, uint64, time.Time, []*domain.CompanyTaskClientKeyAndOpenId) ([]*douyinv1.ListVideoTokensOpenDouyinVideosReply_OpenDouyinVideo, error)
 	ListByUserIds(context.Context, uint64, []uint64) ([]*domain.CompanyTaskAccountRelation, error)
 	ListSettle(context.Context, string) ([]*domain.CompanyTaskAccountRelation, error)
 	Count(context.Context, uint64, uint64) (int64, error)
@@ -64,14 +62,16 @@ type CompanyTaskAccountRelationUsecase struct {
 	dorepo   DoukeOrderRepo
 	wuodrepo WeixinUserOpenDouyinRepo
 	wucrepo  WeixinUserCommissionRepo
+	odvrepo  OpenDouyinVideoRepo
+	wuorrepo WeixinUserOrganizationRelationRepo
 	tm       Transaction
 	conf     *conf.Data
 	vconf    *conf.Volcengine
 	log      *log.Helper
 }
 
-func NewCompanyTaskAccountRelationUsecase(repo CompanyTaskAccountRelationRepo, ctrepo CompanyTaskRepo, ctdrepo CompanyTaskDetailRepo, cprepo CompanyProductRepo, dorepo DoukeOrderRepo, wuodrepo WeixinUserOpenDouyinRepo, wucrepo WeixinUserCommissionRepo, tm Transaction, conf *conf.Data, vconf *conf.Volcengine, logger log.Logger) *CompanyTaskAccountRelationUsecase {
-	return &CompanyTaskAccountRelationUsecase{repo: repo, ctrepo: ctrepo, ctdrepo: ctdrepo, cprepo: cprepo, dorepo: dorepo, wuodrepo: wuodrepo, wucrepo: wucrepo, tm: tm, conf: conf, vconf: vconf, log: log.NewHelper(logger)}
+func NewCompanyTaskAccountRelationUsecase(repo CompanyTaskAccountRelationRepo, ctrepo CompanyTaskRepo, ctdrepo CompanyTaskDetailRepo, cprepo CompanyProductRepo, dorepo DoukeOrderRepo, wuodrepo WeixinUserOpenDouyinRepo, wucrepo WeixinUserCommissionRepo, odvrepo OpenDouyinVideoRepo, wuorrepo WeixinUserOrganizationRelationRepo, tm Transaction, conf *conf.Data, vconf *conf.Volcengine, logger log.Logger) *CompanyTaskAccountRelationUsecase {
+	return &CompanyTaskAccountRelationUsecase{repo: repo, ctrepo: ctrepo, ctdrepo: ctdrepo, cprepo: cprepo, dorepo: dorepo, wuodrepo: wuodrepo, wucrepo: wucrepo, odvrepo: odvrepo, wuorrepo: wuorrepo, tm: tm, conf: conf, vconf: vconf, log: log.NewHelper(logger)}
 }
 
 func (ctaruc *CompanyTaskAccountRelationUsecase) GetCompanyTaskAccountRelations(ctx context.Context, taskAccountRelationId uint64) (*domain.CompanyTaskAccountRelation, error) {
@@ -136,7 +136,7 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) ListCompanyTaskAccountRelation(
 	}
 
 	for _, companyTask := range companyTasks {
-		companyTaskMap[companyTask.ProductOutId] = companyTask
+		companyTaskMap[companyTask.Id] = companyTask
 	}
 
 	b, err := json.Marshal(keys)
@@ -156,8 +156,8 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) ListCompanyTaskAccountRelation(
 			d.SetNicknameAndAvatar(ctx, users.Data.List)
 		}
 
-		if companyTaskMap[t.ProductOutId] != nil {
-			t.CompanyTask = *(companyTaskMap[t.ProductOutId])
+		if companyTaskMap[t.CompanyTaskId] != nil {
+			t.CompanyTask = *(companyTaskMap[t.CompanyTaskId])
 		}
 
 		companyProduct := products[t.ProductOutId]
@@ -203,7 +203,12 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) CreateCompanyTaskAccountRelatio
 		return nil, CompanyTaskExists
 	}
 
-	res, err := ctaruc.repo.GetUserOrganizationRelations(ctx, userId)
+	if _, err := ctaruc.repo.GetByProductOutIdAndUserId(ctx, productOutId, userId, tool.TimeToString("2006-01-02 15:04:05", time.Now())); err != gorm.ErrRecordNotFound {
+		// 上一个相同商品任务没过期前不能领取
+		return nil, CompanyTaskExists
+	}
+
+	res, err := ctaruc.wuorrepo.GetUserOrganizationRelations(ctx, userId)
 
 	if err != nil {
 		return nil, CompanyTaskCreateLevelError
@@ -226,6 +231,10 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) CreateCompanyTaskAccountRelatio
 		task, err := ctaruc.ctrepo.GetById(ctx, companyTaskId)
 
 		if err != nil {
+			return CompanyTaskCreateError
+		}
+
+		if task.ReleaseTime.After(time.Now()) {
 			return CompanyTaskCreateError
 		}
 
@@ -338,15 +347,9 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) UpdateScreenshotAvailableById(c
 	if task.IsGoodReviews == 1 {
 		// 需要好评情况下
 		// 取消截图有效时，判断当前的任务是否时过期状态
-		statusFlag := relation.ExpireTime.After(time.Now())
-		var status uint8 = domain.GoingStatus
-
-		if !statusFlag {
-			status = domain.ExpireStatus
-		}
-
-		if relation.Status == domain.SuccessStatus && isScreenshotAvailable == 0 {
-			relation.SetStatus(ctx, status)
+		if (relation.Status == domain.SuccessStatus || relation.Status == domain.SettledStatus) && isScreenshotAvailable == 0 {
+			relation.SetStatus(ctx, domain.GoingStatus)
+			ctaruc.wucrepo.CreateTaskUserCommissions(ctx, relation.UserId, relation.Id, domain.DoukeOrderREFUND, task.Price, tool.TimeToString("2006-01-02 15:04:05", relation.UpdateTime))
 		}
 	}
 
@@ -373,7 +376,7 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) SyncUpdateCompanyTaskDetail(ctx
 	// 更新任务结果，达人和任务的关系，达人视频的成功结果
 	// 检查对应任务的 redis key 值
 	// 将过期未完成的任务关系标记为失败（已过期），将任务数重新写回 redis 中
-	tasks, err := ctaruc.ctrepo.List(ctx, 1, 40, 0, -1, []uint64{})
+	tasks, err := ctaruc.ctrepo.List(ctx, 0, 40, 0, -1, []uint64{}, tool.TimeToString("2006-01-02 15:04:05", time.Now()))
 
 	if err != nil {
 		return err
@@ -400,20 +403,26 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProc
 
 	pageNum, pageSize := 1, 40
 
+	expriedTime := tool.TimeToString("2006-01-02 15:04:05", time.Now())
+
+	total, err := ctaruc.repo.CountByCondition(ctx, taskInfo.Id, 0, -1, expriedTime, "", "")
+
+	if err != nil {
+		return err
+	}
+
+	product, err := ctaruc.cprepo.GetByProductOutId(ctx, taskInfo.ProductOutId, "", "")
+
+	if err != nil {
+		return err
+	}
+
+	if product != nil {
+		taskInfo.SetCompanyProduct(ctx, *product)
+	}
+
 	for {
-		product, err := ctaruc.cprepo.GetByProductOutId(ctx, taskInfo.ProductOutId, "", "")
-
-		if err != nil {
-			return err
-		}
-
-		if product != nil {
-			taskInfo.SetCompanyProduct(ctx, *product)
-		}
-
 		// 分批次处理领取任务的达人关系，注意是微信信息和任务的关联
-		expriedTime := tool.TimeToString("2006-01-02 15:04:05", time.Now())
-
 		relations, err := ctaruc.repo.List(ctx, taskInfo.Id, 0, pageNum, pageSize, -1, expriedTime, "", "")
 
 		if err != nil {
@@ -425,15 +434,7 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProc
 			break
 		}
 
-		total, err := ctaruc.repo.CountByCondition(ctx, taskInfo.Id, 0, 0, expriedTime, "", "")
-
-		if err != nil {
-			return err
-		}
-
-		if err := ctaruc.companyTaskDetailRelationsProcess(ctx, taskInfo, relations); err != nil {
-			return err
-		}
+		ctaruc.companyTaskDetailRelationsProcess(ctx, taskInfo, relations)
 
 		if pageSize*pageNum >= int(total) {
 			break
@@ -453,129 +454,130 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) syncUpdateCompanyTaskDetailProc
 // 获取微信号对应的抖音账号信息列表，有分页
 // 删除不在最新微信号对应的抖音账号关系中的任务详情数据（因为微信对应抖音账号吧绑定关系会变动）
 // 进行素材数据录入
-func (ctaruc *CompanyTaskAccountRelationUsecase) companyTaskDetailRelationsProcess(ctx context.Context, taskInfo *domain.CompanyTask, relations []*domain.CompanyTaskAccountRelation) error {
+func (ctaruc *CompanyTaskAccountRelationUsecase) companyTaskDetailRelationsProcess(ctx context.Context, taskInfo *domain.CompanyTask, relations []*domain.CompanyTaskAccountRelation) {
 	// 这里的关系就是每个微信的信息
 	// 每次处理提交一次
-	err := ctaruc.tm.InTx(ctx, func(ctx context.Context) error {
-		successTaskIds := []uint64{}
+	successTaskIds := []uint64{}
 
-		for _, re := range relations {
-			// 先获取成本购信息
-			var isCostBuy uint8 = 0
-			tokens := []*domain.CompanyTaskClientKeyAndOpenId{}
-			tokenMap := make(map[domain.CompanyTaskClientKeyAndOpenId]bool)
-			videoIdMap := make(map[string]bool)
-			deleteIds := []uint64{}
+	for _, re := range relations {
+		// 先获取成本购信息
+		var isCostBuy uint8 = 0
+		tokens := []*domain.CompanyTaskClientKeyAndOpenId{}
+		tokenMap := make(map[domain.CompanyTaskClientKeyAndOpenId]bool)
+		videoIdMap := make(map[string]bool)
+		deleteIds := []uint64{}
 
-			claimTime := tool.TimeToString("2006-01-02 15:04:05", re.ClaimTime)
-			// 获取一条购买成功的成本购
-			doukeOrder, err := ctaruc.dorepo.Get(ctx, re.UserId, strconv.FormatUint(taskInfo.ProductOutId, 10), domain.DoukeOrderREFUND, claimTime)
+		claimTime := tool.TimeToString("2006-01-02 15:04:05", re.ClaimTime)
+		// 获取一条购买成功的成本购
+		doukeOrder, err := ctaruc.dorepo.Get(ctx, re.UserId, strconv.FormatUint(taskInfo.ProductOutId, 10), domain.DoukeOrderREFUND, claimTime)
 
-			if err == nil {
-				if doukeOrder.Data.FlowPoint != "" && doukeOrder.Data.FlowPoint != domain.DoukeOrderREFUND {
-					isCostBuy = 1
+		if err == nil {
+			if doukeOrder.Data.FlowPoint != "" && doukeOrder.Data.FlowPoint != domain.DoukeOrderREFUND {
+				isCostBuy = 1
+			}
+
+			if re.IsCostBuy != isCostBuy || doukeOrder.Data.OrderId != re.OrderId {
+				re.SetIsCostBuy(ctx, isCostBuy)
+				re.SetOrderId(ctx, doukeOrder.Data.OrderId)
+				re.SetUpdateTime(ctx)
+
+				// 如果已经完成，订单状态改变，取消完成状态，因为这里获取的是未过期的，所以不用判断时间
+				if (re.Status == domain.SuccessStatus || re.Status == domain.SettledStatus) && isCostBuy == 0 {
+					re.SetStatus(ctx, domain.GoingStatus)
+					// 状态从完成变成进行中，结算金额恢复
+					ctaruc.wucrepo.CreateTaskUserCommissions(ctx, re.UserId, re.Id, domain.DoukeOrderREFUND, taskInfo.Price, tool.TimeToString("2006-01-02 15:04:05", re.UpdateTime))
 				}
 
-				if re.IsCostBuy != isCostBuy {
-					re.SetIsCostBuy(ctx, isCostBuy)
-					re.SetUpdateTime(ctx)
-
-					// 如果已经完成，订单状态改变，取消完成状态，因为这里获取的是未过期的，所以不用判断时间
-					if re.Status == 1 && isCostBuy == 0 {
-						re.SetStatus(ctx, domain.GoingStatus)
-					}
-
-					ctaruc.repo.Update(ctx, re)
-				}
-			}
-
-			// 获取每个微信对应的抖音信息,这里需要拿出所有，因为有删除关系操作
-			openDouyinUser, err := ctaruc.repo.ListOpenDouyinUsers(ctx, re.UserId, 0, 40, "")
-
-			if err != nil {
-				continue
-			}
-
-			for _, r := range openDouyinUser.Data.List {
-				tokens = append(tokens, &domain.CompanyTaskClientKeyAndOpenId{
-					ClientKey: r.ClientKey,
-					OpenId:    r.OpenId,
-				})
-
-				tokenMap[domain.CompanyTaskClientKeyAndOpenId{
-					ClientKey: r.ClientKey,
-					OpenId:    r.OpenId,
-				}] = true
-			}
-
-			oldDetails, err := ctaruc.ctdrepo.List(ctx, 0, 40, re.CompanyTaskId, []uint64{re.UserId}, []domain.CompanyTaskClientKeyAndOpenId{})
-
-			if err != nil {
-				continue
-			}
-
-			// 抖音信息对应的素材数据
-			list, err := ctaruc.repo.ListVideoTokensOpenDouyinVideos(ctx, re.ProductOutId, re.ClaimTime, tokens)
-
-			if err != nil {
-				log.Error("ListVideoTokensOpenDouyinVideos:", err)
-				continue
-			}
-
-			for _, v := range list {
-				videoIdMap[v.VideoId] = true
-			}
-
-			for _, detail := range oldDetails {
-				// 人员关系不存在，或者视频数据不存在，都删除明细数据
-				if !tokenMap[domain.CompanyTaskClientKeyAndOpenId{
-					ClientKey: detail.ClientKey,
-					OpenId:    detail.OpenId,
-				}] {
-					deleteIds = append(deleteIds, detail.Id)
-				}
-
-				if !videoIdMap[detail.VideoId] {
-					deleteIds = append(deleteIds, detail.Id)
-				}
-			}
-
-			if len(deleteIds) > 0 {
-				// 同时更新视频信息，可能视频已经删除或者状态更新
-				ctaruc.ctdrepo.DeleteByUserIds(ctx, deleteIds)
-			}
-
-			isSuccess, err := ctaruc.createOrUpdateCompanyTaskDetail(ctx, isCostBuy == 1, re.IsScreenshotAvailable, re.Id, re.UserId, re.CompanyTaskId, taskInfo, list)
-
-			if err != nil {
-				continue
-			}
-
-			// 插入后查看该用户的该任务是否是已经完成任务后，视频数据不达标的（没有或者剩下的播放量不够）
-			count, err := ctaruc.ctdrepo.CountByIsPlauSuccess(ctx, re.CompanyTaskId, re.UserId)
-
-			if err != nil {
-				continue
-			}
-
-			if re.Status == domain.SuccessStatus && count == 0 {
-				// 如果完成后没有符合的视频，清除完成状态
-				ctaruc.repo.UpdateStatusByIds(ctx, domain.GoingStatus, []uint64{re.Id})
-			}
-
-			if isSuccess && re.Status != 1 {
-				successTaskIds = append(successTaskIds, re.Id)
+				ctaruc.repo.Update(ctx, re)
 			}
 		}
 
-		if len(successTaskIds) > 0 {
-			ctaruc.repo.UpdateStatusByIds(ctx, domain.SuccessStatus, successTaskIds)
+		// 获取每个微信对应的抖音信息,这里需要拿出所有，因为有删除关系操作
+		openDouyinUser, err := ctaruc.wuodrepo.ListOpenDouyinUsers(ctx, re.UserId, 0, 40, "")
+
+		if err != nil {
+			continue
 		}
 
-		return nil
-	})
+		for _, r := range openDouyinUser.Data.List {
+			tokens = append(tokens, &domain.CompanyTaskClientKeyAndOpenId{
+				ClientKey: r.ClientKey,
+				OpenId:    r.OpenId,
+			})
 
-	return err
+			tokenMap[domain.CompanyTaskClientKeyAndOpenId{
+				ClientKey: r.ClientKey,
+				OpenId:    r.OpenId,
+			}] = true
+		}
+
+		oldDetails, err := ctaruc.ctdrepo.List(ctx, 0, 40, re.CompanyTaskId, []uint64{re.UserId}, []domain.CompanyTaskClientKeyAndOpenId{})
+
+		if err != nil {
+			continue
+		}
+
+		// 抖音信息对应的素材数据
+		list, err := ctaruc.odvrepo.ListVideoTokensOpenDouyinVideos(ctx, re.ProductOutId, re.ClaimTime, tokens)
+
+		if err != nil {
+			log.Error("ListVideoTokensOpenDouyinVideos:", err)
+			continue
+		}
+
+		for _, v := range list {
+			videoIdMap[v.VideoId] = true
+		}
+
+		for _, detail := range oldDetails {
+			// 人员关系不存在，或者视频数据不存在，都删除明细数据
+			if !tokenMap[domain.CompanyTaskClientKeyAndOpenId{
+				ClientKey: detail.ClientKey,
+				OpenId:    detail.OpenId,
+			}] {
+				deleteIds = append(deleteIds, detail.Id)
+			}
+
+			if !videoIdMap[detail.VideoId] {
+				deleteIds = append(deleteIds, detail.Id)
+			}
+		}
+
+		if len(deleteIds) > 0 {
+			// 同时更新视频信息，可能视频已经删除或者状态更新
+			ctaruc.ctdrepo.DeleteByUserIds(ctx, deleteIds)
+		}
+
+		isSuccess, err := ctaruc.createOrUpdateCompanyTaskDetail(ctx, isCostBuy == 1, re.IsScreenshotAvailable, re.Id, re.UserId, re.CompanyTaskId, taskInfo, list)
+
+		if err != nil {
+			continue
+		}
+
+		// 插入后查看该用户的该任务是否是已经完成任务后，视频数据不达标的（没有或者剩下的播放量不够）
+		count, err := ctaruc.ctdrepo.CountByIsPlauSuccess(ctx, re.CompanyTaskId, re.UserId)
+
+		if err != nil {
+			continue
+		}
+
+		if (re.Status == domain.SuccessStatus || re.Status == domain.SettledStatus) && count == 0 {
+			// 如果完成后没有符合的视频，清除完成状态
+			ctaruc.repo.UpdateStatusByIds(ctx, domain.GoingStatus, []uint64{re.Id})
+
+			// 状态从完成变成进行中，结算金额恢复
+			ctaruc.wucrepo.CreateTaskUserCommissions(ctx, re.UserId, re.Id, domain.DoukeOrderREFUND, taskInfo.Price, tool.TimeToString("2006-01-02 15:04:05", re.UpdateTime))
+
+		}
+
+		if isSuccess && re.Status != domain.SuccessStatus {
+			successTaskIds = append(successTaskIds, re.Id)
+		}
+	}
+
+	if len(successTaskIds) > 0 {
+		ctaruc.repo.UpdateStatusByIds(ctx, domain.SuccessStatus, successTaskIds)
+	}
 }
 
 // 获取已经存在的数据（clientKey和openId）更新，并插入
@@ -777,7 +779,7 @@ func (ctaruc *CompanyTaskAccountRelationUsecase) recoverCompanyTaskExpireTimeCou
 
 // 结算已经完成任务的金额
 func (ctaruc *CompanyTaskAccountRelationUsecase) settlePriceBySuccessStatus(ctx context.Context) {
-	relations, err := ctaruc.repo.ListSettle(ctx, tool.TimeToString("2006-01-02 15:04:05", time.Now()))
+	relations, err := ctaruc.repo.ListSettle(ctx, "")
 
 	if err != nil {
 		return

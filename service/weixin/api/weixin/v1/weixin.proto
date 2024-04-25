@@ -1078,10 +1078,11 @@ message CreateOrderUserCommissionsReply {
 message CreateCostOrderUserCommissionsRequest {
   uint64 userId = 1 [(validate.rules).uint64.gt = 0];
   string orderId = 2 [(validate.rules).string ={min_len: 1}];
-  string flowPoint = 3 [(validate.rules).string ={min_len: 1}];
-  string paySuccessTime = 4 [(validate.rules).string ={min_len: 1}];
-  double TotalPayAmount = 5 [(validate.rules).double.gte = 0.00];
-  double commission = 6 [(validate.rules).double.gte = 0.00];
+  string productId = 3 [(validate.rules).string ={min_len: 1}];
+  string flowPoint = 4 [(validate.rules).string ={min_len: 1}];
+  string paySuccessTime = 5 [(validate.rules).string ={min_len: 1}];
+  double TotalPayAmount = 6 [(validate.rules).double.gte = 0.00];
+  double commission = 7 [(validate.rules).double.gte = 0.00];
 }
 
 message CreateCostOrderUserCommissionsReply {

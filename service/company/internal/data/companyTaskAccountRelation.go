@@ -1,11 +1,8 @@
 package data
 
 import (
-	douyinv1 "company/api/service/douyin/v1"
-	v1 "company/api/service/weixin/v1"
 	"company/internal/biz"
 	"company/internal/domain"
-	"company/internal/pkg/tool"
 	"context"
 	"encoding/json"
 	"errors"
@@ -42,6 +39,7 @@ type CompanyTaskAccountRelation struct {
 	Status                uint8                `gorm:"column:status;type:tinyint(3) UNSIGNED;not null;default:0;comment:1:任务完成,0:未完成,2:已过期,3:已结算"`
 	IsDel                 uint8                `gorm:"column:is_del;type:tinyint(3) UNSIGNED;not null;default:0;comment:是否移除,1:已移除,0:未移除"`
 	IsCostBuy             uint8                `gorm:"column:is_cost_buy;type:tinyint(3) UNSIGNED;not null;default:0;comment:成本购买,1:是,0:否"`
+	OrderId               string               `gorm:"column:order_id;type:varchar(100);comment:订单ID"`
 	ScreenshotAddress     string               `gorm:"column:screenshot_address;type:varchar(250);not null;comment:截图地址"`
 	IsScreenshotAvailable uint8                `gorm:"column:is_screenshot_available;type:tinyint(3) UNSIGNED;not null;default:0;comment:截图是否有效,1:是,0:否"`
 	CreateTime            time.Time            `gorm:"column:create_time;type:datetime;not null;comment:新增时间"`
@@ -99,6 +97,7 @@ func (c *CompanyTaskAccountRelation) ToDomain(ctx context.Context) *domain.Compa
 		CreateTime:            c.CreateTime,
 		UpdateTime:            c.UpdateTime,
 		IsCostBuy:             c.IsCostBuy,
+		OrderId:               c.OrderId,
 		ScreenshotAddress:     c.ScreenshotAddress,
 		IsScreenshotAvailable: c.IsScreenshotAvailable,
 		CompanyTaskDetails:    list,
@@ -117,7 +116,7 @@ func (ctr *companyTaskAccountRelationRepo) GetById(ctx context.Context, id uint6
 	return task.ToDomain(ctx), nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) GetByProductOutIdAndUserId(ctx context.Context, productOutId, userId uint64) (*domain.CompanyTaskAccountRelation, error) {
+func (ctr *companyTaskAccountRelationRepo) GetByProductOutIdAndUserId(ctx context.Context, productOutId, userId uint64, expireTime string) (*domain.CompanyTaskAccountRelation, error) {
 	task := &CompanyTaskAccountRelation{}
 
 	db := ctr.data.db.WithContext(ctx)
@@ -130,6 +129,10 @@ func (ctr *companyTaskAccountRelationRepo) GetByProductOutIdAndUserId(ctx contex
 		db = db.Where("user_id = ?", userId)
 	}
 
+	if len(expireTime) > 0 {
+		db = db.Where("expire_time >= ?", expireTime)
+	}
+
 	if err := db.First(task).Error; err != nil {
 		return nil, err
 	}
@@ -137,10 +140,14 @@ func (ctr *companyTaskAccountRelationRepo) GetByProductOutIdAndUserId(ctx contex
 	return task.ToDomain(ctx), nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) GetUserOrganizationRelations(ctx context.Context, userId uint64) (*v1.GetUserOrganizationRelationsReply, error) {
-	return ctr.data.weixinuc.GetUserOrganizationRelations(ctx, &v1.GetUserOrganizationRelationsRequest{
-		UserId: userId,
-	})
+func (ctr *companyTaskAccountRelationRepo) GetByTaskId(ctx context.Context, taskId uint64) (*domain.CompanyTaskAccountRelation, error) {
+	task := &CompanyTaskAccountRelation{}
+
+	if err := ctr.data.db.WithContext(ctx).Where("company_task_id = ?", taskId).First(task).Error; err != nil {
+		return nil, err
+	}
+
+	return task.ToDomain(ctx), nil
 }
 
 // List 反馈基本列表
@@ -183,7 +190,7 @@ func (ctr *companyTaskAccountRelationRepo) List(ctx context.Context, companyTask
 		db = db.Limit(pageSize).Offset((pageNum - 1) * pageSize)
 	}
 
-	if err := db.Find(&taskDetails).Error; err != nil {
+	if err := db.Order("create_time desc").Find(&taskDetails).Error; err != nil {
 		return nil, err
 	}
 
@@ -213,39 +220,6 @@ func (ctr *companyTaskAccountRelationRepo) ListByUserIds(ctx context.Context, ta
 	return list, nil
 }
 
-func (ctr *companyTaskAccountRelationRepo) ListOpenDouyinUsers(ctx context.Context, userId, pageNum, pageSize uint64, keyword string) (*v1.ListOpenDouyinUsersReply, error) {
-	return ctr.data.weixinuc.ListOpenDouyinUsers(ctx, &v1.ListOpenDouyinUsersRequest{
-		PageNum:  pageNum,
-		PageSize: pageSize,
-		UserId:   userId,
-		Keyword:  keyword,
-	})
-}
-
-func (ctr *companyTaskAccountRelationRepo) ListVideoTokensOpenDouyinVideos(ctx context.Context, productOutId uint64, claimTime time.Time, tokens []*domain.CompanyTaskClientKeyAndOpenId) ([]*douyinv1.ListVideoTokensOpenDouyinVideosReply_OpenDouyinVideo, error) {
-	tks := []*douyinv1.ListVideoTokensOpenDouyinVideosRequestToken{}
-
-	for _, v := range tokens {
-		tks = append(tks, &douyinv1.ListVideoTokensOpenDouyinVideosRequestToken{
-			ClientKey: v.ClientKey,
-			OpenId:    v.OpenId,
-		})
-	}
-
-	res, err := ctr.data.douyinuc.ListVideoTokensOpenDouyinVideos(ctx, &douyinv1.ListVideoTokensOpenDouyinVideosRequest{
-		ProductOutId: productOutId,
-		Tokens:       tks,
-		ClaimTime:    tool.TimeToString("2006-01-02 15:04:05", claimTime),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Data.List, nil
-}
-
-// 结算状态为到过期时间，并且状态为完成（status = 1）
 func (ctr *companyTaskAccountRelationRepo) ListSettle(ctx context.Context, expiredTime string) ([]*domain.CompanyTaskAccountRelation, error) {
 	list := []*domain.CompanyTaskAccountRelation{}
 	taskDetails := []CompanyTaskAccountRelation{}
@@ -367,6 +341,7 @@ func (ctr *companyTaskAccountRelationRepo) Update(ctx context.Context, in *domai
 		Status:                in.Status,
 		IsDel:                 in.IsDel,
 		IsCostBuy:             in.IsCostBuy,
+		OrderId:               in.OrderId,
 		ScreenshotAddress:     in.ScreenshotAddress,
 		IsScreenshotAvailable: in.IsScreenshotAvailable,
 		CreateTime:            in.CreateTime,

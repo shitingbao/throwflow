@@ -107,7 +107,7 @@ func (ws *WeixinService) CreateOrderUserCommissions(ctx context.Context, in *v1.
 }
 
 func (ws *WeixinService) CreateCostOrderUserCommissions(ctx context.Context, in *v1.CreateCostOrderUserCommissionsRequest) (*v1.CreateCostOrderUserCommissionsReply, error) {
-	if err := ws.ucuc.CreateCostOrderUserCommissions(ctx, in.UserId, in.TotalPayAmount, in.Commission, in.OrderId, in.FlowPoint, in.PaySuccessTime); err != nil {
+	if err := ws.ucuc.CreateCostOrderUserCommissions(ctx, in.UserId, in.TotalPayAmount, in.Commission, in.OrderId, in.ProductId, in.FlowPoint, in.PaySuccessTime); err != nil {
 		return nil, err
 	}
 

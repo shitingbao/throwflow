@@ -39,6 +39,7 @@ type CompanyTaskAccountRelation struct {
 	CreateTime            time.Time
 	UpdateTime            time.Time
 	IsCostBuy             uint8
+	OrderId               string
 	ScreenshotAddress     string
 	IsScreenshotAvailable uint8
 	IsPlaySuccess         uint8
@@ -101,6 +102,10 @@ func (c *CompanyTaskAccountRelation) SetStatus(ctx context.Context, status uint8
 
 func (c *CompanyTaskAccountRelation) SetIsCostBuy(ctx context.Context, isCostBuy uint8) {
 	c.IsCostBuy = isCostBuy
+}
+
+func (c *CompanyTaskAccountRelation) SetOrderId(ctx context.Context, orderId string) {
+	c.OrderId = orderId
 }
 
 func (c *CompanyTaskAccountRelation) SetIsPlaySuccess(ctx context.Context, isPlaySuccess uint8) {

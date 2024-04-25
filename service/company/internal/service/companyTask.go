@@ -10,16 +10,16 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (cs *CompanyService) GetByProductOutId(ctx context.Context, in *v1.GetByProductOutIdRequest) (*v1.GetByProductOutIdReply, error) {
+func (cs *CompanyService) GetCompanyTaskByProductOutId(ctx context.Context, in *v1.GetCompanyTaskByProductOutIdRequest) (*v1.GetCompanyTaskByProductOutIdReply, error) {
 	task, err := cs.ctuc.GetByProductOutId(ctx, in.ProductOutId, in.UserId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &v1.GetByProductOutIdReply{
+	return &v1.GetCompanyTaskByProductOutIdReply{
 		Code: 200,
-		Data: &v1.GetByProductOutIdReply_Data{
+		Data: &v1.GetCompanyTaskByProductOutIdReply_Data{
 			Id:            task.Id,
 			ProductOutId:  task.ProductOutId,
 			ExpireTime:    task.ExpireTime,
@@ -58,7 +58,7 @@ func (cs *CompanyService) GetCompanyTaskAccountRelations(ctx context.Context, in
 }
 
 func (cs *CompanyService) ListCompanyTask(ctx context.Context, in *v1.ListCompanyTaskRequest) (*v1.ListCompanyTaskReply, error) {
-	tasks, err := cs.ctuc.ListCompanyTask(ctx, int(in.IsDel), in.IsTop, in.PageNum, in.PageSize, in.Keyword)
+	tasks, err := cs.ctuc.ListCompanyTask(ctx, int(in.IsDel), in.IsTop, in.PageNum, in.PageSize, in.Keyword, in.ReleaseTime)
 
 	if err != nil {
 		return nil, err
@@ -93,6 +93,7 @@ func (cs *CompanyService) ListCompanyTask(ctx context.Context, in *v1.ListCompan
 			IsDel:          uint32(v.IsDel),
 			IsTop:          uint32(v.IsTop),
 			IsGoodReviews:  uint32(v.IsGoodReviews),
+			ReleaseTime:    tool.TimeToString("2006-01-02 15:04:05", v.ReleaseTime),
 			CreateTime:     tool.TimeToString("2006-01-02 15:04:05", v.CreateTime),
 			CompanyProduct: c,
 		}
@@ -282,7 +283,7 @@ func (cs *CompanyService) ListCompanyTaskDetail(ctx context.Context, in *v1.List
 }
 
 func (cs *CompanyService) CreateCompanyTask(ctx context.Context, in *v1.CreateCompanyTaskRequest) (*v1.CreateCompanyTaskReply, error) {
-	task, err := cs.ctuc.CreateCompanyTask(ctx, in.ProductOutId, in.ExpireTime, in.PlayNum, in.Quota, uint8(in.IsGoodReviews), in.Price)
+	task, err := cs.ctuc.CreateCompanyTask(ctx, in.ProductOutId, in.ExpireTime, in.PlayNum, in.Quota, uint8(in.IsGoodReviews), in.Price, in.ReleaseTime)
 
 	if err != nil {
 		return nil, err
@@ -302,6 +303,7 @@ func (cs *CompanyService) CreateCompanyTask(ctx context.Context, in *v1.CreateCo
 			IsTop:         uint32(task.IsTop),
 			IsDel:         uint32(task.IsDel),
 			IsGoodReviews: uint32(task.IsGoodReviews),
+			ReleaseTime:   tool.TimeToString("2006-01-02 15:04:05", task.ReleaseTime),
 			CreateTime:    tool.TimeToString("2006-01-02 15:04:05", task.CreateTime),
 		},
 	}, nil
@@ -421,6 +423,8 @@ func (cs *CompanyService) UpdateCompanyTaskDetailScreenshotAvailable(ctx context
 
 // SyncUpdateCompanyTaskDetail
 func (cs *CompanyService) SyncUpdateCompanyTaskDetail(ctx context.Context, in *emptypb.Empty) (*v1.SyncUpdateCompanyTaskDetailReply, error) {
+	ctx = context.Background()
+
 	err := cs.ctaruc.SyncUpdateCompanyTaskDetail(ctx)
 
 	if err != nil {

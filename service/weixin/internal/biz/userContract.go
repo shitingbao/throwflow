@@ -224,7 +224,7 @@ func (ucuc *UserContractUsecase) CreateUserContracts(ctx context.Context, userId
 	var userContract *domain.UserContract
 
 	err = ucuc.tm.InTx(ctx, func(ctx context.Context) error {
-		if userContract, err = ucuc.repo.Get(ctx, organizationId, identityCardMark); err != nil {
+		if inUserContract, err := ucuc.repo.Get(ctx, organizationId, identityCardMark); err != nil {
 			syncInfo, err := employee.SyncInfo(gongmallConf.ServiceId, gongmallConf.TemplateId, gongmallConf.AppKey, gongmallConf.AppSecret, enName, enPhone, "1", enIdentityCard)
 
 			if err != nil {
@@ -237,7 +237,7 @@ func (ucuc *UserContractUsecase) CreateUserContracts(ctx context.Context, userId
 				return err
 			}
 
-			inUserContract := domain.NewUserContract(ctx, organizationId, gongmallConf.ServiceId, gongmallConf.TemplateId, contractId, syncInfo.Data.ProcessStatus, contractType, enMengMaName, enMengMaIdentityCard, identityCardMark)
+			inUserContract = domain.NewUserContract(ctx, organizationId, gongmallConf.ServiceId, gongmallConf.TemplateId, contractId, syncInfo.Data.ProcessStatus, contractType, enMengMaName, enMengMaIdentityCard, identityCardMark)
 			inUserContract.SetCreateTime(ctx)
 			inUserContract.SetUpdateTime(ctx)
 
@@ -245,6 +245,35 @@ func (ucuc *UserContractUsecase) CreateUserContracts(ctx context.Context, userId
 
 			if err != nil {
 				return err
+			}
+		} else {
+			if inUserContract.ContractStatus != 3 {
+				syncInfo, err := employee.SyncInfo(gongmallConf.ServiceId, gongmallConf.TemplateId, gongmallConf.AppKey, gongmallConf.AppSecret, enName, enPhone, "1", enIdentityCard)
+
+				if err != nil {
+					return err
+				}
+
+				contractId, err := strconv.ParseUint(syncInfo.Data.ContractId, 10, 64)
+
+				if err != nil {
+					return err
+				}
+
+				inUserContract.SetName(ctx, enMengMaName)
+				inUserContract.SetIdentityCard(ctx, enMengMaIdentityCard)
+				inUserContract.SetServiceId(ctx, gongmallConf.ServiceId)
+				inUserContract.SetTemplateId(ctx, gongmallConf.TemplateId)
+				inUserContract.SetContractId(ctx, contractId)
+				inUserContract.SetContractStatus(ctx, syncInfo.Data.ProcessStatus)
+				inUserContract.SetContractType(ctx, contractType)
+				inUserContract.SetUpdateTime(ctx)
+
+				userContract, err = ucuc.repo.Update(ctx, inUserContract)
+
+				if err != nil {
+					return err
+				}
 			}
 		}
 

@@ -13,5 +13,5 @@ var (
 
 type WeixinUserCommissionRepo interface {
 	CreateOrder(context.Context, float64, float64, string, string, string, string, string) (*v1.CreateOrderUserCommissionsReply, error)
-	CreateCostOrder(context.Context, uint64, float64, float64, string, string, string) (*v1.CreateCostOrderUserCommissionsReply, error)
+	CreateCostOrder(context.Context, uint64, float64, float64, string, string, string, string) (*v1.CreateCostOrderUserCommissionsReply, error)
 }
