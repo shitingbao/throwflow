@@ -48,22 +48,20 @@ func (is *InterfaceService) ListProducts(ctx context.Context, in *v1.ListProduct
 		}
 
 		list = append(list, &v1.ListProductsReply_CompanyProduct{
-			ProductId:            product.ProductId,
-			ProductOutId:         product.ProductOutId,
-			ProductType:          product.ProductType,
-			ProductStatus:        product.ProductStatus,
-			ProductName:          product.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.ProductPrice,
-			ProductUrl:           product.ProductUrl,
-			IsTop:                product.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.SampleThresholdType,
-			SampleThresholdValue: product.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.InvestmentRatio,
-			ForbidReason:         product.ForbidReason,
-			IsTask:               product.IsTask,
+			ProductId:       product.ProductId,
+			ProductOutId:    product.ProductOutId,
+			ProductType:     product.ProductType,
+			ProductStatus:   product.ProductStatus,
+			ProductName:     product.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.ProductPrice,
+			ProductUrl:      product.ProductUrl,
+			IsTop:           product.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.InvestmentRatio,
+			ForbidReason:    product.ForbidReason,
+			IsTask:          product.IsTask,
 		})
 	}
 
@@ -248,22 +246,20 @@ func (is *InterfaceService) ListCompanyTaskProducts(ctx context.Context, in *v1.
 		}
 
 		list = append(list, &v1.ListCompanyTaskProductsReply_CompanyProduct{
-			ProductId:            product.ProductId,
-			ProductOutId:         product.ProductOutId,
-			ProductType:          product.ProductType,
-			ProductStatus:        product.ProductStatus,
-			ProductName:          product.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.ProductPrice,
-			ProductUrl:           product.ProductUrl,
-			IsTop:                product.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.SampleThresholdType,
-			SampleThresholdValue: product.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.InvestmentRatio,
-			ForbidReason:         product.ForbidReason,
-			IsTask:               product.IsTask,
+			ProductId:       product.ProductId,
+			ProductOutId:    product.ProductOutId,
+			ProductType:     product.ProductType,
+			ProductStatus:   product.ProductStatus,
+			ProductName:     product.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.ProductPrice,
+			ProductUrl:      product.ProductUrl,
+			IsTop:           product.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.InvestmentRatio,
+			ForbidReason:    product.ForbidReason,
+			IsTask:          product.IsTask,
 		})
 	}
 
@@ -330,18 +326,11 @@ func (is *InterfaceService) GetMiniProducts(ctx context.Context, in *v1.GetMiniP
 	}
 
 	productImgs := make([]*v1.GetMiniProductsReply_ProductImg, 0)
-	productDetailImgs := make([]*v1.GetMiniProductsReply_ProductDetailImg, 0)
 	awemes := make([]*v1.GetMiniProductsReply_Aweme, 0)
 
 	for _, productImg := range product.Data.ProductImgs {
 		productImgs = append(productImgs, &v1.GetMiniProductsReply_ProductImg{
 			ProductImg: productImg.ProductImg,
-		})
-	}
-
-	for _, productDetailImg := range product.Data.ProductDetailImgs {
-		productDetailImgs = append(productDetailImgs, &v1.GetMiniProductsReply_ProductDetailImg{
-			ProductDetailImg: productDetailImg.ProductDetailImg,
 		})
 	}
 
@@ -360,14 +349,10 @@ func (is *InterfaceService) GetMiniProducts(ctx context.Context, in *v1.GetMiniP
 			ProductId:             product.Data.ProductId,
 			ProductName:           product.Data.ProductName,
 			ProductImgs:           productImgs,
-			ProductDetailImgs:     productDetailImgs,
 			ProductPrice:          product.Data.ProductPrice,
 			ShopName:              product.Data.ShopName,
-			ShopLogo:              product.Data.ShopLogo,
 			ShopScore:             product.Data.ShopScore,
 			IsTop:                 product.Data.IsTop,
-			SampleThresholdType:   product.Data.SampleThresholdType,
-			SampleThresholdValue:  product.Data.SampleThresholdValue,
 			PureCommission:        product.Data.PureCommission,
 			PureServiceCommission: product.Data.PureServiceCommission,
 			CommonCommission:      product.Data.CommonCommission,
@@ -443,22 +428,20 @@ func (is *InterfaceService) CreateProducts(ctx context.Context, in *v1.CreatePro
 	return &v1.CreateProductsReply{
 		Code: 200,
 		Data: &v1.CreateProductsReply_Data{
-			ProductId:            product.Data.ProductId,
-			ProductOutId:         product.Data.ProductOutId,
-			ProductType:          product.Data.ProductType,
-			ProductStatus:        product.Data.ProductStatus,
-			ProductName:          product.Data.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.Data.ProductPrice,
-			ProductUrl:           product.Data.ProductUrl,
-			IsTop:                product.Data.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.Data.SampleThresholdType,
-			SampleThresholdValue: product.Data.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.Data.InvestmentRatio,
-			ForbidReason:         product.Data.ForbidReason,
-			IsTask:               product.Data.IsTask,
+			ProductId:       product.Data.ProductId,
+			ProductOutId:    product.Data.ProductOutId,
+			ProductType:     product.Data.ProductType,
+			ProductStatus:   product.Data.ProductStatus,
+			ProductName:     product.Data.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.Data.ProductPrice,
+			ProductUrl:      product.Data.ProductUrl,
+			IsTop:           product.Data.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.Data.InvestmentRatio,
+			ForbidReason:    product.Data.ForbidReason,
+			IsTask:          product.Data.IsTask,
 		},
 	}, nil
 }
@@ -505,22 +488,20 @@ func (is *InterfaceService) UpdateCommissionProducts(ctx context.Context, in *v1
 	return &v1.UpdateCommissionProductsReply{
 		Code: 200,
 		Data: &v1.UpdateCommissionProductsReply_Data{
-			ProductId:            product.Data.ProductId,
-			ProductOutId:         product.Data.ProductOutId,
-			ProductType:          product.Data.ProductType,
-			ProductStatus:        product.Data.ProductStatus,
-			ProductName:          product.Data.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.Data.ProductPrice,
-			ProductUrl:           product.Data.ProductUrl,
-			IsTop:                product.Data.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.Data.SampleThresholdType,
-			SampleThresholdValue: product.Data.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.Data.InvestmentRatio,
-			ForbidReason:         product.Data.ForbidReason,
-			IsTask:               product.Data.IsTask,
+			ProductId:       product.Data.ProductId,
+			ProductOutId:    product.Data.ProductOutId,
+			ProductType:     product.Data.ProductType,
+			ProductStatus:   product.Data.ProductStatus,
+			ProductName:     product.Data.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.Data.ProductPrice,
+			ProductUrl:      product.Data.ProductUrl,
+			IsTop:           product.Data.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.Data.InvestmentRatio,
+			ForbidReason:    product.Data.ForbidReason,
+			IsTask:          product.Data.IsTask,
 		},
 	}, nil
 }
@@ -563,22 +544,20 @@ func (is *InterfaceService) UpdateStatusProducts(ctx context.Context, in *v1.Upd
 	return &v1.UpdateStatusProductsReply{
 		Code: 200,
 		Data: &v1.UpdateStatusProductsReply_Data{
-			ProductId:            product.Data.ProductId,
-			ProductOutId:         product.Data.ProductOutId,
-			ProductType:          product.Data.ProductType,
-			ProductStatus:        product.Data.ProductStatus,
-			ProductName:          product.Data.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.Data.ProductPrice,
-			ProductUrl:           product.Data.ProductUrl,
-			IsTop:                product.Data.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.Data.SampleThresholdType,
-			SampleThresholdValue: product.Data.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.Data.InvestmentRatio,
-			ForbidReason:         product.Data.ForbidReason,
-			IsTask:               product.Data.IsTask,
+			ProductId:       product.Data.ProductId,
+			ProductOutId:    product.Data.ProductOutId,
+			ProductType:     product.Data.ProductType,
+			ProductStatus:   product.Data.ProductStatus,
+			ProductName:     product.Data.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.Data.ProductPrice,
+			ProductUrl:      product.Data.ProductUrl,
+			IsTop:           product.Data.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.Data.InvestmentRatio,
+			ForbidReason:    product.Data.ForbidReason,
+			IsTask:          product.Data.IsTask,
 		},
 	}, nil
 }
@@ -621,80 +600,20 @@ func (is *InterfaceService) UpdateIsTopProducts(ctx context.Context, in *v1.Upda
 	return &v1.UpdateIsTopProductsReply{
 		Code: 200,
 		Data: &v1.UpdateIsTopProductsReply_Data{
-			ProductId:            product.Data.ProductId,
-			ProductOutId:         product.Data.ProductOutId,
-			ProductType:          product.Data.ProductType,
-			ProductStatus:        product.Data.ProductStatus,
-			ProductName:          product.Data.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.Data.ProductPrice,
-			ProductUrl:           product.Data.ProductUrl,
-			IsTop:                product.Data.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.Data.SampleThresholdType,
-			SampleThresholdValue: product.Data.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.Data.InvestmentRatio,
-			ForbidReason:         product.Data.ForbidReason,
-			IsTask:               product.Data.IsTask,
-		},
-	}, nil
-}
-
-func (is *InterfaceService) UpdateSampleThresholdProducts(ctx context.Context, in *v1.UpdateSampleThresholdProductsRequest) (*v1.UpdateSampleThresholdProductsReply, error) {
-	if _, err := is.verifyLogin(ctx, true, false, "product"); err != nil {
-		return nil, err
-	}
-
-	product, err := is.prouc.UpdateSampleThresholdProducts(ctx, in.ProductId, in.SampleThresholdValue, in.SampleThresholdType)
-
-	if err != nil {
-		return nil, err
-	}
-
-	productImgs := make([]*v1.UpdateSampleThresholdProductsReply_ProductImg, 0)
-	materialOutUrls := make([]*v1.UpdateSampleThresholdProductsReply_MaterialOutUrl, 0)
-	commissions := make([]*v1.UpdateSampleThresholdProductsReply_Commission, 0)
-
-	for _, productImg := range product.Data.ProductImgs {
-		productImgs = append(productImgs, &v1.UpdateSampleThresholdProductsReply_ProductImg{
-			ProductImg: productImg.ProductImg,
-		})
-	}
-
-	for _, materialOutUrl := range product.Data.MaterialOutUrls {
-		materialOutUrls = append(materialOutUrls, &v1.UpdateSampleThresholdProductsReply_MaterialOutUrl{
-			MaterialOutUrl: materialOutUrl.MaterialOutUrl,
-		})
-	}
-
-	for _, commission := range product.Data.Commissions {
-		commissions = append(commissions, &v1.UpdateSampleThresholdProductsReply_Commission{
-			CommissionRatio:  float64(commission.CommissionRatio),
-			ServiceRatio:     float64(commission.ServiceRatio),
-			CommissionOutUrl: commission.CommissionOutUrl,
-		})
-	}
-
-	return &v1.UpdateSampleThresholdProductsReply{
-		Code: 200,
-		Data: &v1.UpdateSampleThresholdProductsReply_Data{
-			ProductId:            product.Data.ProductId,
-			ProductOutId:         product.Data.ProductOutId,
-			ProductType:          product.Data.ProductType,
-			ProductStatus:        product.Data.ProductStatus,
-			ProductName:          product.Data.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.Data.ProductPrice,
-			ProductUrl:           product.Data.ProductUrl,
-			IsTop:                product.Data.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.Data.SampleThresholdType,
-			SampleThresholdValue: product.Data.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.Data.InvestmentRatio,
-			ForbidReason:         product.Data.ForbidReason,
-			IsTask:               product.Data.IsTask,
+			ProductId:       product.Data.ProductId,
+			ProductOutId:    product.Data.ProductOutId,
+			ProductType:     product.Data.ProductType,
+			ProductStatus:   product.Data.ProductStatus,
+			ProductName:     product.Data.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.Data.ProductPrice,
+			ProductUrl:      product.Data.ProductUrl,
+			IsTop:           product.Data.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.Data.InvestmentRatio,
+			ForbidReason:    product.Data.ForbidReason,
+			IsTask:          product.Data.IsTask,
 		},
 	}, nil
 }
@@ -756,22 +675,20 @@ func (is *InterfaceService) UpdateInvestmentRatioProducts(ctx context.Context, i
 	return &v1.UpdateInvestmentRatioProductsReply{
 		Code: 200,
 		Data: &v1.UpdateInvestmentRatioProductsReply_Data{
-			ProductId:            product.Data.ProductId,
-			ProductOutId:         product.Data.ProductOutId,
-			ProductType:          product.Data.ProductType,
-			ProductStatus:        product.Data.ProductStatus,
-			ProductName:          product.Data.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         product.Data.ProductPrice,
-			ProductUrl:           product.Data.ProductUrl,
-			IsTop:                product.Data.IsTop,
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  product.Data.SampleThresholdType,
-			SampleThresholdValue: product.Data.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      product.Data.InvestmentRatio,
-			ForbidReason:         product.Data.ForbidReason,
-			IsTask:               product.Data.IsTask,
+			ProductId:       product.Data.ProductId,
+			ProductOutId:    product.Data.ProductOutId,
+			ProductType:     product.Data.ProductType,
+			ProductStatus:   product.Data.ProductStatus,
+			ProductName:     product.Data.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    product.Data.ProductPrice,
+			ProductUrl:      product.Data.ProductUrl,
+			IsTop:           product.Data.IsTop,
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: product.Data.InvestmentRatio,
+			ForbidReason:    product.Data.ForbidReason,
+			IsTask:          product.Data.IsTask,
 		},
 	}, nil
 }
@@ -807,6 +724,17 @@ func (is *InterfaceService) ParseMiniProductProducts(ctx context.Context, in *v1
 			TotalSale:             product.Data.TotalSale,
 			IsTask:                product.Data.IsTask,
 		},
+	}, nil
+}
+
+func (is *InterfaceService) VerificationMiniProductProducts(ctx context.Context, in *v1.VerificationMiniProductProductsRequest) (*v1.VerificationMiniProductProductsReply, error) {
+	if _, err := is.prouc.VerificationMiniProductProducts(ctx, in.ProductId); err != nil {
+		return nil, err
+	}
+
+	return &v1.VerificationMiniProductProductsReply{
+		Code: 200,
+		Data: &v1.VerificationMiniProductProductsReply_Data{},
 	}, nil
 }
 

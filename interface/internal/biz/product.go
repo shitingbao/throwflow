@@ -23,10 +23,10 @@ type ProductRepo interface {
 	UpdateCommission(context.Context, uint64, string) (*v1.UpdateCommissionCompanyProductsReply, error)
 	UpdateStatus(context.Context, uint64, uint32) (*v1.UpdateStatusCompanyProductsReply, error)
 	UpdateIsTop(context.Context, uint64, uint32) (*v1.UpdateIsTopCompanyProductsReply, error)
-	UpdateSampleThreshold(context.Context, uint64, uint64, uint32) (*v1.UpdateSampleThresholdCompanyProductsReply, error)
 	UpdateMaterial(context.Context, uint64, string) (*v1.UpdateMaterialCompanyProductsReply, error)
 	UpdateInvestmentRatio(context.Context, uint64, float64) (*v1.UpdateInvestmentRatioCompanyProductsReply, error)
 	Parse(context.Context, string) (*v1.ParseCompanyProductsReply, error)
+	Verification(context.Context, uint64) (*v1.VerificationCompanyProductsReply, error)
 	UploadPart(context.Context, uint64, uint64, uint64, string, string) (*v1.UploadPartCompanyProductsReply, error)
 	CompleteUpload(context.Context, string) (*v1.CompleteUploadCompanyProductsReply, error)
 	AbortUpload(context.Context, string) (*v1.AbortUploadCompanyProductsReply, error)
@@ -182,16 +182,6 @@ func (puc *ProductUsecase) UpdateIsTopProducts(ctx context.Context, productId ui
 	return product, nil
 }
 
-func (puc *ProductUsecase) UpdateSampleThresholdProducts(ctx context.Context, productId, sampleThresholdValue uint64, sampleThresholdType uint32) (*v1.UpdateSampleThresholdCompanyProductsReply, error) {
-	product, err := puc.repo.UpdateSampleThreshold(ctx, productId, sampleThresholdValue, sampleThresholdType)
-
-	if err != nil {
-		return nil, errors.InternalServer("INTERFACE_UPDATE_SAMPLE_THRESHOLD_PRODUCT_FAILED", tool.GetGRPCErrorInfo(err))
-	}
-
-	return product, nil
-}
-
 func (puc *ProductUsecase) UpdateMaterialProducts(ctx context.Context, productId uint64, productMaterial string) (*v1.UpdateMaterialCompanyProductsReply, error) {
 	list, err := puc.repo.UpdateMaterial(ctx, productId, productMaterial)
 
@@ -217,6 +207,16 @@ func (puc *ProductUsecase) ParseMiniProductProducts(ctx context.Context, content
 
 	if err != nil {
 		return nil, errors.InternalServer("INTERFACE_PARSE_PRODUCT_FAILED", tool.GetGRPCErrorInfo(err))
+	}
+
+	return product, nil
+}
+
+func (puc *ProductUsecase) VerificationMiniProductProducts(ctx context.Context, productId uint64) (*v1.VerificationCompanyProductsReply, error) {
+	product, err := puc.repo.Verification(ctx, productId)
+
+	if err != nil {
+		return nil, errors.InternalServer("INTERFACE_VERIFICATION_PRODUCT_FAILED", tool.GetGRPCErrorInfo(err))
 	}
 
 	return product, nil

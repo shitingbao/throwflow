@@ -83,6 +83,7 @@ func NewWhiteListMatcher() selector.MatchFunc {
 	whiteList["/interface.v1.Interface/ListMiniProducts"] = struct{}{}
 	whiteList["/interface.v1.Interface/ListMiniCategorys"] = struct{}{}
 	whiteList["/interface.v1.Interface/GetMiniProducts"] = struct{}{}
+	whiteList["/interface.v1.Interface/VerificationMiniProductProducts"] = struct{}{}
 	whiteList["/interface.v1.Interface/StatisticsMiniProducts"] = struct{}{}
 	whiteList["/interface.v1.Interface/ListMiniMaterials"] = struct{}{}
 	whiteList["/interface.v1.Interface/StatisticsMiniMaterials"] = struct{}{}
@@ -90,7 +91,7 @@ func NewWhiteListMatcher() selector.MatchFunc {
 	whiteList["/interface.v1.Interface/ListMiniMaterialProducts"] = struct{}{}
 	whiteList["/interface.v1.Interface/GetVideoUrlUserOrders"] = struct{}{}
 	whiteList["/interface.v1.Interface/GetMiniMaterials"] = struct{}{}
-	
+
 	return func(ctx context.Context, operation string) bool {
 		if _, ok := whiteList[operation]; ok {
 			return false

@@ -185,20 +185,6 @@ func (pr *productRepo) UpdateIsTop(ctx context.Context, productId uint64, isTop 
 	return product, err
 }
 
-func (pr *productRepo) UpdateSampleThreshold(ctx context.Context, productId, sampleThresholdValue uint64, sampleThresholdType uint32) (*v1.UpdateSampleThresholdCompanyProductsReply, error) {
-	product, err := pr.data.companyuc.UpdateSampleThresholdCompanyProducts(ctx, &v1.UpdateSampleThresholdCompanyProductsRequest{
-		ProductId:            productId,
-		SampleThresholdType:  sampleThresholdType,
-		SampleThresholdValue: sampleThresholdValue,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return product, err
-}
-
 func (pr *productRepo) UpdateMaterial(ctx context.Context, productId uint64, productMaterial string) (*v1.UpdateMaterialCompanyProductsReply, error) {
 	list, err := pr.data.companyuc.UpdateMaterialCompanyProducts(ctx, &v1.UpdateMaterialCompanyProductsRequest{
 		ProductId:       productId,
@@ -235,6 +221,18 @@ func (pr *productRepo) Parse(ctx context.Context, content string) (*v1.ParseComp
 	}
 
 	return companyProduct, err
+}
+
+func (pr *productRepo) Verification(ctx context.Context, productId uint64) (*v1.VerificationCompanyProductsReply, error) {
+	product, err := pr.data.companyuc.VerificationCompanyProducts(ctx, &v1.VerificationCompanyProductsRequest{
+		ProductId: productId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return product, err
 }
 
 func (pr *productRepo) UploadPart(ctx context.Context, partNumber, totalPart, contentLength uint64, uploadId, content string) (*v1.UploadPartCompanyProductsReply, error) {

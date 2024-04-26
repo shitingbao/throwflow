@@ -127,7 +127,9 @@ service Douyin {
   rpc UpdateFansOpenDouyinUserInfos (UpdateFansOpenDouyinUserInfosRequest) returns (UpdateFansOpenDouyinUserInfosReply) {}
 
   // 抖客平台商品分销转链管理
-  rpc GetDoukeProducts (GetDoukeProductsRequest) returns (GetDoukeProductsReply) {}
+  rpc ListDoukeProducts (ListDoukeProductsRequest) returns (ListDoukeProductsReply) {}
+  rpc ListDoukeProductByProductIds (ListDoukeProductByProductIdsRequest) returns (ListDoukeProductByProductIdsReply) {}
+  rpc ListCategoryDoukeProducts (ListCategoryDoukeProductsRequest) returns (ListCategoryDoukeProductsReply) {}
   rpc CreateShareDoukeProducts (CreateShareDoukeProductsRequest) returns (CreateShareDoukeProductsReply) {}
   rpc ParseDoukeProducts (ParseDoukeProductsRequest) returns (ParseDoukeProductsReply) {}
 
@@ -1853,12 +1855,47 @@ message UpdateFansOpenDouyinUserInfosReply {
   Data data = 2;
 }
 
-message GetDoukeProductsRequest {
-  uint64 productId = 1 [(validate.rules).uint64.gt = 1];
+message ListDoukeProductsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 cosRatioMin = 3 [(validate.rules).uint64.gt = 0];
+  uint64 industryId = 4 [(validate.rules).uint64.gte = 0];
+  uint64 categoryId = 5 [(validate.rules).uint64.gte = 0];
+  uint64 subCategoryId = 6 [(validate.rules).uint64.gte = 0];
 }
 
-message GetDoukeProductsReply {
+message ListDoukeProductsReply {
+  message Product{
+    uint64 productOutId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string productPrice = 4;
+    uint64 industryId = 5;
+    uint64 categoryId = 6;
+    uint64 subCategoryId = 7;
+    string shopName = 8;
+    uint64 totalSale = 9;
+    uint64 commissionRatio = 10;
+  }
+
   message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated Product list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListDoukeProductByProductIdsRequest {
+  string productIds = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message ListDoukeProductByProductIdsReply {
+  message Product{
     uint64 productOutId = 1;
     string productName = 2;
     string productImg = 3;
@@ -1870,6 +1907,28 @@ message GetDoukeProductsReply {
     double shopScore = 9;
     uint64 totalSale = 10;
     uint64 commissionRatio = 11;
+  }
+
+  message Data {
+    repeated Product list = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCategoryDoukeProductsRequest {
+  uint64 parentId = 1 [(validate.rules).uint64.gte = 0];
+}
+
+message ListCategoryDoukeProductsReply {
+  message Category {
+    uint64 categoryId = 1;
+    string categoryName = 2;
+  }
+
+  message Data {
+    repeated Category list = 5;
   }
 
   uint32 code = 1;

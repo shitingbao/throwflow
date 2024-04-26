@@ -43,7 +43,7 @@ func (is *InterfaceService) ListCompanyTask(ctx context.Context, in *v1.ListComp
 		return nil, err
 	}
 
-	res, err := is.ctuc.ListCompanyTask(ctx, 0, -1, in.PageNum, in.PageSize, in.Keyword, "")
+	res, err := is.ctuc.ListCompanyTask(ctx, 1, -1, in.PageNum, in.PageSize, in.Keyword, "")
 
 	if err != nil {
 		return nil, err

@@ -368,13 +368,6 @@ service Interface {
       body: "*",
     };
   }
-  // 商品管理[修改-寄样门槛]
-  rpc UpdateSampleThresholdProducts (UpdateSampleThresholdProductsRequest) returns (UpdateSampleThresholdProductsReply) {
-    option (google.api.http) = {
-      put: "/v1/products/{productId}/sampleThreshold",
-      body: "*",
-    };
-  }
   // 商品管理[修改-素材分发]
   rpc UpdateMaterialProducts (UpdateMaterialProductsRequest) returns (UpdateMaterialProductsReply) {
     option (google.api.http) = {
@@ -788,6 +781,13 @@ service Interface {
   rpc ParseMiniProductProducts (ParseMiniProductProductsRequest) returns (ParseMiniProductProductsReply) {
     option (google.api.http) = {
       post: "/mini/v1/product/parse"
+      body: "*",
+    };
+  }
+  // 爆品库管理[验证]
+  rpc VerificationMiniProductProducts (VerificationMiniProductProductsRequest) returns (VerificationMiniProductProductsReply) {
+    option (google.api.http) = {
+      post: "/mini/v1/product/verification"
       body: "*",
     };
   }
@@ -2228,12 +2228,10 @@ message ListProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   message Data {
@@ -2306,12 +2304,10 @@ message ListCompanyTaskProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   message Data {
@@ -2370,12 +2366,10 @@ message CreateProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2414,12 +2408,10 @@ message UpdateCommissionProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2457,12 +2449,10 @@ message UpdateStatusProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2500,56 +2490,10 @@ message UpdateIsTopProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
-  }
-
-  uint32 code = 1;
-  Data data = 2;
-}
-
-message UpdateSampleThresholdProductsRequest {
-  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
-  uint32 sampleThresholdType = 2 [(validate.rules).uint32 = {in: [1, 2, 3]}];
-  uint64 sampleThresholdValue = 3 [(validate.rules).uint64.gte = 0];
-}
-
-message UpdateSampleThresholdProductsReply {
-  message ProductImg {
-    string productImg = 1;
-  }
-
-  message Commission {
-    double commissionRatio = 1;
-    double serviceRatio = 2;
-    string commissionOutUrl = 3;
-  }
-
-  message MaterialOutUrl {
-    string materialOutUrl = 1;
-  }
-
-  message Data {
-    uint64 productId = 1;
-    uint64 productOutId = 2;
-    uint32 productType = 3;
-    uint32 productStatus = 4;
-    string productName = 5;
-    repeated ProductImg productImgs = 6;
-    string productPrice = 7;
-    string productUrl = 8;
-    uint32 isTop = 9;
-    repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2601,12 +2545,10 @@ message UpdateInvestmentRatioProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -4352,10 +4294,6 @@ message GetMiniProductsReply {
     string productImg = 1;
   }
 
-  message ProductDetailImg {
-    string productDetailImg = 1;
-  }
-
   message Aweme {
     string accountId = 1;
     string nickname = 2;
@@ -4367,22 +4305,18 @@ message GetMiniProductsReply {
     uint64 productId = 1;
     string productName = 2;
     repeated ProductImg productImgs = 3;
-    repeated ProductDetailImg productDetailImgs = 4;
-    string productPrice = 5;
-    string shopName = 6;
-    string shopLogo = 7;
-    string shopScore = 8;
-    uint32 isTop = 9;
-    uint32 sampleThresholdType = 10;
-    uint64 sampleThresholdValue = 11;
-    string pureCommission = 12;
-    string pureServiceCommission = 13;
-    string commonCommission = 14;
-    uint32 isHot = 15;
-    string productUrl = 16;
-    uint64 TotalSale = 17;
-    string investmentRatio = 18;
-    repeated Aweme awemes = 19;
+    string productPrice = 4;
+    string shopName = 5;
+    string shopScore = 6;
+    uint32 isTop = 7;
+    string pureCommission = 8;
+    string pureServiceCommission = 9;
+    string commonCommission = 10;
+    uint32 isHot = 11;
+    string productUrl = 12;
+    uint64 TotalSale = 13;
+    string investmentRatio = 14;
+    repeated Aweme awemes = 15;
   }
 
   uint32 code = 1;
@@ -4421,6 +4355,18 @@ message ParseMiniProductProductsReply {
     uint32 isHot = 10;
     uint64 TotalSale = 11;
     uint32 isTask = 12;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message VerificationMiniProductProductsRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message VerificationMiniProductProductsReply {
+  message Data {
   }
 
   uint32 code = 1;
