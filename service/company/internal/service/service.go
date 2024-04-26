@@ -5,6 +5,7 @@ import (
 	"company/internal/biz"
 	"company/internal/domain"
 	"context"
+	"github.com/go-kratos/kratos/v2/log"
 	"strconv"
 	"strings"
 
@@ -32,10 +33,14 @@ type CompanyService struct {
 	ctuc    *biz.CompanyTaskUsecase
 	ctaruc  *biz.CompanyTaskAccountRelationUsecase
 	ctduc   *biz.CompanyTaskDetailUsecase
+
+	log *log.Helper
 }
 
-func NewCompanyService(muc *biz.MenuUsecase, iuc *biz.IndustryUsecase, cuc *biz.ClueUsecase, couc *biz.CompanyUsecase, cuuc *biz.CompanyUserUsecase, cpruc *biz.CompanyPerformanceRuleUsecase, cpreruc *biz.CompanyPerformanceRebalanceUsecase, cpuc *biz.CompanyPerformanceUsecase, csuc *biz.CompanySetUsecase, cprouc *biz.CompanyProductUsecase, cmuc *biz.CompanyMaterialUsecase, coruc *biz.CompanyOrganizationUsecase, ctuc *biz.CompanyTaskUsecase, ctaruc *biz.CompanyTaskAccountRelationUsecase, ctduc *biz.CompanyTaskDetailUsecase) *CompanyService {
-	return &CompanyService{muc: muc, iuc: iuc, cuc: cuc, couc: couc, cuuc: cuuc, cpruc: cpruc, cpreruc: cpreruc, cpuc: cpuc, csuc: csuc, cprouc: cprouc, cmuc: cmuc, coruc: coruc, ctuc: ctuc, ctaruc: ctaruc, ctduc: ctduc}
+func NewCompanyService(muc *biz.MenuUsecase, iuc *biz.IndustryUsecase, cuc *biz.ClueUsecase, couc *biz.CompanyUsecase, cuuc *biz.CompanyUserUsecase, cpruc *biz.CompanyPerformanceRuleUsecase, cpreruc *biz.CompanyPerformanceRebalanceUsecase, cpuc *biz.CompanyPerformanceUsecase, csuc *biz.CompanySetUsecase, cprouc *biz.CompanyProductUsecase, cmuc *biz.CompanyMaterialUsecase, coruc *biz.CompanyOrganizationUsecase, ctuc *biz.CompanyTaskUsecase, ctaruc *biz.CompanyTaskAccountRelationUsecase, ctduc *biz.CompanyTaskDetailUsecase, logger log.Logger) *CompanyService {
+	log := log.NewHelper(log.With(logger, "module", "service/douyin"))
+
+	return &CompanyService{muc: muc, iuc: iuc, cuc: cuc, couc: couc, cuuc: cuuc, cpruc: cpruc, cpreruc: cpreruc, cpuc: cpuc, csuc: csuc, cprouc: cprouc, cmuc: cmuc, coruc: coruc, ctuc: ctuc, ctaruc: ctaruc, ctduc: ctduc, log: log}
 }
 
 func (cs *CompanyService) verifyMenu(ctx context.Context, ids string) ([]string, error) {

@@ -169,6 +169,7 @@ type BalanceAsyncNotificationSuccessData struct {
 	Remark             string  `json:"remark,omitempty"`
 	CreateTime         string  `json:"createTime"`
 	PayTime            string  `json:"payTime"`
+	FailReason         string  `json:"failReason,omitempty"`
 }
 
 func BalanceAsyncNotificationSuccess(content string) (*BalanceAsyncNotificationSuccessData, error) {

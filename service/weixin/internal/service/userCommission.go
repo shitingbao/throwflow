@@ -10,6 +10,9 @@ import (
 )
 
 func (ws *WeixinService) ListUserCommissions(ctx context.Context, in *v1.ListUserCommissionsRequest) (*v1.ListUserCommissionsReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
 	userCommissions, err := ws.ucuc.ListUserCommissions(ctx, in.PageNum, in.PageSize, in.UserId, in.OrganizationId, uint8(in.CommissionType), in.Month, in.Keyword)
 
 	if err != nil {

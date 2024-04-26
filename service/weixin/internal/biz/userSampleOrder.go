@@ -5,7 +5,6 @@ import (
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"strconv"
-	"time"
 	v1 "weixin/api/service/common/v1"
 	"weixin/internal/conf"
 	"weixin/internal/domain"
@@ -155,7 +154,7 @@ func (usouc *UserSampleOrderUsecase) StatisticsUserSampleOrders(ctx context.Cont
 }
 
 func (usouc *UserSampleOrderUsecase) VerifyUserSampleOrders(ctx context.Context, userId, openDouyinUserId, productId uint64) error {
-	openDouyinUsers, err := usouc.uodrepo.List(ctx, 0, 40, userId, "")
+	/*openDouyinUsers, err := usouc.uodrepo.List(ctx, 0, 40, userId, "")
 
 	if err != nil {
 		return WeixinUserOpenDouyinListError
@@ -227,7 +226,7 @@ func (usouc *UserSampleOrderUsecase) VerifyUserSampleOrders(ctx context.Context,
 	} else if companyProduct.Data.SampleThresholdType == 3 {
 		return WeixinUserSampleOrderNotAcceptRequirement
 	}
-
+	*/
 	return nil
 }
 
@@ -250,7 +249,7 @@ func (usouc *UserSampleOrderUsecase) CancelUserSampleOrders(ctx context.Context,
 }
 
 func (usouc *UserSampleOrderUsecase) CreateUserSampleOrders(ctx context.Context, userId, openDouyinUserId, productId, userAddressId uint64, note string) (*domain.UserSampleOrder, error) {
-	openDouyinUsers, err := usouc.uodrepo.List(ctx, 0, 40, userId, "")
+	/*openDouyinUsers, err := usouc.uodrepo.List(ctx, 0, 40, userId, "")
 
 	if err != nil {
 		return nil, WeixinUserOpenDouyinListError
@@ -371,9 +370,9 @@ func (usouc *UserSampleOrderUsecase) CreateUserSampleOrders(ctx context.Context,
 
 	if err != nil {
 		return nil, WeixinUserSampleOrderCreateError
-	}
+	}*/
 
-	return userSampleOrder, nil
+	return nil, nil
 }
 
 func (usouc *UserSampleOrderUsecase) UpdateKuaidiUserSampleOrders(ctx context.Context, userSampleOrderId uint64, kuaidiCode, kuaidiNum string) error {

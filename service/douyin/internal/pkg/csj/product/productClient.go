@@ -8,16 +8,16 @@ import (
 	"time"
 )
 
-func List(appId, appSecret, reqId string, page, cosRatioMin uint64, firstCids, secondCids, thirdCids []uint64) (*ListResponse, error) {
+func List(appId, appSecret, reqId string, page, pageSize, cosRatioMin uint64, firstCids, secondCids, thirdCids []uint64) (*ListResponse, error) {
 	timestamp := time.Now().Unix()
 
 	listDataRequest := ListDataRequest{
 		Page:        page,
-		PageSize:    csj.PageSize20,
+		PageSize:    pageSize,
 		FirstCids:   firstCids,
 		SecondCids:  secondCids,
 		ThirdCids:   thirdCids,
-		SearchType:  csj.SearchType3,
+		SearchType:  csj.SearchType4,
 		OrderType:   csj.OrderType1,
 		CosRatioMin: cosRatioMin,
 	}
@@ -130,9 +130,9 @@ func Detail(appId, appSecret, reqId string, productIds []uint64) (*DetailRespons
 	if resp.StatusCode() != 200 {
 		return nil, csj.NewCsjError(90101, csj.BaseDomain+"/product/detail", "请求失败，状态码："+strconv.Itoa(resp.StatusCode()), resp.String())
 	}
-	fmt.Println(resp.String())
-	var detailResponse DetailResponse
 
+	var detailResponse DetailResponse
+	fmt.Println(resp.String())
 	if err := detailResponse.Struct(resp.String()); err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func Category(appId, appSecret, reqId string, parentId uint64) (*CategoryRespons
 	if resp.StatusCode() != 200 {
 		return nil, csj.NewCsjError(90101, csj.BaseDomain+"/product/category", "请求失败，状态码："+strconv.Itoa(resp.StatusCode()), resp.String())
 	}
-	fmt.Println(resp.String())
+
 	var categoryResponse CategoryResponse
 
 	if err := categoryResponse.Struct(resp.String()); err != nil {

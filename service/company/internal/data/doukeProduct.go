@@ -19,9 +19,38 @@ func NewDoukeProductRepo(data *Data, logger log.Logger) biz.DoukeProductRepo {
 	}
 }
 
-func (dpsr *doukeProductRepo) Get(ctx context.Context, productId uint64) (*v1.GetDoukeProductsReply, error) {
-	product, err := dpsr.data.douyinuc.GetDoukeProducts(ctx, &v1.GetDoukeProductsRequest{
-		ProductId: productId,
+func (dpsr *doukeProductRepo) List(ctx context.Context, pageNum, pageSize, cosRatioMin, industryId, categoryId, subCategoryId uint64) (*v1.ListDoukeProductsReply, error) {
+	product, err := dpsr.data.douyinuc.ListDoukeProducts(ctx, &v1.ListDoukeProductsRequest{
+		PageNum:       pageNum,
+		PageSize:      pageSize,
+		CosRatioMin:   cosRatioMin,
+		IndustryId:    industryId,
+		CategoryId:    categoryId,
+		SubCategoryId: subCategoryId,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return product, err
+}
+
+func (dpsr *doukeProductRepo) ListByProductId(ctx context.Context, productIds string) (*v1.ListDoukeProductByProductIdsReply, error) {
+	product, err := dpsr.data.douyinuc.ListDoukeProductByProductIds(ctx, &v1.ListDoukeProductByProductIdsRequest{
+		ProductIds: productIds,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return product, err
+}
+
+func (dpsr *doukeProductRepo) ListCategory(ctx context.Context, parentId uint64) (*v1.ListCategoryDoukeProductsReply, error) {
+	product, err := dpsr.data.douyinuc.ListCategoryDoukeProducts(ctx, &v1.ListCategoryDoukeProductsRequest{
+		ParentId: parentId,
 	})
 
 	if err != nil {

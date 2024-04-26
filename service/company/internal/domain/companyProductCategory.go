@@ -12,6 +12,13 @@ type CompanyProductCategory struct {
 	ChildList    []*CompanyProductCategory
 }
 
+type CompanyProductCategoryGorm struct {
+	CategoryId   uint64
+	ParentId     uint64
+	CategoryName string
+	Sort         uint64
+}
+
 func NewCompanyProductCategory(ctx context.Context, categoryId, parentId uint64, categoryName string) *CompanyProductCategory {
 	return &CompanyProductCategory{
 		CategoryId:   categoryId,

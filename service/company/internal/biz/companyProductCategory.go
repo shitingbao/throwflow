@@ -12,4 +12,5 @@ var (
 
 type CompanyProductCategoryRepo interface {
 	List(context.Context) ([]*domain.CompanyProductCategory, error)
+	Upsert(ctx context.Context, in *domain.CompanyProductCategory) error
 }

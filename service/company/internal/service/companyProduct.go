@@ -5,6 +5,7 @@ import (
 	"company/internal/pkg/tool"
 	"context"
 	"fmt"
+	"github.com/golang/protobuf/ptypes/empty"
 	"math"
 	"strconv"
 	"time"
@@ -46,22 +47,20 @@ func (cs *CompanyService) GetCompanyProducts(ctx context.Context, in *v1.GetComp
 	return &v1.GetCompanyProductsReply{
 		Code: 200,
 		Data: &v1.GetCompanyProductsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		},
 	}, nil
 }
@@ -100,22 +99,20 @@ func (cs *CompanyService) GetCompanyProductByProductOutIds(ctx context.Context, 
 	return &v1.GetCompanyProductByProductOutIdsReply{
 		Code: 200,
 		Data: &v1.GetCompanyProductByProductOutIdsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		},
 	}, nil
 }
@@ -128,18 +125,11 @@ func (cs *CompanyService) GetExternalCompanyProducts(ctx context.Context, in *v1
 	}
 
 	productImgs := make([]*v1.GetExternalCompanyProductsReply_ProductImg, 0)
-	productDetailImgs := make([]*v1.GetExternalCompanyProductsReply_ProductDetailImg, 0)
 	awemes := make([]*v1.GetExternalCompanyProductsReply_Aweme, 0)
 
 	for _, productImg := range companyProduct.ProductImgs {
 		productImgs = append(productImgs, &v1.GetExternalCompanyProductsReply_ProductImg{
 			ProductImg: productImg,
-		})
-	}
-
-	for _, productDetailImg := range companyProduct.ProductDetailImgs {
-		productDetailImgs = append(productDetailImgs, &v1.GetExternalCompanyProductsReply_ProductDetailImg{
-			ProductDetailImg: productDetailImg,
 		})
 	}
 
@@ -158,14 +148,10 @@ func (cs *CompanyService) GetExternalCompanyProducts(ctx context.Context, in *v1
 			ProductId:             companyProduct.ProductOutId,
 			ProductName:           companyProduct.ProductName,
 			ProductImgs:           productImgs,
-			ProductDetailImgs:     productDetailImgs,
 			ProductPrice:          companyProduct.ProductPrice,
 			ShopName:              companyProduct.ShopName,
-			ShopLogo:              companyProduct.ShopLogo,
 			ShopScore:             fmt.Sprintf("%.2f", tool.Decimal(float64(companyProduct.ShopScore), 2)),
 			IsTop:                 uint32(companyProduct.IsTop),
-			SampleThresholdType:   uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue:  companyProduct.SampleThresholdValue,
 			PureCommission:        companyProduct.PureCommission,
 			PureServiceCommission: companyProduct.PureServiceCommission,
 			CommonCommission:      fmt.Sprintf("%.f", tool.Decimal(float64(companyProduct.CommissionRatio), 2)),
@@ -250,22 +236,20 @@ func (cs *CompanyService) ListCompanyProducts(ctx context.Context, in *v1.ListCo
 		}
 
 		list = append(list, &v1.ListCompanyProductsReply_CompanyProduct{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		})
 	}
 
@@ -463,22 +447,20 @@ func (cs *CompanyService) ListCompanyTaskProducts(ctx context.Context, in *v1.Li
 		}
 
 		list = append(list, &v1.ListCompanyTaskProductsReply_CompanyProduct{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		})
 	}
 
@@ -561,22 +543,20 @@ func (cs *CompanyService) CreateCompanyProducts(ctx context.Context, in *v1.Crea
 	return &v1.CreateCompanyProductsReply{
 		Code: 200,
 		Data: &v1.CreateCompanyProductsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		},
 	}, nil
 }
@@ -641,22 +621,20 @@ func (cs *CompanyService) UpdateStatusCompanyProducts(ctx context.Context, in *v
 	return &v1.UpdateStatusCompanyProductsReply{
 		Code: 200,
 		Data: &v1.UpdateStatusCompanyProductsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		},
 	}, nil
 }
@@ -695,76 +673,20 @@ func (cs *CompanyService) UpdateIsTopCompanyProducts(ctx context.Context, in *v1
 	return &v1.UpdateIsTopCompanyProductsReply{
 		Code: 200,
 		Data: &v1.UpdateIsTopCompanyProductsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
-		},
-	}, nil
-}
-
-func (cs *CompanyService) UpdateSampleThresholdCompanyProducts(ctx context.Context, in *v1.UpdateSampleThresholdCompanyProductsRequest) (*v1.UpdateSampleThresholdCompanyProductsReply, error) {
-	companyProduct, err := cs.cprouc.UpdateSampleThresholdCompanyProducts(ctx, in.ProductId, in.SampleThresholdValue, uint8(in.SampleThresholdType))
-
-	if err != nil {
-		return nil, err
-	}
-
-	productImgs := make([]*v1.UpdateSampleThresholdCompanyProductsReply_ProductImg, 0)
-	materialOutUrls := make([]*v1.UpdateSampleThresholdCompanyProductsReply_MaterialOutUrl, 0)
-	commissions := make([]*v1.UpdateSampleThresholdCompanyProductsReply_Commission, 0)
-
-	for _, productImg := range companyProduct.ProductImgs {
-		productImgs = append(productImgs, &v1.UpdateSampleThresholdCompanyProductsReply_ProductImg{
-			ProductImg: productImg,
-		})
-	}
-
-	for _, materialOutUrl := range companyProduct.MaterialOutUrls {
-		materialOutUrls = append(materialOutUrls, &v1.UpdateSampleThresholdCompanyProductsReply_MaterialOutUrl{
-			MaterialOutUrl: materialOutUrl,
-		})
-	}
-
-	for _, commission := range companyProduct.Commissions {
-		commissions = append(commissions, &v1.UpdateSampleThresholdCompanyProductsReply_Commission{
-			CommissionRatio:  float64(commission.CommissionRatio),
-			ServiceRatio:     float64(commission.ServiceRatio),
-			CommissionOutUrl: commission.CommissionOutUrl,
-		})
-	}
-
-	return &v1.UpdateSampleThresholdCompanyProductsReply{
-		Code: 200,
-		Data: &v1.UpdateSampleThresholdCompanyProductsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		},
 	}, nil
 }
@@ -809,22 +731,20 @@ func (cs *CompanyService) UpdateCommissionCompanyProducts(ctx context.Context, i
 		return &v1.UpdateCommissionCompanyProductsReply{
 			Code: 200,
 			Data: &v1.UpdateCommissionCompanyProductsReply_Data{
-				ProductId:            companyProduct.Id,
-				ProductOutId:         companyProduct.ProductOutId,
-				ProductType:          uint32(companyProduct.ProductType),
-				ProductStatus:        uint32(companyProduct.ProductStatus),
-				ProductName:          companyProduct.ProductName,
-				ProductImgs:          productImgs,
-				ProductPrice:         companyProduct.ProductPrice,
-				ProductUrl:           companyProduct.ProductUrl,
-				IsTop:                uint32(companyProduct.IsTop),
-				MaterialOutUrls:      materialOutUrls,
-				SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-				SampleThresholdValue: companyProduct.SampleThresholdValue,
-				Commissions:          commissions,
-				InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-				ForbidReason:         companyProduct.ForbidReason,
-				IsTask:               uint32(companyProduct.IsTask),
+				ProductId:       companyProduct.Id,
+				ProductOutId:    companyProduct.ProductOutId,
+				ProductType:     uint32(companyProduct.ProductType),
+				ProductStatus:   uint32(companyProduct.ProductStatus),
+				ProductName:     companyProduct.ProductName,
+				ProductImgs:     productImgs,
+				ProductPrice:    companyProduct.ProductPrice,
+				ProductUrl:      companyProduct.ProductUrl,
+				IsTop:           uint32(companyProduct.IsTop),
+				MaterialOutUrls: materialOutUrls,
+				Commissions:     commissions,
+				InvestmentRatio: float64(companyProduct.InvestmentRatio),
+				ForbidReason:    companyProduct.ForbidReason,
+				IsTask:          uint32(companyProduct.IsTask),
 			},
 		}, nil
 	}
@@ -875,22 +795,20 @@ func (cs *CompanyService) UpdateInvestmentRatioCompanyProducts(ctx context.Conte
 	return &v1.UpdateInvestmentRatioCompanyProductsReply{
 		Code: 200,
 		Data: &v1.UpdateInvestmentRatioCompanyProductsReply_Data{
-			ProductId:            companyProduct.Id,
-			ProductOutId:         companyProduct.ProductOutId,
-			ProductType:          uint32(companyProduct.ProductType),
-			ProductStatus:        uint32(companyProduct.ProductStatus),
-			ProductName:          companyProduct.ProductName,
-			ProductImgs:          productImgs,
-			ProductPrice:         companyProduct.ProductPrice,
-			ProductUrl:           companyProduct.ProductUrl,
-			IsTop:                uint32(companyProduct.IsTop),
-			MaterialOutUrls:      materialOutUrls,
-			SampleThresholdType:  uint32(companyProduct.SampleThresholdType),
-			SampleThresholdValue: companyProduct.SampleThresholdValue,
-			Commissions:          commissions,
-			InvestmentRatio:      float64(companyProduct.InvestmentRatio),
-			ForbidReason:         companyProduct.ForbidReason,
-			IsTask:               uint32(companyProduct.IsTask),
+			ProductId:       companyProduct.Id,
+			ProductOutId:    companyProduct.ProductOutId,
+			ProductType:     uint32(companyProduct.ProductType),
+			ProductStatus:   uint32(companyProduct.ProductStatus),
+			ProductName:     companyProduct.ProductName,
+			ProductImgs:     productImgs,
+			ProductPrice:    companyProduct.ProductPrice,
+			ProductUrl:      companyProduct.ProductUrl,
+			IsTop:           uint32(companyProduct.IsTop),
+			MaterialOutUrls: materialOutUrls,
+			Commissions:     commissions,
+			InvestmentRatio: float64(companyProduct.InvestmentRatio),
+			ForbidReason:    companyProduct.ForbidReason,
+			IsTask:          uint32(companyProduct.IsTask),
 		},
 	}, nil
 }
@@ -905,6 +823,19 @@ func (cs *CompanyService) UpdateOutProductCompanyProducts(ctx context.Context, i
 	return &v1.UpdateOutProductCompanyProductsReply{
 		Code: 200,
 		Data: &v1.UpdateOutProductCompanyProductsReply_Data{},
+	}, nil
+}
+
+func (cs *CompanyService) UpdateCompanyProductByProductIds(ctx context.Context, in *v1.UpdateCompanyProductByProductIdsRequest) (*v1.UpdateCompanyProductByProductIdsReply, error) {
+	err := cs.cprouc.UpdateCompanyProductByProductIds(ctx, in.ProductIds)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.UpdateCompanyProductByProductIdsReply{
+		Code: 200,
+		Data: &v1.UpdateCompanyProductByProductIdsReply_Data{},
 	}, nil
 }
 
@@ -937,6 +868,19 @@ func (cs *CompanyService) ParseCompanyProducts(ctx context.Context, in *v1.Parse
 			TotalSale:             companyProduct.TotalSale,
 			IsTask:                uint32(companyProduct.IsTask),
 		},
+	}, nil
+}
+
+func (cs *CompanyService) VerificationCompanyProducts(ctx context.Context, in *v1.VerificationCompanyProductsRequest) (*v1.VerificationCompanyProductsReply, error) {
+	err := cs.cprouc.VerificationCompanyProducts(ctx, in.ProductId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &v1.VerificationCompanyProductsReply{
+		Code: 200,
+		Data: &v1.VerificationCompanyProductsReply_Data{},
 	}, nil
 }
 
@@ -994,5 +938,22 @@ func (cs *CompanyService) DeleteCompanyProducts(ctx context.Context, in *v1.Dele
 	return &v1.DeleteCompanyProductsReply{
 		Code: 200,
 		Data: &v1.DeleteCompanyProductsReply_Data{},
+	}, nil
+}
+
+func (cs *CompanyService) SyncCompanyProducts(ctx context.Context, in *empty.Empty) (*v1.SyncCompanyProductsReply, error) {
+	cs.log.Infof("同步商品数据, 开始时间 %s \n", time.Now())
+
+	ctx = context.Background()
+
+	if err := cs.cprouc.SyncCompanyProducts(ctx); err != nil {
+		return nil, err
+	}
+
+	cs.log.Infof("同步商品数据, 结束时间 %s \n", time.Now())
+
+	return &v1.SyncCompanyProductsReply{
+		Code: 200,
+		Data: &v1.SyncCompanyProductsReply_Data{},
 	}, nil
 }

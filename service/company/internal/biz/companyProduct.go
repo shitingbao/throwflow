@@ -12,9 +12,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
@@ -53,6 +55,7 @@ type CompanyProductRepo interface {
 	Statistics(context.Context, uint64, uint64, uint64, string, string, string) (int64, error)
 	Save(context.Context, *domain.CompanyProduct) (*domain.CompanyProduct, error)
 	Update(context.Context, *domain.CompanyProduct) (*domain.CompanyProduct, error)
+	Upsert(context.Context, *domain.DoukeProductGorm) error
 
 	GetCacheHash(context.Context, string, string) (string, error)
 	SaveCacheHash(context.Context, string, map[string]string, time.Duration) error
@@ -143,42 +146,17 @@ func (cpuc *CompanyProductUsecase) GetExternalCompanyProducts(ctx context.Contex
 		}
 	}
 
-	uday, _ := strconv.ParseUint(time.Now().Format("20060102"), 10, 64)
-
-	sampleThreshold, err := cpuc.csrepo.GetByCompanyIdAndDayAndSetKey(ctx, cpuc.cconf.DefaultCompanyId, uint32(uday), "sampleThreshold")
-
-	if err == nil {
-		sampleThreshold.GetSetValue(ctx)
-	}
-
 	if companyProduct.IsExist == 1 {
 		companyProduct.SetCommissions(ctx)
-
-		if companyProduct.SampleThresholdType == 0 && sampleThreshold != nil {
-			companyProduct.SetSampleThresholdType(ctx, sampleThreshold.SetValueSampleThreshold.Type)
-			companyProduct.SetSampleThresholdValue(ctx, sampleThreshold.SetValueSampleThreshold.Value)
-		}
 
 		pureCommission, pureServiceCommission, _ := companyProduct.GetCommission(ctx)
 
 		companyProduct.SetPureCommission(ctx, pureCommission)
 		companyProduct.SetPureServiceCommission(ctx, pureServiceCommission)
-	} else {
-		var sampleThresholdType uint8 = 0
-		var sampleThresholdValue uint64 = 0
-
-		if sampleThreshold != nil {
-			sampleThresholdType = sampleThreshold.SetValueSampleThreshold.Type
-			sampleThresholdValue = sampleThreshold.SetValueSampleThreshold.Value
-		}
-
-		companyProduct.SetSampleThresholdType(ctx, sampleThresholdType)
-		companyProduct.SetSampleThresholdValue(ctx, sampleThresholdValue)
 	}
 
 	companyProduct.SetProductUrl(ctx)
 	companyProduct.SetProductImgs(ctx)
-	companyProduct.SetProductDetailImgs(ctx)
 	companyProduct.SetMaterialOutUrls(ctx)
 	companyProduct.SetAwemes(ctx, awemes)
 
@@ -655,37 +633,6 @@ func (cpuc *CompanyProductUsecase) UpdateIsTopCompanyProducts(ctx context.Contex
 	return companyProduct, nil
 }
 
-func (cpuc *CompanyProductUsecase) UpdateSampleThresholdCompanyProducts(ctx context.Context, productId, sampleThresholdValue uint64, sampleThresholdType uint8) (*domain.CompanyProduct, error) {
-	inCompanyProduct, err := cpuc.repo.GetById(ctx, productId, "", "1")
-
-	if err != nil {
-		return nil, CompanyProductNotFound
-	}
-
-	if sampleThresholdValue == 3 {
-		inCompanyProduct.SetSampleThresholdType(ctx, sampleThresholdType)
-		inCompanyProduct.SetSampleThresholdValue(ctx, 0)
-	} else {
-		inCompanyProduct.SetSampleThresholdType(ctx, sampleThresholdType)
-		inCompanyProduct.SetSampleThresholdValue(ctx, sampleThresholdValue)
-	}
-
-	inCompanyProduct.SetUpdateTime(ctx, time.Now())
-
-	companyProduct, err := cpuc.repo.Update(ctx, inCompanyProduct)
-
-	if err != nil {
-		return nil, CompanyProductUpdateError
-	}
-
-	companyProduct.SetProductUrl(ctx)
-	companyProduct.SetProductImgs(ctx)
-	companyProduct.SetCommissions(ctx)
-	companyProduct.SetMaterialOutUrls(ctx)
-
-	return companyProduct, nil
-}
-
 func (cpuc *CompanyProductUsecase) UpdateCommissionCompanyProducts(ctx context.Context, productId uint64, commission string) (*domain.CompanyProduct, error) {
 	inCompanyProduct, err := cpuc.repo.GetById(ctx, productId, "", "1")
 
@@ -728,8 +675,6 @@ func (cpuc *CompanyProductUsecase) UpdateCommissionCompanyProducts(ctx context.C
 				inCompanyProduct.SetProductStatus(ctx, 1)
 				inCompanyProduct.SetIsTop(ctx, 0)
 				inCompanyProduct.SetIsExist(ctx, 0)
-				inCompanyProduct.SetSampleThresholdType(ctx, 0)
-				inCompanyProduct.SetSampleThresholdValue(ctx, 0)
 				inCompanyProduct.SetMaterialOutUrl(ctx, "")
 				inCompanyProduct.SetCommission(ctx, "")
 				inCompanyProduct.SetInvestmentRatio(ctx, 0.00)
@@ -764,8 +709,6 @@ func (cpuc *CompanyProductUsecase) UpdateCommissionCompanyProducts(ctx context.C
 				inCompanyProduct.SetProductStatus(ctx, 1)
 				inCompanyProduct.SetIsTop(ctx, 0)
 				inCompanyProduct.SetIsExist(ctx, 0)
-				inCompanyProduct.SetSampleThresholdType(ctx, 0)
-				inCompanyProduct.SetSampleThresholdValue(ctx, 0)
 				inCompanyProduct.SetMaterialOutUrl(ctx, "")
 				inCompanyProduct.SetCommission(ctx, "")
 				inCompanyProduct.SetInvestmentRatio(ctx, 0.00)
@@ -963,17 +906,12 @@ func (cpuc *CompanyProductUsecase) UpdateOutProductCompanyProducts(ctx context.C
 
 			inCompanyProduct.SetProductName(ctx, productName)
 			inCompanyProduct.SetProductImg(ctx, productImg)
-			inCompanyProduct.SetProductDetailImg(ctx, productDetailImg)
 			inCompanyProduct.SetProductPrice(ctx, productPrice)
 			inCompanyProduct.SetIndustryId(ctx, industryId)
-			inCompanyProduct.SetIndustryName(ctx, industryName)
 			inCompanyProduct.SetCategoryId(ctx, categoryId)
-			inCompanyProduct.SetCategoryName(ctx, categoryName)
 			inCompanyProduct.SetCategoryId(ctx, subCategoryId)
-			inCompanyProduct.SetCategoryName(ctx, subCategoryName)
 			inCompanyProduct.SetShopName(ctx, shopName)
 			inCompanyProduct.SetShopScore(ctx, shopScore)
-			inCompanyProduct.SetShopLogo(ctx, shopLogo)
 			inCompanyProduct.SetTotalSale(ctx, totalSale)
 			inCompanyProduct.SetCommissionRatio(ctx, float32(commissionRatio))
 			inCompanyProduct.SetIsHot(ctx, isHot)
@@ -998,6 +936,36 @@ func (cpuc *CompanyProductUsecase) UpdateOutProductCompanyProducts(ctx context.C
 	return nil
 }
 
+func (cpuc *CompanyProductUsecase) UpdateCompanyProductByProductIds(ctx context.Context, productIds string) error {
+	sproductIds := tool.RemoveEmptyString(strings.Split(productIds, ","))
+
+	var pageNum, pageSize uint64 = 1, 20
+
+	totalPage := uint64(math.Ceil(float64(len(sproductIds)) / float64(pageSize)))
+
+	for ; pageNum <= totalPage; pageNum++ {
+		startIndex := (pageNum - 1) * pageSize
+		endIndex := pageNum * pageSize
+
+		if endIndex > uint64(len(sproductIds)) {
+			endIndex = uint64(len(sproductIds))
+		}
+
+		if products, err := cpuc.dprepo.ListByProductId(ctx, strings.Join(sproductIds[startIndex:endIndex], ",")); err == nil {
+			for _, product := range products.Data.List {
+				inDoukeProductGorm := domain.NewDoukeProductGorm(ctx, product.ProductOutId, product.IndustryId, product.CategoryId, product.SubCategoryId, product.TotalSale, 1, 2, float32(product.CommissionRatio), product.ProductName, product.ProductImg, product.ProductPrice, product.ShopName)
+				inDoukeProductGorm.SetShopScore(ctx, product.ShopScore)
+				inDoukeProductGorm.SetCreateTime(ctx)
+				inDoukeProductGorm.SetUpdateTime(ctx)
+
+				cpuc.repo.Upsert(ctx, inDoukeProductGorm)
+			}
+		}
+	}
+
+	return nil
+}
+
 func (cpuc *CompanyProductUsecase) ParseCompanyProducts(ctx context.Context, content string) (*domain.CompanyProduct, error) {
 	product, err := cpuc.dprepo.Parse(ctx, content)
 
@@ -1005,28 +973,32 @@ func (cpuc *CompanyProductUsecase) ParseCompanyProducts(ctx context.Context, con
 		return nil, errors.InternalServer("COMPANY_DOUKE_PRODUCT_PARSE_ERROR", tool.GetGRPCErrorInfo(err))
 	}
 
-	productDetail, err := cpuc.dprepo.Get(ctx, product.Data.ProductId)
+	products, err := cpuc.dprepo.ListByProductId(ctx, strconv.FormatUint(product.Data.ProductId, 10))
 
 	if err != nil {
 		return nil, CompanyDoukeProductParseError
 	}
 
+	if len(products.Data.List) == 0 {
+		return nil, CompanyDoukeProductParseError
+	}
+
 	var companyProduct *domain.CompanyProduct
 
-	if inCompanyProduct, err := cpuc.repo.GetByProductOutId(ctx, productDetail.Data.ProductOutId, "", ""); err != nil {
+	if inCompanyProduct, err := cpuc.repo.GetByProductOutId(ctx, products.Data.List[0].ProductOutId, "", ""); err != nil {
 		inCompanyProduct = &domain.CompanyProduct{}
-		inCompanyProduct.SetProductOutId(ctx, productDetail.Data.ProductOutId)
+		inCompanyProduct.SetProductOutId(ctx, products.Data.List[0].ProductOutId)
 		inCompanyProduct.SetProductStatus(ctx, 2)
-		inCompanyProduct.SetProductName(ctx, productDetail.Data.ProductName)
-		inCompanyProduct.SetProductImg(ctx, productDetail.Data.ProductImg)
-		inCompanyProduct.SetProductPrice(ctx, productDetail.Data.ProductPrice)
-		inCompanyProduct.SetIndustryId(ctx, productDetail.Data.IndustryId)
-		inCompanyProduct.SetCategoryId(ctx, productDetail.Data.CategoryId)
-		inCompanyProduct.SetSubCategoryId(ctx, productDetail.Data.SubCategoryId)
-		inCompanyProduct.SetShopName(ctx, productDetail.Data.ShopName)
-		inCompanyProduct.SetShopScore(ctx, productDetail.Data.ShopScore)
-		inCompanyProduct.SetTotalSale(ctx, productDetail.Data.TotalSale)
-		inCompanyProduct.SetCommissionRatio(ctx, float32(productDetail.Data.CommissionRatio))
+		inCompanyProduct.SetProductName(ctx, products.Data.List[0].ProductName)
+		inCompanyProduct.SetProductImg(ctx, products.Data.List[0].ProductImg)
+		inCompanyProduct.SetProductPrice(ctx, products.Data.List[0].ProductPrice)
+		inCompanyProduct.SetIndustryId(ctx, products.Data.List[0].IndustryId)
+		inCompanyProduct.SetCategoryId(ctx, products.Data.List[0].CategoryId)
+		inCompanyProduct.SetSubCategoryId(ctx, products.Data.List[0].SubCategoryId)
+		inCompanyProduct.SetShopName(ctx, products.Data.List[0].ShopName)
+		inCompanyProduct.SetShopScore(ctx, products.Data.List[0].ShopScore)
+		inCompanyProduct.SetTotalSale(ctx, products.Data.List[0].TotalSale)
+		inCompanyProduct.SetCommissionRatio(ctx, float32(products.Data.List[0].CommissionRatio))
 		inCompanyProduct.SetCreateTime(ctx)
 		inCompanyProduct.SetUpdateTime(ctx, time.Now())
 
@@ -1036,18 +1008,18 @@ func (cpuc *CompanyProductUsecase) ParseCompanyProducts(ctx context.Context, con
 			return nil, CompanyProductCreateError
 		}
 	} else {
-		inCompanyProduct.SetProductOutId(ctx, productDetail.Data.ProductOutId)
+		inCompanyProduct.SetProductOutId(ctx, products.Data.List[0].ProductOutId)
 		inCompanyProduct.SetProductStatus(ctx, 2)
-		inCompanyProduct.SetProductName(ctx, productDetail.Data.ProductName)
-		inCompanyProduct.SetProductImg(ctx, productDetail.Data.ProductImg)
-		inCompanyProduct.SetProductPrice(ctx, productDetail.Data.ProductPrice)
-		inCompanyProduct.SetIndustryId(ctx, productDetail.Data.IndustryId)
-		inCompanyProduct.SetCategoryId(ctx, productDetail.Data.CategoryId)
-		inCompanyProduct.SetSubCategoryId(ctx, productDetail.Data.SubCategoryId)
-		inCompanyProduct.SetShopName(ctx, productDetail.Data.ShopName)
-		inCompanyProduct.SetShopScore(ctx, productDetail.Data.ShopScore)
-		inCompanyProduct.SetTotalSale(ctx, productDetail.Data.TotalSale)
-		inCompanyProduct.SetCommissionRatio(ctx, float32(productDetail.Data.CommissionRatio))
+		inCompanyProduct.SetProductName(ctx, products.Data.List[0].ProductName)
+		inCompanyProduct.SetProductImg(ctx, products.Data.List[0].ProductImg)
+		inCompanyProduct.SetProductPrice(ctx, products.Data.List[0].ProductPrice)
+		inCompanyProduct.SetIndustryId(ctx, products.Data.List[0].IndustryId)
+		inCompanyProduct.SetCategoryId(ctx, products.Data.List[0].CategoryId)
+		inCompanyProduct.SetSubCategoryId(ctx, products.Data.List[0].SubCategoryId)
+		inCompanyProduct.SetShopName(ctx, products.Data.List[0].ShopName)
+		inCompanyProduct.SetShopScore(ctx, products.Data.List[0].ShopScore)
+		inCompanyProduct.SetTotalSale(ctx, products.Data.List[0].TotalSale)
+		inCompanyProduct.SetCommissionRatio(ctx, float32(products.Data.List[0].CommissionRatio))
 
 		companyProduct, err = cpuc.repo.Update(ctx, inCompanyProduct)
 
@@ -1081,6 +1053,64 @@ func (cpuc *CompanyProductUsecase) ParseCompanyProducts(ctx context.Context, con
 	}
 
 	return companyProduct, nil
+}
+
+func (cpuc *CompanyProductUsecase) VerificationCompanyProducts(ctx context.Context, productId uint64) error {
+	products, err := cpuc.dprepo.ListByProductId(ctx, strconv.FormatUint(productId, 10))
+
+	if err != nil {
+		return CompanyProductNotFound
+	}
+
+	if inCompanyProduct, err := cpuc.repo.GetByProductOutId(ctx, productId, "", ""); err != nil {
+		if len(products.Data.List) == 0 {
+			return CompanyProductNotFound
+		}
+
+		inCompanyProduct = &domain.CompanyProduct{}
+		inCompanyProduct.SetProductOutId(ctx, products.Data.List[0].ProductOutId)
+		inCompanyProduct.SetProductStatus(ctx, 2)
+		inCompanyProduct.SetProductName(ctx, products.Data.List[0].ProductName)
+		inCompanyProduct.SetProductImg(ctx, products.Data.List[0].ProductImg)
+		inCompanyProduct.SetProductPrice(ctx, products.Data.List[0].ProductPrice)
+		inCompanyProduct.SetIndustryId(ctx, products.Data.List[0].IndustryId)
+		inCompanyProduct.SetCategoryId(ctx, products.Data.List[0].CategoryId)
+		inCompanyProduct.SetSubCategoryId(ctx, products.Data.List[0].SubCategoryId)
+		inCompanyProduct.SetShopName(ctx, products.Data.List[0].ShopName)
+		inCompanyProduct.SetShopScore(ctx, products.Data.List[0].ShopScore)
+		inCompanyProduct.SetTotalSale(ctx, products.Data.List[0].TotalSale)
+		inCompanyProduct.SetCommissionRatio(ctx, float32(products.Data.List[0].CommissionRatio))
+		inCompanyProduct.SetCreateTime(ctx)
+		inCompanyProduct.SetUpdateTime(ctx, time.Now())
+
+		if _, err = cpuc.repo.Save(ctx, inCompanyProduct); err != nil {
+			return CompanyProductCreateError
+		}
+	} else {
+		if len(products.Data.List) == 0 {
+			inCompanyProduct.SetProductStatus(ctx, 1)
+		} else {
+			inCompanyProduct.SetProductStatus(ctx, 2)
+		}
+
+		inCompanyProduct.SetProductOutId(ctx, products.Data.List[0].ProductOutId)
+		inCompanyProduct.SetProductName(ctx, products.Data.List[0].ProductName)
+		inCompanyProduct.SetProductImg(ctx, products.Data.List[0].ProductImg)
+		inCompanyProduct.SetProductPrice(ctx, products.Data.List[0].ProductPrice)
+		inCompanyProduct.SetIndustryId(ctx, products.Data.List[0].IndustryId)
+		inCompanyProduct.SetCategoryId(ctx, products.Data.List[0].CategoryId)
+		inCompanyProduct.SetSubCategoryId(ctx, products.Data.List[0].SubCategoryId)
+		inCompanyProduct.SetShopName(ctx, products.Data.List[0].ShopName)
+		inCompanyProduct.SetShopScore(ctx, products.Data.List[0].ShopScore)
+		inCompanyProduct.SetTotalSale(ctx, products.Data.List[0].TotalSale)
+		inCompanyProduct.SetCommissionRatio(ctx, float32(products.Data.List[0].CommissionRatio))
+
+		if _, err = cpuc.repo.Update(ctx, inCompanyProduct); err != nil {
+			return CompanyProductUpdateError
+		}
+	}
+
+	return nil
 }
 
 func (cpuc *CompanyProductUsecase) UploadPartCompanyProducts(ctx context.Context, partNumber, totalPart, contentLength uint64, uploadId, content string) error {
@@ -1195,8 +1225,6 @@ func (cpuc *CompanyProductUsecase) DeleteCompanyProducts(ctx context.Context, pr
 	inCompanyProduct.SetProductStatus(ctx, 0)
 	inCompanyProduct.SetIsTop(ctx, 0)
 	inCompanyProduct.SetIsExist(ctx, 0)
-	inCompanyProduct.SetSampleThresholdType(ctx, 0)
-	inCompanyProduct.SetSampleThresholdValue(ctx, 0)
 	inCompanyProduct.SetMaterialOutUrl(ctx, "")
 	inCompanyProduct.SetCommission(ctx, "")
 	inCompanyProduct.SetInvestmentRatio(ctx, 0.00)
@@ -1208,4 +1236,203 @@ func (cpuc *CompanyProductUsecase) DeleteCompanyProducts(ctx context.Context, pr
 	}
 
 	return nil
+}
+
+func (cpuc *CompanyProductUsecase) SyncCompanyProducts(ctx context.Context) error {
+	/*var pageNum, pageSize uint64 = 1, 20
+
+	total, err := cpuc.repo.Count(ctx, 0, 0, 0, 0, "", "", "")
+
+	if err != nil {
+		return CompanyProductListError
+	}
+
+	totalPage := uint64(math.Ceil(float64(total) / float64(pageSize)))
+
+	for ; pageNum <= totalPage; pageNum++ {
+		companyProducts, err := cpuc.repo.List(ctx, int(pageNum), int(pageSize), 0, 0, 0, "", "", "")
+
+		if err != nil {
+			return CompanyProductListError
+		}
+
+		var productIds []string
+
+		for _, companyProduct := range companyProducts {
+			productIds = append(productIds, strconv.FormatUint(companyProduct.ProductOutId, 10))
+		}
+
+		if len(productIds) > 0 {
+			if products, err := cpuc.dprepo.ListByProductId(ctx, strings.Join(productIds, ",")); err == nil {
+				for _, product := range products.Data.List {
+					inDoukeProductGorm := domain.NewDoukeProductGorm(ctx, product.ProductOutId, product.IndustryId, product.CategoryId, product.SubCategoryId, product.TotalSale, 1, 2, float32(product.CommissionRatio), product.ProductName, product.ProductImg, product.ProductPrice, product.ShopName)
+					inDoukeProductGorm.SetShopScore(ctx, product.ShopScore)
+					inDoukeProductGorm.SetCreateTime(ctx)
+					inDoukeProductGorm.SetUpdateTime(ctx)
+
+					cpuc.repo.Upsert(ctx, inDoukeProductGorm)
+				}
+			}
+		}
+	}*/
+
+	industries, err := cpuc.dprepo.ListCategory(ctx, 0)
+
+	if err != nil {
+		return CompanyDoukeProductCategoryListError
+	}
+
+	for _, industry := range industries.Data.List {
+		if industry.CategoryId != 20037 || industry.CategoryId != 20042 || industry.CategoryId != 20050 || industry.CategoryId != 20051 || industry.CategoryId != 20082 || industry.CategoryId != 20121 || industry.CategoryId != 20122 || industry.CategoryId != 31920 || industry.CategoryId != 31928 || industry.CategoryId != 31983 || industry.CategoryId != 32603 {
+			inIndustry := &domain.CompanyProductCategory{
+				CategoryId:   industry.CategoryId,
+				ParentId:     0,
+				CategoryName: industry.CategoryName,
+			}
+
+			cpuc.cpcrepo.Upsert(ctx, inIndustry)
+
+			if categories, err := cpuc.dprepo.ListCategory(ctx, industry.CategoryId); err == nil {
+				for _, category := range categories.Data.List {
+					inCategory := &domain.CompanyProductCategory{
+						CategoryId:   category.CategoryId,
+						ParentId:     industry.CategoryId,
+						CategoryName: category.CategoryName,
+					}
+
+					cpuc.cpcrepo.Upsert(ctx, inCategory)
+
+					if subCategories, err := cpuc.dprepo.ListCategory(ctx, category.CategoryId); err == nil {
+						for _, subCategory := range subCategories.Data.List {
+							inSubCategory := &domain.CompanyProductCategory{
+								CategoryId:   subCategory.CategoryId,
+								ParentId:     category.CategoryId,
+								CategoryName: subCategory.CategoryName,
+							}
+
+							cpuc.cpcrepo.Upsert(ctx, inSubCategory)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	companyProductCategories, err := cpuc.cpcrepo.List(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	list := make([]*domain.CompanyProductCategory, 0)
+
+	for _, companyProductCategory := range companyProductCategories {
+		if companyProductCategory.ParentId == 0 {
+			childList := make([]*domain.CompanyProductCategory, 0)
+
+			list = append(list, &domain.CompanyProductCategory{
+				CategoryId:   companyProductCategory.CategoryId,
+				ParentId:     companyProductCategory.ParentId,
+				CategoryName: companyProductCategory.CategoryName,
+				Sort:         companyProductCategory.Sort,
+				ChildList:    childList,
+			})
+		}
+	}
+
+	for _, l := range list {
+		for _, companyProductCategory := range companyProductCategories {
+			if l.CategoryId == companyProductCategory.ParentId {
+				childList := make([]*domain.CompanyProductCategory, 0)
+
+				l.ChildList = append(l.ChildList, &domain.CompanyProductCategory{
+					CategoryId:   companyProductCategory.CategoryId,
+					ParentId:     companyProductCategory.ParentId,
+					CategoryName: companyProductCategory.CategoryName,
+					Sort:         companyProductCategory.Sort,
+					ChildList:    childList,
+				})
+			}
+		}
+	}
+
+	for _, l := range list {
+		for _, ll := range l.ChildList {
+			for _, companyProductCategory := range companyProductCategories {
+				if ll.CategoryId == companyProductCategory.ParentId {
+					childList := make([]*domain.CompanyProductCategory, 0)
+
+					ll.ChildList = append(ll.ChildList, &domain.CompanyProductCategory{
+						CategoryId:   companyProductCategory.CategoryId,
+						ParentId:     companyProductCategory.ParentId,
+						CategoryName: companyProductCategory.CategoryName,
+						Sort:         companyProductCategory.Sort,
+						ChildList:    childList,
+					})
+				}
+			}
+		}
+	}
+
+	for _, l := range list {
+		if len(l.ChildList) == 0 {
+			cpuc.SyncCompanyProduct(ctx, 1, 20, 1000, l.CategoryId, 0, 0)
+		} else {
+			for _, lchildList := range l.ChildList {
+				if len(lchildList.ChildList) == 0 {
+					cpuc.SyncCompanyProduct(ctx, 1, 20, 1000, l.CategoryId, lchildList.CategoryId, 0)
+				} else {
+					for _, llchildList := range lchildList.ChildList {
+						cpuc.SyncCompanyProduct(ctx, 1, 20, 1000, l.CategoryId, lchildList.CategoryId, llchildList.CategoryId)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (cpuc *CompanyProductUsecase) SyncCompanyProduct(ctx context.Context, pageNum, pageSize, cosRatioMin, industryId, categoryId, subCategoryId uint64) {
+	var scpwg sync.WaitGroup
+
+	scpwg.Add(1)
+
+	products, err := cpuc.listProducts(ctx, &scpwg, pageNum, pageSize, cosRatioMin, industryId, categoryId, subCategoryId)
+
+	if err == nil {
+		if products.Data.TotalPage > 1 {
+			var page uint64
+
+			if products.Data.TotalPage > 100 {
+				products.Data.TotalPage = 100
+			}
+
+			for page = 2; page <= products.Data.TotalPage; page++ {
+				scpwg.Add(1)
+
+				go cpuc.listProducts(ctx, &scpwg, page, pageSize, cosRatioMin, industryId, categoryId, subCategoryId)
+			}
+		}
+	}
+
+	scpwg.Wait()
+}
+
+func (cpuc *CompanyProductUsecase) listProducts(ctx context.Context, scpwg *sync.WaitGroup, pageNum, pageSize, cosRatioMin, industryId, categoryId, subCategoryId uint64) (*v1.ListDoukeProductsReply, error) {
+	defer scpwg.Done()
+
+	products, err := cpuc.dprepo.List(ctx, pageNum, pageSize, cosRatioMin, industryId, categoryId, subCategoryId)
+
+	if err == nil {
+		for _, product := range products.Data.List {
+			inDoukeProductGorm := domain.NewDoukeProductGorm(ctx, product.ProductOutId, product.IndustryId, product.CategoryId, product.SubCategoryId, product.TotalSale, 1, 2, float32(product.CommissionRatio), product.ProductName, product.ProductImg, product.ProductPrice, product.ShopName)
+			inDoukeProductGorm.SetCreateTime(ctx)
+			inDoukeProductGorm.SetUpdateTime(ctx)
+
+			cpuc.repo.Upsert(ctx, inDoukeProductGorm)
+		}
+	}
+
+	return products, err
 }

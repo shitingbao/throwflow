@@ -96,7 +96,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, volcengine *conf.Volc
 	companyTaskAccountRelationUsecase := biz.NewCompanyTaskAccountRelationUsecase(companyTaskAccountRelationRepo, companyTaskRepo, companyTaskDetailRepo, companyProductRepo, doukeOrderRepo, weixinUserOpenDouyinRepo, weixinUserCommissionRepo, openDouyinVideoRepo, weixinUserOrganizationRelationRepo, transaction, confData, volcengine, logger)
 	weixinUserRepo := data.NewWeixinUserRepo(dataData, logger)
 	companyTaskDetailUsecase := biz.NewCompanyTaskDetailUsecase(companyTaskDetailRepo, companyTaskAccountRelationRepo, weixinUserRepo, weixinUserOpenDouyinRepo, confData, logger)
-	companyService := service.NewCompanyService(menuUsecase, industryUsecase, clueUsecase, companyUsecase, companyUserUsecase, companyPerformanceRuleUsecase, companyPerformanceRebalanceUsecase, companyPerformanceUsecase, companySetUsecase, companyProductUsecase, companyMaterialUsecase, companyOrganizationUsecase, companyTaskUsecase, companyTaskAccountRelationUsecase, companyTaskDetailUsecase)
+	companyService := service.NewCompanyService(menuUsecase, industryUsecase, clueUsecase, companyUsecase, companyUserUsecase, companyPerformanceRuleUsecase, companyPerformanceRebalanceUsecase, companyPerformanceUsecase, companySetUsecase, companyProductUsecase, companyMaterialUsecase, companyOrganizationUsecase, companyTaskUsecase, companyTaskAccountRelationUsecase, companyTaskDetailUsecase, logger)
 	grpcServer := server.NewGRPCServer(confServer, companyService, logger)
 	registrar := server.NewRegistrar(registry)
 	app := newApp(logger, grpcServer, registrar)

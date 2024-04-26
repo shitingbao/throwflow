@@ -68,7 +68,7 @@ func wireApp(confServer *conf.Server, confData *conf.Data, registry *conf.Regist
 	userSampleOrderRepo := data.NewUserSampleOrderRepo(dataData, logger)
 	kuaidiInfoRepo := data.NewKuaidiInfoRepo(dataData, logger)
 	userSampleOrderUsecase := biz.NewUserSampleOrderUsecase(userSampleOrderRepo, userOpenDouyinRepo, userAddressRepo, companyRepo, companyProductRepo, jinritemaiOrderRepo, kuaidiInfoRepo, areaRepo, transaction, confData, logger)
-	userScanRecordUsecase := biz.NewUserScanRecordUsecase(userScanRecordRepo, userRepo, companyOrganizationRepo, transaction, confData, logger)
+	userScanRecordUsecase := biz.NewUserScanRecordUsecase(userScanRecordRepo, userRepo, userOrganizationRelationRepo, userIntegralRelationRepo, companyOrganizationRepo, transaction, confData, logger)
 	userCommissionRepo := data.NewUserCommissionRepo(dataData, logger)
 	userBalanceLogRepo := data.NewUserBalanceLogRepo(dataData, logger)
 	payRepo := data.NewPayRepo(dataData, logger)

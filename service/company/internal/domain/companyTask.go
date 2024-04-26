@@ -58,6 +58,10 @@ func (c *CompanyTask) SetIsTop(ctx context.Context, isTop uint8) {
 	c.IsTop = isTop
 }
 
+func (c *CompanyTask) SetIsDel(ctx context.Context) {
+	c.IsDel = 1
+}
+
 func (c *CompanyTask) SetReleaseTime(ctx context.Context, releaseTime time.Time) {
 	c.ReleaseTime = releaseTime
 }

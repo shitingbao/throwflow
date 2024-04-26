@@ -139,10 +139,6 @@ func (c *CompanyTaskUsecase) ListCompanyTask(ctx context.Context, isDel int, isT
 		if product != nil {
 			product.SetProductImgs(ctx)
 
-			if len(product.ProductImgs) > 0 {
-				product.SetProductDetailImg(ctx, product.ProductImgs[0])
-			}
-
 			t.CompanyProduct = *product
 		}
 	}
@@ -263,7 +259,16 @@ func (c *CompanyTaskUsecase) UpdateCompanyTaskIsDel(ctx context.Context, taskId 
 			return CompanyTaskProductDelete
 		}
 
-		if err := c.repo.UpdateCompanyTaskIsDel(ctx, taskId); err != nil {
+		task, err := c.repo.GetById(ctx, taskId)
+
+		if err != nil {
+			return CompanyTaskProductDelete
+		}
+
+		task.SetIsTop(ctx, 0)
+		task.SetIsDel(ctx)
+
+		if _, err := c.repo.Update(ctx, task); err != nil {
 			return CompanyTaskProductDelete
 		}
 

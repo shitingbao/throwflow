@@ -11,6 +11,7 @@ import (
 	"company/internal/pkg/event/kafka"
 	ctos "company/internal/pkg/volcengine/tos"
 	"context"
+	"gorm.io/gorm/logger"
 	slog "log"
 	"os"
 	"strings"
@@ -30,7 +31,6 @@ import (
 	grpcx "google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 // ProviderSet is data providers.
@@ -126,6 +126,7 @@ func NewDB(c *conf.Data, log log.Logger) *gorm.DB {
 	_ = db.AutoMigrate(&CompanySet{})
 	_ = db.AutoMigrate(&CompanyUserQianchuanSearch{})
 	_ = db.AutoMigrate(&CompanyProduct{})
+	_ = db.AutoMigrate(&CompanyProductCategory{})
 	_ = db.AutoMigrate(&CompanyMaterialLibrary{})
 	_ = db.AutoMigrate(&CompanyOrganization{})
 	_ = db.AutoMigrate(&CompanyTask{})

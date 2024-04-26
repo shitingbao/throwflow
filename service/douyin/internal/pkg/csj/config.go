@@ -5,7 +5,7 @@ const (
 	ApplicationJson         = "application/json"
 	PageSize20              = 20
 	PageSize50              = 50
-	SearchType3             = 3
+	SearchType4             = 4
 	OrderType1              = 1
 	ListOrderOrderType1     = 1
 	ListOrderTimeTypeUpdate = "update"

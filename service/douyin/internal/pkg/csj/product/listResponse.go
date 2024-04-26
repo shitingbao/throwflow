@@ -12,7 +12,7 @@ type ListDataProductResponse struct {
 	IsKolProduct bool   `json:"is_kol_product"` // 是否有达⼈特殊佣⾦
 	Price        uint64 `json:"price"`          // 商品价格，单位分
 	InStock      bool   `json:"in_stock"`       // 有⽆库存
-	firstCid     uint64 `json:"first_cid"`      // 商品⼀级类⽬
+	FirstCid     uint64 `json:"first_cid"`      // 商品⼀级类⽬
 	SecondCid    uint64 `json:"second_cid"`     // 商品⼆级类⽬
 	ThirdCid     uint64 `json:"third_cid"`      // 商品三级类⽬
 	Sales        uint64 `json:"sales"`          // 商品历史销量

@@ -125,7 +125,7 @@ func (ctr *companyTaskRepo) List(ctx context.Context, pageNum, pageSize, isTop, 
 		db = db.Limit(pageSize).Offset((pageNum - 1) * pageSize)
 	}
 
-	if err := db.Order("create_time DESC").
+	if err := db.Order("release_time DESC").
 		Find(&tasks).Error; err != nil {
 		return nil, err
 	}

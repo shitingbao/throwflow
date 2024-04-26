@@ -19,16 +19,18 @@ type UserScanRecordRepo interface {
 }
 
 type UserScanRecordUsecase struct {
-	repo   UserScanRecordRepo
-	urepo  UserRepo
-	corepo CompanyOrganizationRepo
-	tm     Transaction
-	conf   *conf.Data
-	log    *log.Helper
+	repo    UserScanRecordRepo
+	urepo   UserRepo
+	uorrepo UserOrganizationRelationRepo
+	uirrepo UserIntegralRelationRepo
+	corepo  CompanyOrganizationRepo
+	tm      Transaction
+	conf    *conf.Data
+	log     *log.Helper
 }
 
-func NewUserScanRecordUsecase(repo UserScanRecordRepo, urepo UserRepo, corepo CompanyOrganizationRepo, tm Transaction, conf *conf.Data, logger log.Logger) *UserScanRecordUsecase {
-	return &UserScanRecordUsecase{repo: repo, urepo: urepo, corepo: corepo, tm: tm, conf: conf, log: log.NewHelper(logger)}
+func NewUserScanRecordUsecase(repo UserScanRecordRepo, urepo UserRepo, uorrepo UserOrganizationRelationRepo, uirrepo UserIntegralRelationRepo, corepo CompanyOrganizationRepo, tm Transaction, conf *conf.Data, logger log.Logger) *UserScanRecordUsecase {
+	return &UserScanRecordUsecase{repo: repo, urepo: urepo, uorrepo: uorrepo, uirrepo: uirrepo, corepo: corepo, tm: tm, conf: conf, log: log.NewHelper(logger)}
 }
 
 func (usruc *UserScanRecordUsecase) CreateUserScanRecords(ctx context.Context, userId, organizationId, parentUserId uint64) error {
@@ -49,6 +51,7 @@ func (usruc *UserScanRecordUsecase) CreateUserScanRecords(ctx context.Context, u
 	}
 
 	var inUserScanRecord *domain.UserScanRecord
+	var organizationUserId uint64
 
 	if parentUserId > 0 {
 		weixinUser, err := usruc.urepo.Get(ctx, parentUserId)
@@ -57,6 +60,9 @@ func (usruc *UserScanRecordUsecase) CreateUserScanRecords(ctx context.Context, u
 			return WeixinUserNotFound
 
 		}
+
+		organizationUserId = weixinUser.Id
+
 		inUserScanRecord = domain.NewUserScanRecord(ctx, user.Id, companyOrganization.Data.OrganizationId, weixinUser.Id, 0)
 	} else {
 		inUserScanRecord = domain.NewUserScanRecord(ctx, user.Id, companyOrganization.Data.OrganizationId, 0, 0)
@@ -67,6 +73,32 @@ func (usruc *UserScanRecordUsecase) CreateUserScanRecords(ctx context.Context, u
 
 	if _, err := usruc.repo.Save(ctx, inUserScanRecord); err != nil {
 		return WeixinUserScanRecordCreateError
+	}
+
+	if organizationUserId > 0 {
+		if _, err := usruc.uorrepo.GetByUserId(ctx, user.Id, 0, 0, ""); err != nil {
+			if parentUserOrganizationRelation, err := usruc.uorrepo.GetByUserId(ctx, organizationUserId, companyOrganization.Data.OrganizationId, 0, "0"); err == nil {
+				var organizationTutorId uint64 = 0
+
+				if parentUserOrganizationRelation.Level == 4 {
+					organizationTutorId = parentUserOrganizationRelation.UserId
+				} else {
+					if userIntegralRelations, err := usruc.uirrepo.List(ctx, companyOrganization.Data.OrganizationId); err == nil {
+						tutorUserIntegralRelation := usruc.uirrepo.GetSuperior(ctx, parentUserOrganizationRelation.UserId, 4, userIntegralRelations)
+
+						if tutorUserIntegralRelation != nil {
+							organizationTutorId = tutorUserIntegralRelation.UserId
+						}
+					}
+				}
+
+				inUserOrganizationRelation := domain.NewUserOrganizationRelation(ctx, user.Id, companyOrganization.Data.OrganizationId, organizationUserId, organizationTutorId, 0, 1, "")
+				inUserOrganizationRelation.SetCreateTime(ctx)
+				inUserOrganizationRelation.SetUpdateTime(ctx)
+
+				usruc.uorrepo.Save(ctx, inUserOrganizationRelation)
+			}
+		}
 	}
 
 	return nil

@@ -26,26 +26,18 @@ type CompanyProduct struct {
 	ProductName           string
 	ProductImg            string
 	ProductImgs           []string
-	ProductDetailImg      string
-	ProductDetailImgs     []string
 	ProductPrice          string
 	IndustryId            uint64
-	IndustryName          string
 	CategoryId            uint64
-	CategoryName          string
 	SubCategoryId         uint64
-	SubCategoryName       string
 	ProductUrl            string
 	ShopName              string
-	ShopLogo              string
 	ShopScore             float64
 	IsTop                 uint8
 	IsHot                 uint8
 	IsExist               uint8
 	TotalSale             uint64
 	CommissionRatio       float32
-	SampleThresholdType   uint8
-	SampleThresholdValue  uint64
 	MaterialOutUrl        string
 	MaterialOutUrls       []string
 	Commission            string
@@ -144,14 +136,6 @@ func (cp *CompanyProduct) SetProductImgs(ctx context.Context) {
 	cp.ProductImgs = tool.RemoveEmptyString(strings.Split(cp.ProductImg, ","))
 }
 
-func (cp *CompanyProduct) SetProductDetailImg(ctx context.Context, productDetailImg string) {
-	cp.ProductDetailImg = productDetailImg
-}
-
-func (cp *CompanyProduct) SetProductDetailImgs(ctx context.Context) {
-	cp.ProductDetailImgs = tool.RemoveEmptyString(strings.Split(cp.ProductDetailImg, ","))
-}
-
 func (cp *CompanyProduct) SetProductPrice(ctx context.Context, productPrice string) {
 	cp.ProductPrice = productPrice
 }
@@ -160,24 +144,12 @@ func (cp *CompanyProduct) SetIndustryId(ctx context.Context, industryId uint64) 
 	cp.IndustryId = industryId
 }
 
-func (cp *CompanyProduct) SetIndustryName(ctx context.Context, industryName string) {
-	cp.IndustryName = industryName
-}
-
 func (cp *CompanyProduct) SetCategoryId(ctx context.Context, categoryId uint64) {
 	cp.CategoryId = categoryId
 }
 
-func (cp *CompanyProduct) SetCategoryName(ctx context.Context, categoryName string) {
-	cp.CategoryName = categoryName
-}
-
 func (cp *CompanyProduct) SetSubCategoryId(ctx context.Context, subCategoryId uint64) {
 	cp.SubCategoryId = subCategoryId
-}
-
-func (cp *CompanyProduct) SetSubCategoryName(ctx context.Context, subCategoryName string) {
-	cp.SubCategoryName = subCategoryName
 }
 
 func (cp *CompanyProduct) SetProductUrl(ctx context.Context) {
@@ -186,10 +158,6 @@ func (cp *CompanyProduct) SetProductUrl(ctx context.Context) {
 
 func (cp *CompanyProduct) SetShopName(ctx context.Context, shopName string) {
 	cp.ShopName = shopName
-}
-
-func (cp *CompanyProduct) SetShopLogo(ctx context.Context, shopLogo string) {
-	cp.ShopLogo = shopLogo
 }
 
 func (cp *CompanyProduct) SetShopScore(ctx context.Context, shopScore float64) {
@@ -214,14 +182,6 @@ func (cp *CompanyProduct) SetTotalSale(ctx context.Context, totalSale uint64) {
 
 func (cp *CompanyProduct) SetCommissionRatio(ctx context.Context, commissionRatio float32) {
 	cp.CommissionRatio = commissionRatio
-}
-
-func (cp *CompanyProduct) SetSampleThresholdType(ctx context.Context, sampleThresholdType uint8) {
-	cp.SampleThresholdType = sampleThresholdType
-}
-
-func (cp *CompanyProduct) SetSampleThresholdValue(ctx context.Context, sampleThresholdValue uint64) {
-	cp.SampleThresholdValue = sampleThresholdValue
 }
 
 func (cp *CompanyProduct) SetMaterialOutUrl(ctx context.Context, materialOutUrl string) {

@@ -612,10 +612,7 @@ func (ucuc *UserCommissionUsecase) getOrderComission(ctx context.Context, releva
 		commissionPool := commission * 100 / ratio * companyOrganization.Data.OrganizationColonelCommission.OrderRatio / 100
 
 		var realCommission float64
-		fmt.Println("#################3")
-		fmt.Println(organizationParentUser)
-		fmt.Println(organizationTutorUser)
-		fmt.Println("#################3")
+
 		if organizationParentUser.Level == 2 {
 			realCommission = commissionPool * companyOrganization.Data.OrganizationColonelCommission.PrimaryAdvancedPresenterOrderCommissionRule / 100
 		} else if organizationParentUser.Level == 3 {
