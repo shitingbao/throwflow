@@ -4,14 +4,8 @@ import (
 	"context"
 )
 
-func (ts *TaskService) SyncOrderUserCommissions() {
+func (ts *TaskService) SyncTaskUserCommissions() {
 	ctx := context.Background()
 
-	ts.wucuc.SyncOrderUserCommissions(ctx)
-}
-
-func (ts *TaskService) SyncCostOrderUserCommissions() {
-	ctx := context.Background()
-
-	ts.wucuc.SyncCostOrderUserCommissions(ctx)
+	ts.wucuc.SyncTaskUserCommissions(ctx)
 }

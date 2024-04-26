@@ -1,8 +1,9 @@
 module task
 
-go 1.22
+go 1.17
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-kratos/kratos/contrib/registry/consul/v2 v2.0.0-20230307155106-51fac4ff9003
 	github.com/go-kratos/kratos/v2 v2.5.3

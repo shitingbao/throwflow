@@ -20,7 +20,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewOceanengineAccountTokenRepo, NewOpenDouyinTokenRepo, NewQianchuanAdvertiserRepo, NewQianchuanAdRepo, NewCompanyRepo, NewCompanyOrganizationRepo, NewJinritemaiOrderRepo, NewJinritemaiStoreRepo, NewOpenDouyinVideoRepo, NewWeixinUserRepo, NewWeixinUserOrganizationRepo, NewWeixinUserCommissionRepo, NewWeixinUserCouponRepo, NewWeixinUserBalanceRepo, NewDoukeTokenRepo, NewCompanyTaskRepo, NewDiscovery, NewDouyinServiceClient, NewCompanyServiceClient, NewWeixinServiceClient)
+var ProviderSet = wire.NewSet(NewData, NewOceanengineAccountTokenRepo, NewOpenDouyinTokenRepo, NewQianchuanAdvertiserRepo, NewQianchuanAdRepo, NewCompanyRepo, NewCompanyOrganizationRepo, NewJinritemaiOrderRepo, NewJinritemaiStoreRepo, NewOpenDouyinVideoRepo, NewWeixinUserRepo, NewWeixinUserCommissionRepo, NewWeixinUserCouponRepo, NewWeixinUserBalanceRepo, NewDoukeOrderRepo, NewCompanyTaskRepo, NewCompanyProductRepo, NewDiscovery, NewDouyinServiceClient, NewCompanyServiceClient, NewWeixinServiceClient)
 
 // Data .
 type Data struct {
@@ -48,7 +48,7 @@ func NewDouyinServiceClient(sr *conf.Service, rr registry.Discovery) douyinv1.Do
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(20*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
@@ -67,7 +67,7 @@ func NewCompanyServiceClient(sr *conf.Service, rr registry.Discovery) companyv1.
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(20*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {
@@ -86,7 +86,7 @@ func NewWeixinServiceClient(sr *conf.Service, rr registry.Discovery) weixinv1.We
 			tracing.Client(),
 			recovery.Recovery(),
 		),
-		grpc.WithTimeout(20*time.Second),
+		grpc.WithTimeout(2*time.Second),
 		grpc.WithOptions(grpcx.WithStatsHandler(&tracing.ClientHandler{})),
 	)
 	if err != nil {

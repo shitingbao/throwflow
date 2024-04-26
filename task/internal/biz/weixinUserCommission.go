@@ -9,8 +9,7 @@ import (
 )
 
 type WeixinUserCommissionRepo interface {
-	SyncOrder(ctx context.Context) (*v1.SyncOrderUserCommissionsReply, error)
-	SyncCostOrder(ctx context.Context) (*v1.SyncCostOrderUserCommissionsReply, error)
+	SyncTask(ctx context.Context) (*v1.SyncTaskUserCommissionsReply, error)
 }
 
 type WeixinUserCommissionUsecase struct {
@@ -22,21 +21,11 @@ func NewWeixinUserCommissionUsecase(repo WeixinUserCommissionRepo, logger log.Lo
 	return &WeixinUserCommissionUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
-func (wucuc *WeixinUserCommissionUsecase) SyncOrderUserCommissions(ctx context.Context) (*v1.SyncOrderUserCommissionsReply, error) {
-	userCommission, err := wucuc.repo.SyncOrder(ctx)
+func (wucuc *WeixinUserCommissionUsecase) SyncTaskUserCommissions(ctx context.Context) (*v1.SyncTaskUserCommissionsReply, error) {
+	userCommission, err := wucuc.repo.SyncTask(ctx)
 
 	if err != nil {
-		return nil, errors.InternalServer("TASK_SYNC_ORDER_USER_COMMISSION_ERROR", tool.GetGRPCErrorInfo(err))
-	}
-
-	return userCommission, nil
-}
-
-func (wucuc *WeixinUserCommissionUsecase) SyncCostOrderUserCommissions(ctx context.Context) (*v1.SyncCostOrderUserCommissionsReply, error) {
-	userCommission, err := wucuc.repo.SyncCostOrder(ctx)
-
-	if err != nil {
-		return nil, errors.InternalServer("TASK_SYNC_COST_ORDER_USER_COMMISSION_ERROR", tool.GetGRPCErrorInfo(err))
+		return nil, errors.InternalServer("TASK_SYNC_TASK_USER_COMMISSION_ERROR", tool.GetGRPCErrorInfo(err))
 	}
 
 	return userCommission, nil

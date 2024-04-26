@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/protobuf/types/known/emptypb"
 	v1 "task/api/service/weixin/v1"
 	"task/internal/biz"
 )
@@ -19,18 +20,8 @@ func NewWeixinUserCommissionRepo(data *Data, logger log.Logger) biz.WeixinUserCo
 	}
 }
 
-func (wucr *weixinUserCommissionRepo) SyncOrder(ctx context.Context) (*v1.SyncOrderUserCommissionsReply, error) {
-	userCommission, err := wucr.data.weixinuc.SyncOrderUserCommissions(ctx, &v1.SyncOrderUserCommissionsRequest{})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return userCommission, err
-}
-
-func (wucr *weixinUserCommissionRepo) SyncCostOrder(ctx context.Context) (*v1.SyncCostOrderUserCommissionsReply, error) {
-	userCommission, err := wucr.data.weixinuc.SyncCostOrderUserCommissions(ctx, &v1.SyncCostOrderUserCommissionsRequest{})
+func (wucr *weixinUserCommissionRepo) SyncTask(ctx context.Context) (*v1.SyncTaskUserCommissionsReply, error) {
+	userCommission, err := wucr.data.weixinuc.SyncTaskUserCommissions(ctx, &emptypb.Empty{})
 
 	if err != nil {
 		return nil, err

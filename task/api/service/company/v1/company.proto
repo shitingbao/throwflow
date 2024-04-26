@@ -82,20 +82,24 @@ service Company {
   rpc ListSimpleCompanyProducts (ListSimpleCompanyProductsRequest) returns (ListSimpleCompanyProductsReply) {}
   rpc ListExternalCompanyProducts (ListExternalCompanyProductsRequest) returns (ListExternalCompanyProductsReply) {}
   rpc ListCompanyProductCategorys (google.protobuf.Empty) returns (ListCompanyProductCategorysReply) {}
+  rpc ListCompanyTaskProducts (ListCompanyTaskProductsRequest) returns (ListCompanyTaskProductsReply) {}
   rpc StatisticsCompanyProducts (StatisticsCompanyProductsRequest) returns (StatisticsCompanyProductsReply) {}
   rpc CreateCompanyProducts (CreateCompanyProductsRequest) returns (CreateCompanyProductsReply) {}
   rpc CreateJinritemaiStoreCompanyProducts (CreateJinritemaiStoreCompanyProductsRequest) returns (CreateJinritemaiStoreCompanyProductsReply) {}
   rpc UpdateStatusCompanyProducts (UpdateStatusCompanyProductsRequest) returns (UpdateStatusCompanyProductsReply) {}
   rpc UpdateIsTopCompanyProducts (UpdateIsTopCompanyProductsRequest) returns (UpdateIsTopCompanyProductsReply) {}
-  rpc UpdateSampleThresholdCompanyProducts (UpdateSampleThresholdCompanyProductsRequest) returns (UpdateSampleThresholdCompanyProductsReply) {}
   rpc UpdateCommissionCompanyProducts (UpdateCommissionCompanyProductsRequest) returns (UpdateCommissionCompanyProductsReply) {}
   rpc UpdateMaterialCompanyProducts (UpdateMaterialCompanyProductsRequest) returns (UpdateMaterialCompanyProductsReply) {}
   rpc UpdateInvestmentRatioCompanyProducts (UpdateInvestmentRatioCompanyProductsRequest) returns (UpdateInvestmentRatioCompanyProductsReply) {}
   rpc UpdateOutProductCompanyProducts (UpdateOutProductCompanyProductsRequest) returns (UpdateOutProductCompanyProductsReply) {}
+  rpc UpdateCompanyProductByProductIds (UpdateCompanyProductByProductIdsRequest) returns (UpdateCompanyProductByProductIdsReply) {}
+  rpc ParseCompanyProducts (ParseCompanyProductsRequest) returns (ParseCompanyProductsReply) {}
+  rpc VerificationCompanyProducts (VerificationCompanyProductsRequest) returns (VerificationCompanyProductsReply) {}
   rpc UploadPartCompanyProducts (UploadPartCompanyProductsRequest) returns (UploadPartCompanyProductsReply) {}
   rpc CompleteUploadCompanyProducts (CompleteUploadCompanyProductsRequest) returns (CompleteUploadCompanyProductsReply) {}
   rpc AbortUploadCompanyProducts (AbortUploadCompanyProductsRequest) returns (AbortUploadCompanyProductsReply) {}
   rpc DeleteCompanyProducts (DeleteCompanyProductsRequest) returns (DeleteCompanyProductsReply) {}
+  rpc SyncCompanyProducts (google.protobuf.Empty) returns (SyncCompanyProductsReply) {}
 
   // 机构管理
   rpc GetCompanyOrganizations (GetCompanyOrganizationsRequest) returns (GetCompanyOrganizationsReply) {}
@@ -152,13 +156,20 @@ service Company {
   // 行业分类管理
   rpc ListIndustries (google.protobuf.Empty) returns (ListIndustriesReply) {}
 
+  // 种草任务
+  rpc GetCompanyTaskByProductOutId(GetCompanyTaskByProductOutIdRequest)returns(GetCompanyTaskByProductOutIdReply){}
+  rpc GetCompanyTaskAccountRelations(GetCompanyTaskAccountRelationsRequest)returns(GetCompanyTaskAccountRelationsReply){}
+  rpc ListCompanyTask(ListCompanyTaskRequest)returns(ListCompanyTaskReply){}
+  rpc ListCompanyTaskDetail(ListCompanyTaskDetailRequest)returns(ListCompanyTaskDetailReply){}
+  rpc ListCompanyTaskAccountRelation(ListCompanyTaskAccountRelationRequest)returns(ListCompanyTaskAccountRelationReply){}
+  rpc CreateCompanyTask(CreateCompanyTaskRequest)returns(CreateCompanyTaskReply){}
+  rpc CreateCompanyTaskAccountRelation(CreateCompanyTaskAccountRelationRequest)returns(CreateCompanyTaskAccountRelationReply){}
+  rpc UpdateCompanyTaskQuota(UpdateCompanyTaskQuotaRequest)returns(UpdateCompanyTaskReply){}
+  rpc UpdateCompanyTaskIsTop(UpdateCompanyTaskIsTopRequest)returns(UpdateCompanyTaskReply){}
+  rpc UpdateCompanyTaskIsDel(UpdateCompanyTaskIsDelRequest)returns(UpdateCompanyTaskIsDelReply){}
+  rpc UpdateCompanyTaskDetailScreenshot(UpdateCompanyTaskDetailScreenshotRequest)returns(UpdateCompanyTaskDetailScreenshotReply){}
+  rpc UpdateCompanyTaskDetailScreenshotAvailable(UpdateCompanyTaskDetailScreenshotAvailableRequest)returns(UpdateCompanyTaskDetailScreenshotAvailableReply){}
   rpc SyncUpdateCompanyTaskDetail(google.protobuf.Empty)returns(SyncUpdateCompanyTaskDetailReply){}
-}
-
-message SyncUpdateCompanyTaskDetailReply{
-  message Data{}
-  uint32 code = 1;
-  Data data = 2;
 }
 
 message ListMenusReply {
@@ -1608,12 +1619,10 @@ message GetCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -1651,12 +1660,10 @@ message GetCompanyProductByProductOutIdsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -1665,16 +1672,11 @@ message GetCompanyProductByProductOutIdsReply {
 
 message GetExternalCompanyProductsRequest {
   uint64 productId = 1 [(validate.rules).uint64.gt = 0];
-  uint64 userId = 2 [(validate.rules).uint64.gt = 0];
 }
 
 message GetExternalCompanyProductsReply {
   message ProductImg {
     string productImg = 1;
-  }
-
-  message ProductDetailImg {
-    string productDetailImg = 1;
   }
 
   message Aweme {
@@ -1688,21 +1690,18 @@ message GetExternalCompanyProductsReply {
     uint64 productId = 1;
     string productName = 2;
     repeated ProductImg productImgs = 3;
-    repeated ProductDetailImg productDetailImgs = 4;
-    string productPrice = 5;
-    string shopName = 6;
-    string shopLogo = 7;
-    string shopScore = 8;
-    uint32 isTop = 9;
-    uint32 sampleThresholdType = 10;
-    uint64 sampleThresholdValue = 11;
-    string pureCommission = 12;
-    string pureServiceCommission = 13;
-    string commonCommission = 14;
-    uint32 isHot = 15;
-    string productUrl = 16;
-    uint64 TotalSale = 17;
-    repeated Aweme awemes = 18;
+    string productPrice = 4;
+    string shopName = 5;
+    string shopScore = 6;
+    uint32 isTop = 7;
+    string pureCommission = 8;
+    string pureServiceCommission = 9;
+    string commonCommission = 10;
+    uint32 isHot = 11;
+    string productUrl = 12;
+    uint64 TotalSale = 13;
+    string investmentRatio = 14;
+    repeated Aweme awemes = 15;
   }
 
   uint32 code = 1;
@@ -1772,12 +1771,10 @@ message ListCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   message Data {
@@ -1832,6 +1829,7 @@ message ListExternalCompanyProductsRequest {
   uint64 industryId = 3 [(validate.rules).uint64.gte = 0];
   uint64 categoryId = 4 [(validate.rules).uint64.gte = 0];
   uint64 subCategoryId = 5 [(validate.rules).uint64.gte = 0];
+  uint32 isInvestment = 7 [(validate.rules).uint32 = {in: [0, 1]}];
   string keyword = 6 [(validate.rules).string = {min_len: 0}];
 }
 
@@ -1883,6 +1881,56 @@ message ListCompanyProductCategorysReply {
 
   message Data{
     repeated Category category = 1;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCompanyTaskProductsRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gte = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListCompanyTaskProductsReply {
+  message ProductImg {
+    string productImg = 1;
+  }
+
+  message Commission {
+    double commissionRatio = 1;
+    double serviceRatio = 2;
+    string commissionOutUrl = 3;
+  }
+
+  message MaterialOutUrl {
+    string materialOutUrl = 1;
+  }
+
+  message CompanyProduct {
+    uint64 productId = 1;
+    uint64 productOutId = 2;
+    uint32 productType = 3;
+    uint32 productStatus = 4;
+    string productName = 5;
+    repeated ProductImg productImgs = 6;
+    string productPrice = 7;
+    string productUrl = 8;
+    uint32 isTop = 9;
+    repeated MaterialOutUrl materialOutUrls = 10;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated CompanyProduct list = 5;
   }
 
   uint32 code = 1;
@@ -1941,12 +1989,10 @@ message CreateCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2006,12 +2052,10 @@ message UpdateStatusCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2049,56 +2093,10 @@ message UpdateIsTopCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
-  }
-
-  uint32 code = 1;
-  Data data = 2;
-}
-
-message UpdateSampleThresholdCompanyProductsRequest {
-  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
-  uint32 sampleThresholdType = 2 [(validate.rules).uint32 = {in: [1, 2, 3]}];
-  uint64 sampleThresholdValue = 3 [(validate.rules).uint64.gte = 0];
-}
-
-message UpdateSampleThresholdCompanyProductsReply {
-  message ProductImg {
-    string productImg = 1;
-  }
-
-  message Commission {
-    double commissionRatio = 1;
-    double serviceRatio = 2;
-    string commissionOutUrl = 3;
-  }
-
-  message MaterialOutUrl {
-    string materialOutUrl = 1;
-  }
-
-  message Data {
-    uint64 productId = 1;
-    uint64 productOutId = 2;
-    uint32 productType = 3;
-    uint32 productStatus = 4;
-    string productName = 5;
-    repeated ProductImg productImgs = 6;
-    string productPrice = 7;
-    string productUrl = 8;
-    uint32 isTop = 9;
-    repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2136,12 +2134,10 @@ message UpdateCommissionCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2192,12 +2188,10 @@ message UpdateInvestmentRatioCompanyProductsReply {
     string productUrl = 8;
     uint32 isTop = 9;
     repeated MaterialOutUrl materialOutUrls = 10;
-    uint32 sampleThresholdType = 11;
-    uint64 sampleThresholdValue = 12;
-    repeated Commission commissions = 13;
-    double investmentRatio = 14;
-    string forbidReason = 15;
-    uint32 isTask = 16;
+    repeated Commission commissions = 11;
+    double investmentRatio = 12;
+    string forbidReason = 13;
+    uint32 isTask = 14;
   }
 
   uint32 code = 1;
@@ -2226,6 +2220,54 @@ message UpdateOutProductCompanyProductsRequest {
 }
 
 message UpdateOutProductCompanyProductsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCompanyProductByProductIdsRequest {
+  string productIds = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message UpdateCompanyProductByProductIdsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ParseCompanyProductsRequest {
+  string content = 1 [(validate.rules).string ={min_len: 1}];
+}
+
+message ParseCompanyProductsReply {
+  message Data {
+    uint64 productId = 1;
+    string productName = 2;
+    string productImg = 3;
+    string productPrice = 4;
+    uint32 isTop = 5;
+    string pureCommission = 6;
+    string pureServiceCommission = 7;
+    string commonCommission = 8;
+    string investmentRatio = 9;
+    uint32 isHot = 10;
+    uint64 TotalSale = 11;
+    uint32 isTask = 12;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message VerificationCompanyProductsRequest {
+  uint64 productId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message VerificationCompanyProductsReply {
   message Data {
   }
 
@@ -2286,6 +2328,14 @@ message DeleteCompanyProductsReply {
   Data data = 2;
 }
 
+message SyncCompanyProductsReply {
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
 message GetCompanyOrganizationsRequest {
   uint64 organizationId = 1 [(validate.rules).uint64.gt = 0];
 }
@@ -2302,27 +2352,45 @@ message GetCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2383,27 +2451,45 @@ message GetCompanyOrganizationByOrganizationCodesReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2465,27 +2551,45 @@ message ListCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2562,9 +2666,9 @@ message CreateCompanyOrganizationsRequest {
   string organizationName = 1 [(validate.rules).string = {min_len: 1}];
   string organizationLogo = 2 [(validate.rules).string = {min_len: 1}];
   string organizationMcn = 3 [(validate.rules).string = {min_len: 0}];
-  string companyName = 4 [(validate.rules).string = {min_len: 1}];
-  string bankCode = 5 [(validate.rules).string = {min_len: 1}];
-  string bankDeposit = 6 [(validate.rules).string = {min_len: 1}];
+  string companyName = 4 [(validate.rules).string = {min_len: 0}];
+  string bankCode = 5 [(validate.rules).string = {min_len: 0}];
+  string bankDeposit = 6 [(validate.rules).string = {min_len: 0}];
 }
 
 message CreateCompanyOrganizationsReply {
@@ -2579,27 +2683,45 @@ message CreateCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2649,9 +2771,9 @@ message UpdateCompanyOrganizationsRequest {
   string organizationName = 2 [(validate.rules).string = {min_len: 1}];
   string organizationLogo = 3 [(validate.rules).string = {min_len: 0}];
   string organizationMcn = 4 [(validate.rules).string = {min_len: 0}];
-  string companyName = 5 [(validate.rules).string = {min_len: 1}];
-  string bankCode = 6 [(validate.rules).string = {min_len: 1}];
-  string bankDeposit = 7 [(validate.rules).string = {min_len: 1}];
+  string companyName = 5 [(validate.rules).string = {min_len: 0}];
+  string bankCode = 6 [(validate.rules).string = {min_len: 0}];
+  string bankDeposit = 7 [(validate.rules).string = {min_len: 0}];
 }
 
 message UpdateCompanyOrganizationsReply {
@@ -2666,27 +2788,45 @@ message UpdateCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2748,27 +2888,45 @@ message UpdateTeamCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2830,27 +2988,45 @@ message UpdateCommissionCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2912,27 +3088,45 @@ message UpdateColonelCommissionCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -2994,27 +3188,45 @@ message UpdateCourseCompanyOrganizationsReply {
 
   message OrganizationColonelCommission {
     double zeroCourseRatio = 1;
-    double primaryAdvancedPresenterZeroCourseCommissionRule = 2;
-    double primaryAdvancedTutorZeroCourseCommissionRule = 3;
-    double intermediateAdvancedPresenterZeroCourseCommissionRule = 4;
-    double intermediateAdvancedTutorZeroCourseCommissionRule = 5;
-    double advancedPresenterZeroCourseCommissionRule = 6;
-    double courseRatio = 7;
-    double primaryAdvancedPresenterCourseCommissionRule = 8;
-    double primaryAdvancedTutorCourseCommissionRule = 9;
-    double intermediateAdvancedPresenterCourseCommissionRule = 10;
-    double intermediateAdvancedTutorCourseCommissionRule = 11;
-    double advancedPresenterCourseCommissionRule = 12;
-    double orderRatio = 13;
-    double intermediateAdvancedPresenterOrderCommissionRule = 14;
-    double intermediateAdvancedTutorOrderCommissionRule = 15;
-    double advancedPresenterOrderCommissionRule = 16;
-    double costOrderRatio = 17;
-    double primaryAdvancedPresenterCostOrderCommissionRule = 18;
-    double primaryAdvancedTutorCostOrderCommissionRule = 19;
-    double intermediateAdvancedPresenterCostOrderCommissionRule = 20;
-    double intermediateAdvancedTutorCostOrderCommissionRule = 21;
-    double advancedPresenterCostOrderCommissionRule = 22;
+    double zeroAdvancedPresenterZeroCourseCommissionRule = 2;
+    double zeroAdvancedTutorZeroCourseCommissionRule = 3;
+    double primaryAdvancedPresenterZeroCourseCommissionRule = 4;
+    double primaryAdvancedTutorZeroCourseCommissionRule = 5;
+    double intermediateAdvancedPresenterZeroCourseCommissionRule = 6;
+    double intermediateAdvancedTutorZeroCourseCommissionRule = 7;
+    double advancedPresenterZeroCourseCommissionRule = 8;
+    double primaryCourseRatio = 9;
+    double primaryAdvancedPresenterPrimaryCourseCommissionRule = 10;
+    double primaryAdvancedTutorPrimaryCourseCommissionRule = 11;
+    double intermediateAdvancedPresenterPrimaryCourseCommissionRule = 12;
+    double intermediateAdvancedTutorPrimaryCourseCommissionRule = 13;
+    double advancedPresenterPrimaryCourseCommissionRule = 14;
+    double intermediateCourseRatio = 15;
+    double primaryAdvancedPresenterIntermediateCourseCommissionRule = 16;
+    double primaryAdvancedTutorIntermediateCourseCommissionRule = 17;
+    double intermediateAdvancedPresenterIntermediateCourseCommissionRule = 18;
+    double intermediateAdvancedTutorIntermediateCourseCommissionRule = 19;
+    double advancedPresenterIntermediateCourseCommissionRule = 20;
+    double advancedCourseRatio = 21;
+    double primaryAdvancedPresenterAdvancedCourseCommissionRule = 22;
+    double primaryAdvancedTutorAdvancedCourseCommissionRule = 23;
+    double intermediateAdvancedPresenterAdvancedCourseCommissionRule = 24;
+    double intermediateAdvancedTutorAdvancedCourseCommissionRule = 25;
+    double advancedPresenterAdvancedCourseCommissionRule = 26;
+    double orderRatio = 27;
+    double primaryAdvancedPresenterOrderCommissionRule = 28;
+    double primaryAdvancedTutorOrderCommissionRule = 29;
+    double intermediateAdvancedPresenterOrderCommissionRule = 30;
+    double intermediateAdvancedTutorOrderCommissionRule = 31;
+    double advancedPresenterOrderCommissionRule = 32;
+    double costOrderRatio = 33;
+    double zeroAdvancedPresenterCostOrderCommissionRule = 34;
+    double zeroAdvancedTutorCostOrderCommissionRule = 35;
+    double primaryAdvancedPresenterCostOrderCommissionRule = 36;
+    double primaryAdvancedTutorCostOrderCommissionRule = 37;
+    double intermediateAdvancedPresenterCostOrderCommissionRule = 38;
+    double intermediateAdvancedTutorCostOrderCommissionRule = 39;
+    double advancedPresenterCostOrderCommissionRule = 40;
   }
 
   message CourseModule {
@@ -3910,6 +4122,415 @@ message ListCompanyUserExternalHistoryQianchuanHistorySearchReply {
     repeated Search list = 1;
   }
 
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetCompanyTaskByProductOutIdRequest{
+  uint64 productOutId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 userId = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message GetCompanyTaskByProductOutIdReply{
+  message Data{
+    uint64 id = 1;
+    uint64 productOutId = 2;
+    uint64 expireTime = 3;
+    uint64 playNum = 4;
+    double price = 5;
+    uint64 quota = 6;
+    uint32 isTop = 7;
+    uint32 isDel =8;
+    string createTime = 9;
+    uint32 isGoodReviews = 10;
+    uint64 claimQuota = 11;
+    uint64 successQuota = 12;
+    uint32 isExist = 13;
+  }
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message GetCompanyTaskAccountRelationsRequest{
+  uint64 taskAccountRelationId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message GetCompanyTaskAccountRelationsReply{
+  message Data{
+    uint64 taskAccountRelationId = 1;
+    uint64 taskId = 2;
+    uint64 productOutId = 3;
+    uint64 userId = 4;
+    string claimTime = 5;
+    string expireTime = 6;
+  }
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCompanyTaskRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  string keyword = 3 [(validate.rules).string = {min_len: 0}];
+  uint32 isTop = 4 [(validate.rules).uint32.gte = 0];
+  int32 isDel = 5 [(validate.rules).int32.gte = -1];
+  string releaseTime = 6 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListCompanyTaskReply{
+  message CompanyTask{
+    message CompanyProduct {
+      uint64 productOutId = 1;
+      string productName = 2;
+      string productPrice = 3;
+      string productImg = 4;
+      string pureCommission = 5;
+      string pureServiceCommission = 6;
+      string commissionRatio = 7;
+    }
+    uint64 id = 1;
+    uint64 productOutId = 2;
+    uint64 expireTime = 3;
+    uint64 playNum = 4;
+    double price = 5;
+    uint64 quota = 6;
+    uint32 isTop = 7;
+    uint32 isDel =8;
+    string createTime = 9;
+    string releaseTime = 10;
+    uint32 isGoodReviews = 11;
+    uint64 claimQuota = 12;
+    uint64 successQuota = 13;
+    CompanyProduct companyProduct = 14;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated CompanyTask list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCompanyTaskDetailRequest {
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 companyTaskId = 3 [(validate.rules).uint64.gte = 0];
+  string nickname = 4 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListCompanyTaskDetailReply{
+  message CompanyTaskAccountRelation{
+    uint64 id = 1;
+    string nickName = 2;
+    string avatarUrl = 3;   
+    uint64 companyTaskId = 4;
+    string productName = 5;     
+    uint64 productOutId = 6; 
+    uint64 userId = 7;        
+    string claimTime = 8;     
+    string expireTime = 9;    
+    uint32 status = 10;     
+    uint32 isDel = 11;     
+    uint32 isCostBuy = 12;     
+    string screenshotAddress = 13;
+    uint32 isScreenshotAvailable = 14; 
+    uint32 isPlaySuccess = 15; 
+    string createTime = 16;
+    string updateTime = 17;
+    repeated CompanyTaskDetail companyTaskDetails = 18;
+  }
+
+  message CompanyTaskDetail {
+    uint64 id = 1;
+    uint64 companyTaskId = 2;
+    uint64 userId = 3;
+    string clientKey = 4;
+    string openId = 5;
+    uint64 companyTaskAccountRelationId = 6;
+    string productName = 7;
+    string itemId = 8;
+    uint64 playCount = 9;
+    string cover = 10;
+    string releaseTime = 11;
+    uint32 isReleaseVideo = 12;       
+    uint32 isPlaySuccess = 13;
+    string createTime = 14;
+    string nickname = 15;
+    string avatar = 16;
+  }
+
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated CompanyTaskAccountRelation list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message ListCompanyTaskAccountRelationRequest{
+  uint64 pageNum = 1 [(validate.rules).uint64.gt = 0];
+  uint64 pageSize = 2 [(validate.rules).uint64.gt = 0];
+  uint64 companyTaskId = 3 [(validate.rules).uint64.gte = 0];
+  uint64 userId = 4 [(validate.rules).uint64.gt = 0];
+  int32 status = 5 [(validate.rules).int32.gte = -1];
+  string expireTime = 6 [(validate.rules).string = {min_len: 0}];
+  string expiredTime = 7 [(validate.rules).string = {min_len: 0}];
+  string productName = 8 [(validate.rules).string = {min_len: 0}];
+}
+
+message ListCompanyTaskAccountRelationReply{
+  message CompanyTaskAccountRelation{
+    message CompanyTask{
+      uint64 id = 1;
+      uint64 productOutId = 2;
+      uint64 expireTime = 3;
+      uint64 playNum = 4;
+      double price = 5;
+      uint64 quota = 6;
+      uint32 isTop = 7;
+      uint32 isDel =8;
+      string createTime = 9;
+      uint32 isGoodReviews = 10;
+      uint64 claimQuota = 11;
+      uint64 successQuota = 12;
+    }
+
+    message CompanyTaskDetail {
+      uint64 id = 1;
+      uint64 companyTaskId = 2;
+      uint64 userId = 3;
+      string clientKey = 4;
+      string openId = 5;
+      uint64 companyTaskAccountRelationId = 6;
+      string productName = 7;
+      string itemId = 8;
+      uint64 playCount = 9;
+      string cover = 10;
+      string releaseTime = 11;
+      uint32 isReleaseVideo = 12;       
+      uint32 isPlaySuccess = 13;
+      string createTime = 14;
+      string nickname = 15;
+      string avatar = 16;
+    }
+
+    message CompanyProduct {
+      uint64 productOutId = 1;
+      string productName = 2;
+      string productPrice = 3;
+      string productImg = 4;
+    }
+
+    uint64 id = 1;
+    uint64 companyTaskId = 2;
+    string productName = 3;     
+    uint64 productOutId = 4;     
+    uint64 userId = 5;        
+    string claimTime = 6;     
+    string expireTime = 7;    
+    uint32 status = 8;     
+    uint32 isDel = 9;     
+    uint32 isCostBuy = 10;     
+    string screenshotAddress = 11;
+    uint32 isScreenshotAvailable = 12;     
+    string createTime = 13;
+    string updateTime = 14;
+    repeated CompanyTaskDetail companyTaskDetails = 15;
+    CompanyTask companyTask = 16;
+    CompanyProduct companyProduct = 17;
+    uint32 isPlayCount = 18;
+  }
+  
+  message Data {
+    uint64 pageNum = 1;
+    uint64 pageSize = 2;
+    uint64 total = 3;
+    uint64 totalPage = 4;
+    repeated CompanyTaskAccountRelation list = 5;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateCompanyTaskRequest {
+  uint64 productOutId = 1 [(validate.rules).uint64.gt = 0];
+  uint64 expireTime = 2 [(validate.rules).uint64.gt = 0];
+  uint64 playNum = 3 [(validate.rules).uint64.gte = 0];
+  double price = 4 [(validate.rules).double.gt = 0.00];
+  uint64 quota = 5 [(validate.rules).uint64.gt = 0];
+  uint32 isGoodReviews = 6 [(validate.rules).uint32.gte = 0];
+  string releaseTime = 7 [(validate.rules).string = {min_len: 0}];
+}
+
+message CreateCompanyTaskReply{
+  message Data{
+    uint64 id = 1;
+    uint64 productOutId = 2;
+    uint64 expireTime = 3;
+    uint64 playNum = 4;
+    double price = 5;
+    uint64 quota = 6;
+    uint32 isTop = 7;
+    uint32 isDel =8;
+    string createTime = 9;
+    uint32 isGoodReviews = 10;
+    uint64 claimQuota = 11;
+    uint64 successQuota = 12;
+    string releaseTime = 13;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message CreateCompanyTaskAccountRelationRequest {
+  uint64 companyTaskId = 1 [(validate.rules).uint64.gt = 0];
+	uint64 productOutId = 2 [(validate.rules).uint64.gt = 0];
+	uint64 userId = 3 [(validate.rules).uint64.gt = 0];
+}
+
+message CreateCompanyTaskAccountRelationReply{
+  message Data{
+    message CompanyTask{
+      uint64 id = 1;
+      uint64 productOutId = 2;
+      uint64 expireTime = 3;
+      uint64 playNum = 4;
+      double price = 5;
+      uint64 quota = 6;
+      uint32 isTop = 7;
+      uint32 isDel =8;
+      string createTime = 9;
+      uint32 isGoodReviews = 10;
+      uint64 claimQuota = 11;
+      uint64 successQuota = 12;
+    }
+
+    message CompanyTaskDetail {
+      uint64 id = 1;
+      uint64 companyTaskId = 2;
+      uint64 userId = 3;
+      string clientKey = 4;
+      string openId = 5;
+      uint64 companyTaskAccountRelationId = 6;
+      string productName = 7;
+      string itemId = 8;
+      uint64 playCount = 9;
+      string cover = 10;
+      string releaseTime = 11;
+      uint32 isReleaseVideo = 12;       
+      uint32 isPlaySuccess = 13;
+      string createTime = 14;
+      string nickname = 15;
+      string avatar = 16;
+    }
+
+    message CompanyProduct {
+      uint64 productOutId = 1;
+      string productName = 2;
+      string productPrice = 3;
+      string productImg = 4;
+    }
+
+    uint64 id = 1;
+    uint64 companyTaskId = 2;
+    string productName = 3;     
+    uint64 productOutId = 4;     
+    uint64 userId = 5;        
+    string claimTime = 6;     
+    string expireTime = 7;    
+    uint32 status = 8;     
+    uint32 isDel = 9;     
+    uint32 isCostBuy = 10;     
+    string screenshotAddress = 11;
+    uint32 isScreenshotAvailable = 12;     
+    string createTime = 13;
+    string updateTime = 14;
+    repeated CompanyTaskDetail companyTaskDetails = 15;
+    CompanyTask companyTask = 16;
+    CompanyProduct companyProduct = 17;
+    uint32 isPlayCount = 18;
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCompanyTaskQuotaRequest {
+  uint64 companyTaskId = 1 [(validate.rules).uint64.gt = 0];
+	uint64 quota = 2 [(validate.rules).uint64.gt = 0];
+}
+
+message UpdateCompanyTaskIsTopRequest {
+  uint64 companyTaskId = 1 [(validate.rules).uint64.gt = 0];
+  uint32 isTop = 3 [(validate.rules).uint32.gte = 0];
+}
+
+message UpdateCompanyTaskReply{
+  message Data{
+    uint64 id = 1;
+    uint64 productOutId = 2;
+    uint64 expireTime = 3;
+    uint64 playNum = 4;
+    double price = 5;
+    uint64 quota = 6;
+    uint32 isTop = 7;
+    uint32 isDel =8;
+    string createTime = 9;
+    uint32 isGoodReviews = 10;
+    uint64 claimQuota = 11;
+    uint64 successQuota = 12;
+  }
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCompanyTaskIsDelRequest{
+  uint64 companyTaskId = 1 [(validate.rules).uint64.gt = 0];
+}
+
+message UpdateCompanyTaskIsDelReply{
+  message Data {
+  }
+
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCompanyTaskDetailScreenshotRequest{
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+  string screenshot = 2 [(validate.rules).string = {min_len: 1}];
+}
+
+message UpdateCompanyTaskDetailScreenshotReply{
+  message Data{}
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message UpdateCompanyTaskDetailScreenshotAvailableRequest{
+  uint64 id = 1 [(validate.rules).uint64.gt = 0];
+  uint32 isScreenshotAvailable = 2 [(validate.rules).uint32.gte = 0];
+}
+
+message UpdateCompanyTaskDetailScreenshotAvailableReply{
+  message Data{}
+  uint32 code = 1;
+  Data data = 2;
+}
+
+message SyncUpdateCompanyTaskDetailReply{
+  message Data{}
   uint32 code = 1;
   Data data = 2;
 }
